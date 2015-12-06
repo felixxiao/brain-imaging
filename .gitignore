@@ -1,0 +1,15 @@
+nohup.out
+*.Rout
+*.RData
+*.aux
+*.cb
+*.cb2
+*.log
+*.synctex.gz
+*.ps
+*.dvi
+*.bbl
+*.blg
+*.out
+*.toc
+*.swp
