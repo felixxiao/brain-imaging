@@ -1,5 +1,6 @@
 #!/usr/bin/Rscript
 
+rm(list=ls())
 source("source_header.R")
 
 parser = ArgumentParser()
@@ -26,7 +27,9 @@ template = template@.Data
 
 fileoutput = paste0(args$output, "_", Sys.Date(), ".RData")
 
-res = extract.neighbors(template, pattern = args$pattern,
+res= extract.neighbors(template, pattern = args$pattern,
  tmpsave = fileoutput)
 res$details = args$details
-save(res, file = fileoutput)
+
+template = res
+save(template, file = fileoutput)

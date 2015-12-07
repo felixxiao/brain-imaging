@@ -13,6 +13,8 @@ extract.data <- function(dat, mask, verbose = TRUE){
 
     if(j%%floor(dimen[4]/10)==0 & verbose) cat('*')
   }
+
+  mat
 }
 
 #given the MNI standard template, find out all the neighbors
