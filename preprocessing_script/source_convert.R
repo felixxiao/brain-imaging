@@ -17,6 +17,7 @@ extract.data <- function(dat, mask, verbose = TRUE){
 
 #given the MNI standard template, find out all the neighbors
 #return two things: the mask and list of neighbors
+#the pattern dictates how neighbors are defined.
 extract.neighbors <- function(template, pattern = cube.enumerate(), 
  tmpsave = NA, verbose = TRUE){
 
@@ -85,7 +86,7 @@ cube.enumerate <- function(){
 
 cross.enumerate <- function(){
   vec = c( 0, 0, 1,   0, 1, 0,  1, 0, 0,
-           0, 0,-1,   0,-1, 0, -1, 0, 0,)
+           0, 0,-1,   0,-1, 0, -1, 0, 0)
 
   mat = matrix(vec,ncol=3,byrow=TRUE)
   mat
