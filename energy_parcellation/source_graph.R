@@ -1,19 +1,32 @@
-compute.edge.list = function(data, adj.list, func)
+convert.edgelist2mat <- function(adj.list){
+  vec1 = rep(1:length(adj.list), times = lapply(adj.list, length))
+  vec2 = unlist(adj.list)
+
+  assert_that(length(vec1) == length(vec2))
+
+  cbind(vec1, vec2)
+}
+
+compute.edge.list = function(data, adj.list, func, verbose = FALSE)
 {
-  v1 = integer()
-  v2 = integer()
-  w  = numeric()
-  for (i in 1:length(adj.list))
-  {
-    adj = adj.list[[i]]
-    for (j in adj)
-    {
-      w  = c(w, func(data[,i], data[,j]))
-      v1 = c(v1, i)
-      v2 = c(v2, j)
-    }
+  adj.mat = convert.edgelist2mat(adj.list)
+
+  batch.len = ceiling(nrow(adj.mat)/10)
+  vec = numeric(nrow(adj.mat))
+
+  #split edge computation into 10 batches
+  for(i in 2:10){
+    #form the indices we're going to work over
+    idx = ((i-1)*batch.len+1):(min(i*batch.len, nrow(adj.mat)))
+
+    vec[idx] = sapply(idx, function(x){
+      dcor(data[,adj.mat[x,1]], data[,adj.mat[x,2]])
+    })
+ 
+    if(verbose) cat('*')
   }
-  return(data.frame(v1 = v1, v2 = v2, w = w))
+
+  list(adj.mat = adj.mat, energy.vec = vec)
 }
 
 construct.graph <- function(data, adj.list, component.num = 20,
