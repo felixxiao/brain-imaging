@@ -17,7 +17,7 @@ compute.edgeWeights = function(data, adj.list, func, verbose = FALSE)
   vec = numeric(nrow(adj.mat))
 
   #split edge computation into 10 batches
-  for(i in 2:10){
+  for(i in 1:10){
     #form the indices we're going to work over
     idx = ((i-1)*batch.len+1):(min(i*batch.len, nrow(adj.mat)))
 
