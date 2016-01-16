@@ -16,5 +16,6 @@ DATE = Sys.Date()
 PATH_DATA = "C:/Users/Felix/Dropbox/Felix_Kevin_Han-seniorthesis2015-16/data/"
 
 #where are the saving the outputs to?
-PATH_SAVE = "~/fmri_script_test/20151206_felix_output/"
+#PATH_SAVE = "~/fmri_script_test/20151206_felix_output/"
+PATH_SAVE = PATH_DATA
 

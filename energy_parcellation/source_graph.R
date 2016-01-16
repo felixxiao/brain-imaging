@@ -10,7 +10,7 @@ convert.adjList2edgeMat <- function(adj.list)
 }
 
 #compute the distance covariance for the edge weights
-compute.edgeWeights = function(data, adj.list, func,
+compute.edgeWeights = function(data, adj.list, func = dcor,
                                verbose = FALSE, save = TRUE)
 {
   edge.mat = convert.adjList2edgeMat(adj.list)
@@ -31,7 +31,7 @@ compute.edgeWeights = function(data, adj.list, func,
   }
   edges = list(edge.mat = edge.mat, energy.vec = vec)
   
-  if(save) save(edges, file = paste0(PATH_DATA, "edges_", 
+  if(save) save(edges, file = paste0(PATH_SAVE, "edges_", 
                                      DATE, ".RData"))
   
   edges
@@ -49,17 +49,18 @@ construct.graph <- function(data, adj.list, edges = NULL,
     edges = compute.edgeWeights(data, adj.list, dcor, save = save)
     if(verbose) cat("Edges done computing.")
   }
-  # number of vertices
-  n = max(length(unique(edges[,1])), length(unique(edges[,2])))
   
   idx = order(edges$energy.vec, decreasing = T)
   edge.mat = edges$edge.mat[idx,]
 
+  # number of vertices
+  n = max(edges)
+  
   g.base = graph.empty(n, direct = F)
 
   
   #let's do our binary search
-  upper = nrow(adj.mat)
+  upper = nrow(edge.mat)
   lower = 1
   compute.mid <- function(x,y){floor((x+y)/2)}
 
