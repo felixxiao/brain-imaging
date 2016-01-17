@@ -1,6 +1,5 @@
 #onvert adj.list into a matrix
-convert.adjList2edgeMat <- function(adj.list)
-{
+convert.adjList2edgeMat <- function(adj.list) {
   v1 = rep(1:length(adj.list), times = lapply(adj.list, length))
   v2 = unlist(adj.list)
 
@@ -11,8 +10,7 @@ convert.adjList2edgeMat <- function(adj.list)
 
 #compute the distance covariance for the edge weights
 compute.edgeWeights = function(data, adj.list, func = dcor,
-                               verbose = FALSE, save = TRUE)
-{
+                               verbose = FALSE, save = TRUE) {
   edge.mat = convert.adjList2edgeMat(adj.list)
 
   batch.len = ceiling(nrow(edge.mat)/10)
@@ -42,29 +40,25 @@ compute.edgeWeights = function(data, adj.list, func = dcor,
 # data and adj.list are ignored if edges are given
 construct.graph <- function(data, adj.list, edges = NULL,
                             component.num = 20,
-                            verbose = TRUE, save = TRUE)
-{
-  if(is.null(edges))
-  {
+                            verbose = TRUE, save = TRUE) {
+  if(is.null(edges)) {
     edges = compute.edgeWeights(data, adj.list, dcor, save = save)
     if(verbose) cat("Edges done computing.")
   }
+
+  # number of vertices
+  n = max(edges$edge.mat)
+  g.base = construct.graphBase(data, edges$edge.mat, n)
   
   idx = order(edges$energy.vec, decreasing = T)
   edge.mat = edges$edge.mat[idx,]
 
-  # number of vertices
-  n = max(edges)
-  
-  g.base = graph.empty(n, direct = F)
-
-  
   #let's do our binary search
   upper = nrow(edge.mat)
   lower = 1
   compute.mid <- function(x,y){floor((x+y)/2)}
 
-  while(TRUE){
+  while(TRUE) {
     mid = compute.mid(lower, upper)
     g = add.edges(g.base, t(edge.mat[1:mid,]))
 
@@ -78,6 +72,56 @@ construct.graph <- function(data, adj.list, edges = NULL,
     if(verbose) print(paste0("Current component number: ", current.comp))
   }
   
+  g
+}
+
+construct.graphBase <- function(data, edge.mat, n, verbose = FALSE){
+  assert_that(is.numeric(n) & length(n) == 1)
+
+  #initialize the graph
+  g = graph.empty(n, directed = F)
+  
+  #determine which columns are all 0
+  zero.voxels = which(apply(data, 2, sum) == 0)
+  iter = 1
+
+  #the following is way too slow ugh
+  #connect all the 0'd out voxels to its nearest non-zero voxel
+  #graph.tmp = add.edges(g, t(edge.mat))
+  #dist = shortest.paths(graph.tmp, v = zero.voxels, 
+  #  to = c(1:vcount(graph.tmp))[-zero.voxels])
+
+  #do this recursively: find all edge-pairs such that one edge
+  #  is not in zero.voxel and one edge is. Add that edge and
+  #  move the zero.voxel into the non-zero.voxel list.
+  #  Continue until there are no more zero.voxels
+
+  while(length(zero.voxels)>0) {
+    bool.mat = apply(edge.mat, 2, function(x){x %in% zero.voxels})
+
+    #find voxels between nonzero and zero
+    sum.mat = apply(bool.mat, 1, sum)
+    boundary.voxels = which(sum.mat == 1)  
+
+    #add edges to g
+    g = add.edges(g, t(edge.mat[boundary.voxels,]))
+
+    #mark zero edges as nonzero
+    zero.voxels = zero.voxels[!zero.voxels %in% 
+     unique(as.vector(edge.mat[boundary.voxels,]))]
+
+    #remove extra edges
+    edge.mat = edge.mat[-which(sum.mat == 0),, drop = FALSE]
+
+    if(verbose) {
+      print(iter)
+      iter = iter + 1
+      print(paste0("Length of zero.voxels: ", length(zero.voxels)))
+      print(paste0("Edge count: ", ecount(g)))
+      print(paste0("Dim of edges: ", nrow(edge.mat)))
+    }
+  }
+
   g
 }
 

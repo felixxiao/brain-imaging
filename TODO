@@ -1,0 +1,13 @@
+(Notes for Kevin himself so I don't forget.
+I'll slowly introduce these over time so it's not overwhelming)
+
+- Get other brain parcellations to compare against
+- Shuffle the dcor values you found to generate random parcellations
+- Make a super source_header outside all the folder and have each
+  folder's individual source_header call upon it (or something. We
+  really only need one source_header)
+- Add hooks to check tests whenever you push
+- Do extensive testing
+- Make the plotter for the parcellation
+- Get another brain ready so we have at least 2 brains to run on
+
