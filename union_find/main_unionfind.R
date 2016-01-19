@@ -3,19 +3,21 @@
 # Unsure why singleton components still exist
 # Need to clean up this script and put into a function
 
-
+PATH_DATA = 'C:/Users/Felix/DropBox/Felix_Kevin_Han-seniorthesis2015-16/data/'
+DATE = Sys.Date()
+setwd('~/GitHub/union_find')
 source('source_unionfind.R')
 
 MAX_COMP_SIZE = 10000
 
 load(paste0(PATH_DATA, 'edges_2016-01-14.RData'))
 
-partition.addedge.
 edges$edge.mat = edges$edge.mat[order(edges$energy.vec, decreasing = T),]
 edges$energy.vec = edges$energy.vec[order(edges$energy.vec, decreasing = T)]
 
 n = max(edges$edge.mat)
-uf = unionfind(n)
+#uf = unionfind(n)
+uf = UnionFind$new(n)
 
 edge.added = logical(nrow(edges$edge.mat))
 
@@ -24,34 +26,37 @@ breaks = c(breaks, nrow(edges$edge.mat))
 for (edge.set in 2:length(breaks))
 {
   cat(paste(edge.set - 1, '/', length(breaks) - 1, '\n'))
-  for (e in (breaks[edge.set - 1] + 1):breaks[edge.set]) #nrow(edges$edge.mat))
+  for (e in (breaks[edge.set - 1] + 1):breaks[edge.set])
   {
     i = edges$edge.mat[e, 1]
     j = edges$edge.mat[e, 2]
-    if (unionfind.component_size(uf, i) +
-        unionfind.component_size(uf, j) <= MAX_COMP_SIZE)
+    if (uf$component_size(i) + uf$component_size(j) <= MAX_COMP_SIZE)
     {
-      uf = unionfind.union(uf, i, j)
+      uf$union(i, j)
       edge.added[e] = T
     }
   }
 }
 
-#uf = unionfind.flatten(uf)
-#roots = sapply(100000:101000, .unionfind.root, uf = uf)
+save(uf, edge.added, file = paste0(PATH_DATA,
+                                   'edge_connect_',
+                                   MAX_COMP_SIZE, '_',
+                                   DATE,
+                                   '.RData'))
 
-nrow(edges$edge.mat)
-sum(edge.added)
+sum(edge.added) / nrow(edges$edge.mat)
 
 g = graph.empty(n, directed = F)
 g = add.edges(g, t(edges$edge.mat[edge.added,]))
 components = components(g)
 sort(table(components$membership), decreasing = T)
 
-tmp = which(components$membership == which.max(table(components$membership)))
-
 singletons = which(components$csize == 1)
+
+.unionfind.root(uf, singletons[2])
 
 i = 1
 edges$edge.mat[edges$edge.mat[,1] == singletons[i],]
-e = which(edges$edge.mat[,1] == singletons[i] & edges$edge.mat[,2] == 42)
+e = which(edges$edge.mat[,1] == singletons[i])
+edge.added[e]
+edges$edge.mat[e,]
