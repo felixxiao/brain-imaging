@@ -68,6 +68,8 @@ UnionFind = R6Class('UnionFind',
 # Arguments
 #   edges : list containing [[1]] data.frame listing edges and [[2]] vector
 #           of energy correlation weights of those edges
+# Return
+#   a factor indicating the component number of each vertex
 partition.addedge.uf = function(edges,
                                 max.size = 15000,
                                 min.size = 1000,
