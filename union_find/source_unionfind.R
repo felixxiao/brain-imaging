@@ -12,7 +12,7 @@ UnionFind = R6Class('UnionFind',
     initialize = function(size) {
       self$id = 1:size
       self$num = rep(1, times = size)
-      self$flat = FALSE
+      private$flat = FALSE
     },
     
     # find the component identifier of vertex i
@@ -39,7 +39,7 @@ UnionFind = R6Class('UnionFind',
         self$id[rootI] = rootJ
         self$num[rootJ] = self$num[rootJ] + self$num[rootI]
       }
-      self$flat = FALSE
+      private$flat = FALSE
     },
     
     # is there a path between vertices i and j?
@@ -56,12 +56,12 @@ UnionFind = R6Class('UnionFind',
     
     flatten = function()
     {
-      if (self$flat) return()
+      if (private$flat) return()
       roots = sapply(1:length(self$id), self$root)
       self$num = self$num[roots]
       self$id = roots
-      self$flat = TRUE
-    }
+      private$flat = TRUE
+    },
 
     # factor indicating the component of each vertex
     get_parcels = function()
@@ -71,10 +71,10 @@ UnionFind = R6Class('UnionFind',
       levels(parcels) = 1:nlevels(parcels)
       parcels
     }
-  )
+  ),
 
   private = list(
-    flat = NA,
+    flat = NA
   )
 )
 
@@ -122,8 +122,8 @@ partition.addedge.uf = function(edges,
   if (! missing(save.path))
     save(uf, file = paste0(PATH_DATA,
                            'edge_connect_',
-                           MIN_COMP_SIZE, '_',
-                           MAX_COMP_SIZE, '_',
+                           min.size, '_',
+                           max.size, '_',
                            DATE,
                            '.RData'))
   
