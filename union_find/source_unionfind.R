@@ -96,7 +96,7 @@ UnionFind = R6Class('UnionFind',
     
     flatten = function()
     {
-      roots = sapply(names(self$id), self$root)
+      roots = sapply(1:length(self$id), self$root)
       self$num = self$num[roots]
       self$id = roots
     }
