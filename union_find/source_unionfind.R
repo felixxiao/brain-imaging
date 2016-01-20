@@ -1,51 +1,9 @@
-library(R6)
-
-"
-.unionfind.RC = setRefClass('UnionFind',
-  fields = list(id = 'numeric', num = 'numeric'),
-  
-  methods = list(
-    # find the component identifier of vertex i
-    root = function(i)
-    {
-      while (i != id[i]) {
-        id[i] <<- id[id[i]]
-        i = id[i]
-      }
-      i
-    },
-    
-    # add an edge between vertices i and j
-    union = function(i, j)
-    {
-      rootI = root(i)
-      rootJ = root(j)
-      if (rootI == rootJ) return()
-      if (num[rootI] > num[rootJ]) {
-        id[rootJ] <<- rootI
-        num[rootI] <<- num[rootI] + num[rootJ]
-      }
-      else {
-        id[rootI] <<- rootJ
-        num[rootJ] <<- num[rootJ] + num[rootI]
-      }
-    },
-    
-    # is there a path between vertices i and j?
-    connected = function(i, j)
-    {
-      root(i) == root(j)
-    },
-    
-    # how many vertices is i connected to, including itself?
-    component_size = function(i)
-    {
-      num[root(i)]
-    }
-  )
-)
-"
-
+# Usage:
+#  uf = UnionFind$new(10)  initialize
+#  uf$connected(2,5)       FALSE
+#  uf$union(5,2)
+#  uf$connected(2,5)       TRUE
+#  uf$component_size(5)    2
 UnionFind = R6Class('UnionFind',
   public = list(
     id = NA,
@@ -103,22 +61,55 @@ UnionFind = R6Class('UnionFind',
   )
 )
 
-"
-# initialize an undirected graph with no edges and
-# size : number of vertices
-unionfind = function(size)
+# Find a partition using the Add-Edge algorithm : sequentially add each
+# edge between two different components if one of the two below is true
+#   1) either component has size < min.size
+#   2) the union of both components has size <= max.size
+# Arguments
+#   edges : list containing [[1]] data.frame listing edges and [[2]] vector
+#           of energy correlation weights of those edges
+partition.addedge.uf = function(edges,
+                                max.size = 15000,
+                                min.size = 1000,
+                                save.path,
+                                verbose = T)
 {
-  uf = .unionfind()
+  edges$edge.mat = edges$edge.mat[order(edges$energy.vec, decreasing = T),]
+  edges$energy.vec = edges$energy.vec[order(edges$energy.vec, decreasing = T)]
   
-  uf$id = 1:size
-  uf$num = rep(1, times = size)
+  n = max(edges$edge.mat)
+  uf = UnionFind$new(n)
   
-  uf
+  breaks = seq(0, nrow(edges$edge.mat), by = 25000)
+  breaks = c(breaks, nrow(edges$edge.mat))
+  
+  for (edge.set in 2:length(breaks))
+  {
+    if (verbose) cat(paste(edge.set - 1, '/', length(breaks) - 1, '\n'))
+    for (e in (breaks[edge.set - 1] + 1):breaks[edge.set])
+    {
+      i = edges$edge.mat[e, 1]
+      j = edges$edge.mat[e, 2]
+      sizeI = uf$component_size(i)
+      sizeJ = uf$component_size(j)
+      if ((sizeI < min.size || sizeJ < min.size) ||
+          sizeI + sizeJ <= max.size)
+        uf$union(i, j)
+    }
+  }
+  
+  uf$flatten()
+  
+  if (! missing(save.path))
+    save(uf, file = paste0(PATH_DATA,
+                           'edge_connect_',
+                           MIN_COMP_SIZE, '_',
+                           MAX_COMP_SIZE, '_',
+                           DATE,
+                           '.RData'))
+  
+  parcels = as.factor(uf$id)
+  levels(parcels) = 1:nlevels(parcels)
+  
+  parcels
 }
-"
-
-# uf = UnionFind$new(10)
-# uf$connected(2,5)
-# uf$union(5,2)
-# uf$connected(2,5)
-# uf$component_size(5)
