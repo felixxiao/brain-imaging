@@ -93,4 +93,114 @@ test_that("Make sure that compute.edgeWeights is correct", {
   expect_true(max(stat.acrossBatch) < min(stat.withinBatch))
 })
 
+test_that("Graph Base is correct", {
+  edges = compute.edgeWeights(mat, neigh$neighbor.list, dcor, save = FALSE)
 
+  n = max(edges$edge.mat)
+  g.base = .construct.graphBase(mat, edges$edge.mat, n)
+
+  #make sure correct number of vertices
+  expect_true(vcount(g.base) == 6^3)
+
+  #make sure all 0-voxels have an edge (degree > 0)
+  expect_true(length(which(apply(mat, 2, sum) == 0)) <= 
+   length(which(degree(g.base) > 0)))
+ 
+  dimen = c(6,6,6)
+  batch = apply(expand.grid(c(1,6), 1:6, 1:6), 1, .convert.3Dto2Dloc,
+   dimen = dimen)
+  batch = c(apply(expand.grid(1:6, c(1,6), 1:6), 1, .convert.3Dto2Dloc,
+   dimen = dimen), batch)
+  batch = c(apply(expand.grid(1:6, 1:6, c(1,5,6)), 1, .convert.3Dto2Dloc,
+   dimen = dimen), batch)
+  expect_true(all(degree(g.base)[batch] > 0))
+
+
+  edges.gBase = as_edgelist(g.base)
+  # make sure there are no self-loops
+  bool = apply(edges.gBase, 1, function(x){x[1] == x[2]})
+  expect_true(all(!bool))
+
+  #let's check specific cases
+  #make sure all the points in X[1, 2:5, 2:5] (zero'd out) are connected
+  # to X[2, 2:5, 2:5] respectively
+  zero.loc = as.matrix(expand.grid(1, 2:5, 2:4))
+  assert_that(all(apply(zero.loc, 1, function(x){all(X[x[1], x[2], x[3], ] 
+   == 0)})))
+  nonzero.loc = zero.loc
+  nonzero.loc[,1] = nonzero.loc[,1] + 1
+  assert_that(all(apply(nonzero.loc, 1, function(x){sum(abs(
+   X[x[1], x[2], x[3], ])) != 0})))
+
+  check.adjacency <- function(mat1, mat2){
+    for(i in 1:nrow(mat1)) {
+      idx1 = .convert.3Dto2Dloc(mat1[i,], dimen)
+      idx2 = .convert.3Dto2Dloc(mat2[i,], dimen)
+  
+      #first, make sure zero.idx and nonzero.idx are neighbors
+      expect_true(idx2 %in% neigh$neighbor.list[[idx1]])
+    
+      bool = apply(edges.gBase, 2, function(x){x %in% c(idx1, idx2)})
+      bool = apply(bool, 1, sum)
+      expect_true(length(which(bool == 2)) >= 1) #can be larger due to duplicates
+    }
+  }
+  check.adjacency(zero.loc, nonzero.loc)
+
+  #similarly, make sure all the points in X[2:5, 2:5, 6] are
+  # connected to X[2:5, 2:5, 5], which are in turn connected to
+  # X[2:5, 2:5, 4]
+  zero.loc = as.matrix(expand.grid(2:5, 2:5, 5))
+  nonzero.loc = zero.loc
+  nonzero.loc[,3] = nonzero.loc[,3] - 1
+  check.adjacency(zero.loc, nonzero.loc)
+
+  zero2.loc = zero.loc
+  zero2.loc[,3] = zero2.loc[,3] + 1
+  check.adjacency(zero.loc, zero2.loc)
+
+  #check that the points in X[3:4, 3:4, 6] have only one edge coming
+  # out, so they should appear in edges.gBase only once
+  zero.idx = apply(expand.grid(3:4, 3:4, 6), 1, .convert.3Dto2Dloc, dimen)
+  for(i in 1:length(zero.idx)) {
+    bool = apply(edges.gBase, 1, function(x){sum(x %in% zero.idx[i])})
+    expect_true(sum(bool) <= 2 & sum(bool) >= 1) #handle duplicates for now
+  }
+
+  #check the shortest paths matrix
+  dmat = shortest.paths(g.base)
+
+  #first check that the edges in the middle (X[3:4, 3:4, 3]) have no
+  # edges at all
+  loc = apply(expand.grid(3:4, 3:4, 3), 1, .convert.3Dto2Dloc, dimen)
+  expect_true(length(unique(as.vector(dmat[loc,]))) == 2) #elements 0 and Inf
+
+  #check that X[3:4, 3:4, 6] are only connected to 2 points (in [,,5] and
+  #  [,,4] respectively
+  loc = apply(expand.grid(3:4, 3:4, 6), 1, .convert.3Dto2Dloc, dimen)
+  for(i in loc) {
+    expect_true(length(which(dmat[i,] != Inf)) == 3) 
+  }
+
+  #check that the point X[1,1,1] is connected to the point X[2,2,2]
+  idx1 = .convert.3Dto2Dloc(c(1,1,1), dimen)
+  idx2 = .convert.3Dto2Dloc(c(2,2,2), dimen)
+  expect_true(dmat[idx1, idx2] == 3)
+})
+
+test_that("Test that construct.graph is correct", {
+  g = construct.graph(mat, neigh$neighbor.list, save = FALSE, 
+   component.num = 4)
+
+  #make sure all components have more than 2*2*4 members (since
+  # by design, for example, all points in X[2:3, 2:3, 2:4] should
+  # be in the same group
+  comp = components(g)
+  tab = table(comp$membership)
+  expect_true(all(tab > 2*2*4))
+
+  #check that X[2:3, 2:3, 2:4] are all in the same group
+  dimen = c(6,6,6)
+  loc = apply(expand.grid(2:3, 2:3, 2:4), 1, .convert.3Dto2Dloc, dimen)
+  expect_true(unique(comp$membership[loc]) == 1)
+})
