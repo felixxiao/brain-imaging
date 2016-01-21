@@ -46,10 +46,13 @@ construct.graph <- function(data, adj.list, edges = NULL,
     if(verbose) cat("Edges done computing.")
   }
 
-  # number of vertices
+  #number of vertices
   n = max(edges$edge.mat)
   g.base = construct.graphBase(data, edges$edge.mat, n)
-  
+
+  #for each voxel, add the largest associated edge
+  g.base = add.initalEdges(g.base, data, edges) 
+
   idx = order(edges$energy.vec, decreasing = T)
   edge.mat = edges$edge.mat[idx,]
 
@@ -75,6 +78,15 @@ construct.graph <- function(data, adj.list, edges = NULL,
   g
 }
 
+#add the largest edge for each voxel
+add.initialEdges <- function(g, data, edges){
+  idx = order(edges$energy.vec, decreasing = T)
+  edge.mat = edges$edge.mat[idx,]
+
+  
+}
+
+
 construct.graphBase <- function(data, edge.mat, n, verbose = FALSE){
   assert_that(is.numeric(n) & length(n) == 1)
 
@@ -85,17 +97,10 @@ construct.graphBase <- function(data, edge.mat, n, verbose = FALSE){
   zero.voxels = which(apply(data, 2, sum) == 0)
   iter = 1
 
-  #the following is way too slow ugh
-  #connect all the 0'd out voxels to its nearest non-zero voxel
-  #graph.tmp = add.edges(g, t(edge.mat))
-  #dist = shortest.paths(graph.tmp, v = zero.voxels, 
-  #  to = c(1:vcount(graph.tmp))[-zero.voxels])
-
   #do this recursively: find all edge-pairs such that one edge
   #  is not in zero.voxel and one edge is. Add that edge and
   #  move the zero.voxel into the non-zero.voxel list.
   #  Continue until there are no more zero.voxels
-
   while(length(zero.voxels)>0) {
     bool.mat = apply(edge.mat, 2, function(x){x %in% zero.voxels})
 
