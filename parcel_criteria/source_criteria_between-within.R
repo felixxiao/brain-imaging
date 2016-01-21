@@ -1,3 +1,6 @@
+# Used to compute energy covariance between 1-dimensional variables more
+# efficiently than the energy package. See (Szekely 2013) for details.
+# x : numeric, univariate data vector
 .distance.matrix = function(x)
 {
   a = matrix(x, nrow = length(x), ncol = length(x))
@@ -15,12 +18,11 @@
 
   if (! is.null(dat2))
   {
-    stopifnot(nrow(dat) != n)
+    stopifnot(nrow(dat2) == n)
 
     dist2 = matrix(0, nrow = n*n, ncol = ncol(dat2))
     for (j in 1:ncol(dat2))
       dist2[,j] = as.numeric(.distance.matrix(dat2[,j]))
-    dist2 = dist2 / diag()
   }
   
   dist = matrix(0, nrow = n*n, ncol = ncol(dat))
@@ -29,12 +31,12 @@
 
   if (is.null(dat2)) dist2 = dist
 
-  ecov = sqrt(t(dist) %*% dist2)
-  evar1 = sqrt(matrix(diag(t(dist) %*% dist),
-                      nrow = ncol(dist), ncol = ncol(dist2)))
-  evar2 = sqrt(t(matrix(diag(t(dist2) %*% dist2),
-                        nrow = ncol(dist2), nrow = ncol(dist))))
-  ecor = ecov / sqrt(evar1 * evar2)
+  ecov = sqrt(crossprod(dist, dist2))
+  evar1 = sqrt(colSums(dist * dist)) / n
+  evar2 = sqrt(colSums(dist2 * dist2)) / n
+  ecor = sweep(ecov, 1, evar1, '/')
+  ecor = sweep(ecor, 2, evar2, '/')
+  
   ecor[is.na(ecor)] = na.replace
 
   ecor
@@ -55,18 +57,21 @@ criterion.within_pairwise_ecor = function(dat, parcel, subsample = 1000,
                                           replace = T, verbose = T)
 {
   n = nrow(dat)
+  if (! is.numeric(subsample)) subsample = Inf
   
   within.mean = rep(NA, nlevels(parcel))
   within.var  = rep(NA, nlevels(parcel))
-  names(within.var) = levels(parcel)
+  within.n    = rep(NA, nlevels(parcel))
+  names(within.var)  = levels(parcel)
   names(within.mean) = levels(parcel)
+  names(within.n)    = levels(parcel) 
 
   if (verbose) cat('Computing Within-Score for Component:')
   for (p in levels(parcel))
   {
     if (verbose) cat(' ', p)
 
-    if (! is.numeric(subsample) | length(which(parcel == p)) <= subsample)
+    if (length(which(parcel == p)) <= subsample)
       voxels = which(parcel == p)
     else
       voxels = sample(which(parcel == p), size = subsample, replace = replace)
@@ -75,10 +80,11 @@ criterion.within_pairwise_ecor = function(dat, parcel, subsample = 1000,
     
     within.mean[p] = mean(ecor)
     within.var[p]  = var(as.numeric(ecor))
+    within.n[p] = length(voxels)
   }
   if (verbose) cat('\n')
   
-  list(mean = within.mean, var = within.var)
+  list(mean = within.mean, var = within.var, n = within.n)
 }
 
 # Arguments
@@ -92,25 +98,42 @@ criterion.between_pairwise_ecor = function(dat, parcel, subsample = 1000,
                                            replace = T, verbose = T)
 {
   n = nrow(dat)
-
+  m = nlevels(parcel)
+  if (! is.numeric(subsample)) subsample = Inf
+  
   component_pairs = combn(levels(parcel), 2)
-  m = ncol(component_pairs)
-
+  
   between.mean = matrix(NA, nrow = m, ncol = m)
   rownames(between.mean) = levels(parcel)
-  colnames(between.var)  = levels(parcel)
-  between.var  = between.mean
-  for (pair in 1:m)
+  colnames(between.mean) = levels(parcel)
+  between.var = between.mean
+  between.n   = rep(NA, times = nlevels(parcel))
+  names(between.n) = levels(parcel)
+  
+  if (verbose) cat('Computing Between-Score for Components:')
+  for (pair in 1:ncol(component_pairs))
   {
     i = component_pairs[1, pair]
     j = component_pairs[2, pair]
     
-    ecor = .pairwise.ecor(dat[,parcel == i], dat[,parcel == j])
+    if (verbose) cat(' (', i, ',', j, ')', sep = '')
+    
+    voxelsI = which(parcel == i)
+    voxelsJ = which(parcel == j)
+    if (length(voxelsI) > subsample)
+      voxelsI = sample(voxelsI, subsample, replace)
+    if (length(voxelsJ) > subsample)
+      voxelsJ = sample(voxelsJ, subsample, replace)
+    
+    ecor = .pairwise.ecor(dat[,voxelsI], dat[,voxelsJ])
 
     between.mean[i,j] = between.mean[j,i] = mean(ecor)
     between.var[i,j]  = between.var[j,i]  = var(as.numeric(ecor))
+    between.n[i] = length(voxelsI)
+    between.n[j] = length(voxelsJ)
   }
+  if (verbose) cat('\n')
 
-  list(mean = between.mean, var = between.var)
+  list(mean = between.mean, var = between.var, n = between.n)
 }
 
