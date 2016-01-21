@@ -31,11 +31,11 @@
 
   if (is.null(dat2)) dist2 = dist
 
-  ecov = sqrt(crossprod(dist, dist2))
+  ecov = sqrt(crossprod(dist, dist2)) / n
   evar1 = sqrt(colSums(dist * dist)) / n
   evar2 = sqrt(colSums(dist2 * dist2)) / n
-  ecor = sweep(ecov, 1, evar1, '/')
-  ecor = sweep(ecor, 2, evar2, '/')
+  ecor = sweep(ecov, 1, sqrt(evar1), '/')
+  ecor = sweep(ecor, 2, sqrt(evar2), '/')
   
   ecor[is.na(ecor)] = na.replace
 
@@ -56,6 +56,8 @@
 criterion.within_pairwise_ecor = function(dat, parcel, subsample = 1000,
                                           replace = T, verbose = T)
 {
+  assert_that(ncol(dat) == length(parcel))
+
   n = nrow(dat)
   if (! is.numeric(subsample)) subsample = Inf
   
@@ -97,6 +99,8 @@ criterion.within_pairwise_ecor = function(dat, parcel, subsample = 1000,
 criterion.between_pairwise_ecor = function(dat, parcel, subsample = 1000,
                                            replace = T, verbose = T)
 {
+  assert_that(ncol(dat) == length(parcel))
+
   n = nrow(dat)
   m = nlevels(parcel)
   if (! is.numeric(subsample)) subsample = Inf
