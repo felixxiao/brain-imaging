@@ -44,7 +44,8 @@ neigh = extract.neighbors(array(1, dim = c(6,6,6)),
 
 #now let's start testing
 test_that("Make sure that compute.edgeWeights is correct", {
-  edges = compute.edgeWeights(mat, neigh$neighbor.list, dcor, save = FALSE)
+  edges = compute.edgeWeights(mat, neigh$neighbor.list, dcor, save = FALSE,
+   verbose = FALSE)
 
   #make sure that the dcor in each block is more than the dcor across blocks
   batch.list = list(4)
@@ -57,8 +58,9 @@ test_that("Make sure that compute.edgeWeights is correct", {
   batch.list[[4]] = apply(expand.grid(4:5, 2:3, 2:4), 1, .convert.3Dto2Dloc,
    dimen = c(6,6,6))
 
-  expect_true(length(c(batch1, batch2, batch3, batch4)) ==
-   length(unique(c(batch1, batch2, batch3, batch4))))
+  batch.all = unlist(batch.list)
+  expect_true(length(batch.all) ==
+   length(unique(batch.all)))
 
   #find all the energy statistics within a batch and output the median
   output.withinBatch <- function(batch, edges){
@@ -190,7 +192,7 @@ test_that("Graph Base is correct", {
 
 test_that("Test that construct.graph is correct", {
   g = construct.graph(mat, neigh$neighbor.list, save = FALSE, 
-   component.num = 4)
+   verbose = FALSE, component.num = 4)
 
   #make sure all components have more than 2*2*4 members (since
   # by design, for example, all points in X[2:3, 2:3, 2:4] should
