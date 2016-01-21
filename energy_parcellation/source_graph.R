@@ -1,4 +1,5 @@
 #onvert adj.list into a matrix
+#TODO: There are duplicates in this list
 convert.adjList2edgeMat <- function(adj.list) {
   v1 = rep(1:length(adj.list), times = lapply(adj.list, length))
   v2 = unlist(adj.list)
@@ -48,7 +49,7 @@ construct.graph <- function(data, adj.list, edges = NULL,
 
   #number of vertices
   n = max(edges$edge.mat)
-  g.base = construct.graphBase(data, edges$edge.mat, n)
+  g.base = .construct.graphBase(data, edges$edge.mat, n)
 
   #for each voxel, add the largest associated edge
   g.base = add.initalEdges(g.base, data, edges) 
@@ -79,7 +80,8 @@ construct.graph <- function(data, adj.list, edges = NULL,
 }
 
 #add the largest edge for each voxel
-add.initialEdges <- function(g, data, edges){
+#TO BE FINISHED
+.add.initialEdges <- function(g, data, edges){
   idx = order(edges$energy.vec, decreasing = T)
   edge.mat = edges$edge.mat[idx,]
 
@@ -87,7 +89,7 @@ add.initialEdges <- function(g, data, edges){
 }
 
 
-construct.graphBase <- function(data, edge.mat, n, verbose = FALSE){
+.construct.graphBase <- function(data, edge.mat, n, verbose = FALSE){
   assert_that(is.numeric(n) & length(n) == 1)
 
   #initialize the graph

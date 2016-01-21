@@ -20,7 +20,7 @@ extract.data <- function(dat, mask, verbose = TRUE){
 #given the MNI standard template, find out all the neighbors
 #return two things: the mask and list of neighbors
 #the pattern dictates how neighbors are defined.
-extract.neighbors <- function(template, pattern = cube.enumerate(), 
+extract.neighbors <- function(template, pattern = .cross.enumerate(), 
  tmpsave = NA, verbose = TRUE){
 
   assert_that(is.numeric(template) & length(dim(template))==3)
@@ -32,7 +32,7 @@ extract.neighbors <- function(template, pattern = cube.enumerate(),
 
   for(j in 1:length(mask)){
     #convert mask index into pixel-location
-    loc = convert.2Dto3Dloc(mask[j], dimen)
+    loc = .convert.2Dto3Dloc(mask[j], dimen)
 		
     #apply pattern
     neigh = t(apply(pattern,1,function(s, loc){s+loc}, loc=loc))
@@ -44,7 +44,7 @@ extract.neighbors <- function(template, pattern = cube.enumerate(),
     if(length(rmv)>0) neigh = neigh[-rmv,]
 
     #convert pattern back to idx and see if it's in mask
-    idx = apply(neigh, 1, convert.3Dto2Dloc, dimen=dimen)
+    idx = apply(neigh, 1, .convert.3Dto2Dloc, dimen=dimen)
     #see if the index number is in mask
     idx = idx[which(idx %in% mask)]
     #convert idx into a column number
@@ -71,7 +71,7 @@ extract.neighbors <- function(template, pattern = cube.enumerate(),
 }
 
 
-cube.enumerate <- function(){
+.cube.enumerate <- function(){
   vec = c( 0, 0, 1,   0, 1, 0,  1, 0, 0,
            0, 0,-1,   0,-1, 0, -1, 0, 0,
            0, 1, 1,   1, 0, 1,  1, 1, 0,
@@ -86,7 +86,7 @@ cube.enumerate <- function(){
   mat
 }
 
-cross.enumerate <- function(){
+.cross.enumerate <- function(){
   vec = c( 0, 0, 1,   0, 1, 0,  1, 0, 0,
            0, 0,-1,   0,-1, 0, -1, 0, 0)
 
@@ -96,7 +96,7 @@ cross.enumerate <- function(){
 
 #convert a location (in matrix represented by an index) 
 #  into 3D coordinates
-convert.2Dto3Dloc <- function(idx, dimen){
+.convert.2Dto3Dloc <- function(idx, dimen){
   assert_that(is.numeric(idx))
   assert_that(length(dimen)==3 & is.numeric(dimen))
   assert_that(idx <= prod(dimen))
@@ -115,7 +115,7 @@ convert.2Dto3Dloc <- function(idx, dimen){
 
 #convert a location (3D by coordinates) into an index for
 #  a matrix
-convert.3Dto2Dloc <- function(loc, dimen){
+.convert.3Dto2Dloc <- function(loc, dimen){
   assert_that(length(loc)==3 & is.numeric(loc))
   assert_that(length(dimen)==3 & is.numeric(dimen))
   assert_that(all(loc<=dimen))
