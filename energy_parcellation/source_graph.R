@@ -1,4 +1,5 @@
 #onvert adj.list into a matrix
+#TODO: There are duplicates in this list
 convert.adjList2edgeMat <- function(adj.list) {
   v1 = rep(1:length(adj.list), times = lapply(adj.list, length))
   v2 = unlist(adj.list)
@@ -41,6 +42,9 @@ compute.edgeWeights = function(data, adj.list, func = dcor,
 construct.graph <- function(data, adj.list, edges = NULL,
                             component.num = 20,
                             verbose = TRUE, save = TRUE) {
+  assert_that(is.numeric(data) & is.matrix(data))
+  assert_that(is.list(adj.list))
+
   if(is.null(edges)) {
     edges = compute.edgeWeights(data, adj.list, dcor, save = save)
     if(verbose) cat("Edges done computing.")
@@ -48,10 +52,10 @@ construct.graph <- function(data, adj.list, edges = NULL,
 
   #number of vertices
   n = max(edges$edge.mat)
-  g.base = construct.graphBase(data, edges$edge.mat, n)
+  g.base = .construct.graphBase(data, edges$edge.mat, n)
 
   #for each voxel, add the largest associated edge
-  g.base = add.initalEdges(g.base, data, edges) 
+  #g.base = add.initalEdges(g.base, data, edges) 
 
   idx = order(edges$energy.vec, decreasing = T)
   edge.mat = edges$edge.mat[idx,]
@@ -79,7 +83,8 @@ construct.graph <- function(data, adj.list, edges = NULL,
 }
 
 #add the largest edge for each voxel
-add.initialEdges <- function(g, data, edges){
+#TO BE FINISHED
+.add.initialEdges <- function(g, data, edges){
   idx = order(edges$energy.vec, decreasing = T)
   edge.mat = edges$edge.mat[idx,]
 
@@ -87,14 +92,16 @@ add.initialEdges <- function(g, data, edges){
 }
 
 
-construct.graphBase <- function(data, edge.mat, n, verbose = FALSE){
+.construct.graphBase <- function(data, edge.mat, n, verbose = FALSE){
   assert_that(is.numeric(n) & length(n) == 1)
+  assert_that(is.matrix(edge.mat) & is.numeric(edge.mat))#initialize the graph
+  assert_that(is.matrix(data) & is.numeric(data))
 
   #initialize the graph
   g = graph.empty(n, directed = F)
   
   #determine which columns are all 0
-  zero.voxels = which(apply(data, 2, sum) == 0)
+  zero.voxels = which(apply(data, 2, function(x){sum(abs(x))}) == 0)
   iter = 1
 
   #do this recursively: find all edge-pairs such that one edge
