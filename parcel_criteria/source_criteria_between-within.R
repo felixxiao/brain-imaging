@@ -137,3 +137,38 @@ criterion.between_pairwise_ecor = function(dat, parcel, subsample = 1000,
   list(mean = between.mean, var = between.var, n = between.n)
 }
 
+# Compute a confidence interval for the mean Within-Between score
+# Arguments
+#   within  : list containing mean, var, and n vectors for each component
+#             Return value of criterion.within_pairwise_ecor
+#   between : list containing mean (matrix), var (matrix), and n (vector)
+#             for pairs of components
+#             Return value of criterion.between_pairwise_ecor
+#   tail    : numeric(1), lower and upper quantile cutoff for interval
+criterion.between_within_interval = function(within, between, tail = 0.05)
+{
+
+}
+
+criterion.adjacent_pairwise_ecor = function(edges, parcel)
+{
+  adjacent.mean = rep(NA, nlevels(parcel))
+  names(adjacent.mean) = levels(parcel)
+  adjacent.var  = adjacent.mean
+
+  edge.mat = edges$edge.mat
+  ecor = edges$energy.vec
+
+  parcels1 = parcel[edges$edge.mat[,1]]
+  parcels2 = parcel[edges$edge.mat[,2]]
+
+  for (p in levels(parcel))
+  {
+    ecor = edges$energy.vec[parcels1 == p & parcels2 == p]
+
+    adjacent.mean[p] = mean(ecor)
+    adjacent.var[p] = var(ecor)
+  }
+
+  list(mean = adjacent.mean, var = adjacent.var)
+}
