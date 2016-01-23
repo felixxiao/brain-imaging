@@ -104,6 +104,11 @@ criterion.between_pairwise_ecor = function(dat, parcel, subsample = 1000,
 
   n = nrow(dat)
   m = nlevels(parcel)
+  if (m < 2)
+  {
+    warning('only one component')
+    return()
+  }
   if (! is.numeric(subsample)) subsample = Inf
   
   component_pairs = combn(levels(parcel), 2)
