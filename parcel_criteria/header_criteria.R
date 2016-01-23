@@ -1,3 +1,5 @@
+library(assertthat)
+
 set.seed(10)
 DATE = Sys.Date()
 

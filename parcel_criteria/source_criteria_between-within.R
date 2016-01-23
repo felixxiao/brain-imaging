@@ -56,6 +56,8 @@
 criterion.within_pairwise_ecor = function(dat, parcel, subsample = 1000,
                                           replace = T, verbose = T)
 {
+  assert_that(ncol(dat) == length(parcel))
+
   n = nrow(dat)
   if (! is.numeric(subsample)) subsample = Inf
   
@@ -98,6 +100,8 @@ criterion.within_pairwise_ecor = function(dat, parcel, subsample = 1000,
 criterion.between_pairwise_ecor = function(dat, parcel, subsample = 1000,
                                            replace = T, verbose = T)
 {
+  assert_that(ncol(dat) == length(parcel))
+
   n = nrow(dat)
   m = nlevels(parcel)
   if (! is.numeric(subsample)) subsample = Inf
