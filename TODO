@@ -13,3 +13,6 @@ I'll slowly introduce these over time so it's not overwhelming)
 - parallel computing (foreach and DoMC)
 - SMILE and TIGER account
 - branches on git
+
+-- for loop braces
+-- function names and variables names, don't be the same

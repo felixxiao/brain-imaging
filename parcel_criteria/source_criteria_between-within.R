@@ -86,7 +86,8 @@ criterion.within_pairwise_ecor = function(dat, parcel, subsample = 1000,
   }
   if (verbose) cat('\n')
   
-  list(mean = within.mean, var = within.var, n = within.n)
+  list(mean = within.mean, var = within.var, n = within.n,
+       total.mean = mean(within.mean))
 }
 
 # Arguments
@@ -138,6 +139,74 @@ criterion.between_pairwise_ecor = function(dat, parcel, subsample = 1000,
   }
   if (verbose) cat('\n')
 
-  list(mean = between.mean, var = between.var, n = between.n)
+  list(mean = between.mean, var = between.var, n = between.n,
+       total.mean = mean(between.mean, na.rm = T))
 }
 
+# Compute a confidence interval for the mean Within-Between score
+# Arguments
+#   within  : list containing mean, var, and n vectors for each component
+#             Return value of criterion.within_pairwise_ecor
+#   between : list containing mean (matrix), var (matrix), and n (vector)
+#             for pairs of components
+#             Return value of criterion.between_pairwise_ecor
+#   tail    : numeric(1), lower and upper quantile cutoff for interval
+criterion.between_within_interval = function(within, between, tail = 0.05)
+{
+
+}
+
+criterion.adjacent_pairwise_ecor = function(edges, parcel)
+{
+  adjacent.mean = rep(NA, nlevels(parcel))
+  names(adjacent.mean) = levels(parcel)
+  adjacent.var  = adjacent.mean
+
+  parcels1 = parcel[edges$edge.mat[,1]]
+  parcels2 = parcel[edges$edge.mat[,2]]
+
+  for (p in levels(parcel))
+  {
+    ecor = edges$energy.vec[parcels1 == p & parcels2 == p]
+
+    adjacent.mean[p] = mean(ecor)
+    adjacent.var[p] = var(ecor)
+  }
+
+  list(mean = adjacent.mean, var = adjacent.var,
+       total.mean = mean(adjacent.mean))
+}
+
+criterion.boundary_pairwise_ecor = function(edges, parcel)
+{
+  boundary.mean = matrix(NA, nrow = nlevels(parcel), ncol = nlevels(parcel),
+                         dimnames = list(levels(parcel), levels(parcel)))
+  boundary.var  = boundary.mean
+  boundary.n    = boundary.mean
+  boundary.n[]  = 0
+
+  parcels1 = parcel[edges$edge.mat[,1]]
+  parcels2 = parcel[edges$edge.mat[,2]]
+
+  component_pairs = combn(levels(parcel), 2)
+  for (pair in 1:ncol(component_pairs))
+  {
+    comp1 = component_pairs[1, pair]
+    comp2 = component_pairs[2, pair]
+
+    ecor = edges$energy.vec[parcels1 == comp1 & parcels2 == comp2]
+
+    if (length(ecor) > 0)
+    {
+      boundary.mean[comp1, comp2] = boundary.mean[comp2, comp1] = mean(ecor)
+      boundary.var[comp1, comp2]  = boundary.var[comp2, comp1]  = var(ecor)
+      boundary.n[comp1, comp2]    = boundary.n[comp2, comp1]    = length(ecor)
+    }
+  }
+
+  total.mean = sum(boundary.mean * boundary.n, na.rm = T) /
+               sum(boundary.n, na.rm = T)
+
+  list(mean = boundary.mean, var = boundary.var, n = boundary.n,
+       total.mean = total.mean)
+}
