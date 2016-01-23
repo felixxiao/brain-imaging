@@ -1,3 +1,5 @@
+#load all the functions in all the source files in this entire git repo
+
 #note: some functions are hidden. to 
 # show them, use "ls(all.names = TRUE)"
 
@@ -22,4 +24,7 @@ for(i in 1:length(folder.vec)){
 
   setwd(script.dir)
 }
+
+#remove the extra variables
+rm(list = c("script.dir", "folder.vec", "i"))
 
