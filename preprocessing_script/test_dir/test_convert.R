@@ -1,6 +1,6 @@
 library(testthat)
 setwd("..")
-source("source_header.R")
+source("header_preprocess.R")
 
 test_that("Conversion works both ways", {
   set.seed(10)

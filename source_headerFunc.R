@@ -1,11 +1,7 @@
-suppressPackageStartupMessages(library(igraph))
-suppressPackageStartupMessages(library(energy))
-suppressPackageStartupMessages(library(testthat))
 suppressPackageStartupMessages(library(assertthat))
+suppressPackageStartupMessages(library(testthat))
 
-set.seed(10)
-DATE = Sys.Date()
-
+#set global variables
 #path will vary from user to user
 #where are you reading the data from?
 PATH_DATA = "/home/smile/klsix/felix_senior_thesis_2015-16/data/"
@@ -23,5 +19,26 @@ for(i in c(PATH_DATA, PATH_SAVE)){
   assert_that(tmp == "/")
 }
 
+rm(list = c("i", "tmp"))
 
-source("source_graph.R")
+set.seed(10)
+DATE  = Sys.Date()
+VIEWS = c("sagittal", "coronal", "axial")
+
+##################
+
+#assortment of functions for easy and universal loading of functions
+#to be used by each folder
+
+#load all the source files in the directory
+load.source <- function() {
+  lapply(grep("^source*", dir(), value = TRUE), source)
+}
+
+load.nifti <- function(path){
+  dat = readNIfTI(path)
+  dat = dat@.Data
+}
+
+
+

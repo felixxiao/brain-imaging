@@ -1,7 +1,7 @@
 #!/usr/bin/Rscript
 
 rm(list=ls())
-source("source_header.R")
+source("header_preprocess.R")
 
 parser = ArgumentParser()
 parser$add_argument("-i", "--input", type="character",
@@ -27,8 +27,8 @@ fileoutput = paste0(args$output, "_", Sys.Date(), ".RData")
 
 #save output as a sparse matrix
 res = extract.data(dat, mask)
-res = Matrix(res, sparse=TRUE)
-res = list(mat = res, details = args$details)
+#res = Matrix(res, sparse=TRUE)
+res = list(dat = res, details = args$details)
 
 dat = res
 save(dat, file = fileoutput)
