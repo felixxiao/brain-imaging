@@ -1,3 +1,8 @@
+nohup ./main_inputReq_convert.R --input "/home/smile/klsix/fmri_script_test/20151201_test/50003/func2mni.nii.gz" --output "/home/smile/klsix/felix_senior_thesis_2015-16/data/ABIDE_50003_matrix" --template "/home/smile/klsix/felix_senior_thesis_2015-16/data/template_2015-12-07.RData" --details "Extracted 2D matrix from ABIDE 50002 after preprocessing with C-PAC, taking preprocessing.nii.gz and using flirt to match the dimensions of the MNI_2mm template. The mask for this comes from MNI_2mm as well."
+
+
+###############################3
+
 #these are command-line functions. You might need to set the permissions
 # on the functions to enable them to be executables.
 # For example: in the command line, run "chmod +x main_inputReg_template.R"

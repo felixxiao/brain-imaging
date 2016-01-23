@@ -61,6 +61,7 @@ test_that("Make sure that compute.edgeWeights is correct", {
   batch.all = unlist(batch.list)
   expect_true(length(batch.all) ==
    length(unique(batch.all)))
+  expect_true(5 == 3)
 
   #find all the energy statistics within a batch and output the median
   output.withinBatch <- function(batch, edges){
