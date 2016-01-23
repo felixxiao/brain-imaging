@@ -1,6 +1,6 @@
 rm(list=ls())
 
-source("source_header.R")
+source("header_energy.R")
 load(paste0(PATH_DATA, 'ABIDE_50002_matrix_2015-12-07.RData')) #loads dat
 load(paste0(PATH_DATA, 'template_2015-12-07.RData')) #loads template
 load(paste0(PATH_SAVE, 'edges_2016-01-14.RData')) #loads edges

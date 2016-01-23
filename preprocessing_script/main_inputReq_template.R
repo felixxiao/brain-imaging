@@ -1,7 +1,7 @@
 #!/usr/bin/Rscript
 
 rm(list=ls())
-source("source_header.R")
+source("header_preprocess.R")
 
 parser = ArgumentParser()
 parser$add_argument("-t", "--template", type="character", 
