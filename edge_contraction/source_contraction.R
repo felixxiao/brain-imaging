@@ -1,6 +1,3 @@
-library(R6)
-library(assertthat)
-
 ContractibleGraph = R6Class('ContractibleGraph',
   public = list(
     # list, for each component, the vertices that constitute it
