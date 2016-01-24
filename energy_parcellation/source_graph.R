@@ -1,5 +1,6 @@
 #onvert adj.list into a matrix
 #TODO: There are duplicates in this list
+# Felix: please keep this version with duplicates -- my code uses them
 convert.adjList2edgeMat <- function(adj.list) {
   v1 = rep(1:length(adj.list), times = lapply(adj.list, length))
   v2 = unlist(adj.list)
