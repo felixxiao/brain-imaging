@@ -11,7 +11,7 @@ ContractibleGraph = R6Class('ContractibleGraph',
     # Assumptions
     # - edges has duplicates
     # - in edges$edge.mat, vertices are numbered 1:n
-    initialize = function(edges)
+    initialize = function(edges, verbose = F)
     {
       edge.mat = edges$edge.mat
       self$n = max(edge.mat)
@@ -24,19 +24,24 @@ ContractibleGraph = R6Class('ContractibleGraph',
       self$edges = lapply(1:n, function(x) list())
       names(self$edges) = as.character(1:n)
       
-      for (e in 1:nrow(edge.mat))
+      breaks = seq(0, nrow(edge.mat), by = 100000)
+      breaks = c(breaks, nrow(edge.mat))
+      for (i in 1:(length(breaks) - 1))
       {
-        a = as.character(edge.mat[e,1])
-        b = as.character(edge.mat[e,2])
-        self$edges[[a]][[b]] = energy.vec[e]
-        if (! is.null(self$edges[[b]][[a]]))
-          assert_that(self$edges[[b]][[a]] == self$edges[[a]][[b]])
+        if (verbose) cat(i, '/', length(breaks) - 1, ' ')
+        for (e in (breaks[i] + 1):breaks[i+1])
+        {
+          a = as.character(edge.mat[e,1])
+          b = as.character(edge.mat[e,2])
+          self$edges[[a]][[b]] = energy.vec[e]
+        }
       }
     },
     
     get_edges = function(comp)
     {
       c = as.character(comp)
+      if (length(self$edges[[c]]) == 0) return(NULL)
       weights = sapply(self$edges[[c]], mean)
       names(weights) = names(self$edges[[c]])
       weights
@@ -95,26 +100,34 @@ ContractibleGraph = R6Class('ContractibleGraph',
   )
 )
 
-partition.contractedge = function(edges, num.components)
+partition.contractedge = function(edges, num.components, verbose = T)
 {
-  cg = ContractibleGraph$new(edges)
   n = max(edges$edge.mat)
   assert_that(num.components < n)
   
+  if (verbose) cat('Initializing graph ')
+  cg = ContractibleGraph$new(edges, verbose)
+  if (verbose) cat('\n')
+  
   components = rep(NA, times = n)
+  if (verbose) cat('Computing initial order\n')
   for (c in 1:n)
     components[c] = 1 - max(cg$get_edges(c))
   names(components) = as.character(1:n)
   
-  for (i in 1:(n - num.components))
+  if (verbose) cat('Contracting edges; no. components =')
+  
+  for (i in n:(num.components - 1))
   {
+    if (verbose & i %% 10000 == 0) cat(' ', i)
     a = names(which.min(components))
     b = names(which.max(cg$get_edges(a)))
     c = cg$contract_components(a, b)
-    assert_that(c == a)
+
     components[a] = cg$get_size(a) - max(cg$get_edges(a))
     components[b] = Inf
   }
+  if (verbose) cat('\n')
   
   cg$get_components()
 }
