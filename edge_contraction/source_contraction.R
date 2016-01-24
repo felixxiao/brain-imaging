@@ -8,11 +8,16 @@ ContractibleGraph = R6Class('ContractibleGraph',
     # list, for each component, list indexed by adjacent components
     # of connecting edge weights as numeric vectors
     edges = NA,
+    # number of vertices
+    n = NA,
     
-    # edges has duplicates
+    # Assumptions
+    # - edges has duplicates
+    # - in edges$edge.mat, vertices are numbered 1:n
     initialize = function(edges)
     {
       edge.mat = edges$edge.mat
+      self$n = max(edge.mat)
       energy.vec = edges$energy.vec
       assert_that(length(energy.vec) == nrow(edge.mat))
       
@@ -74,10 +79,50 @@ ContractibleGraph = R6Class('ContractibleGraph',
       self$edges[[b]] = NULL
       
       a
+    },
+    
+    get_components = function(as.factor = T)
+    {
+      components = rep(NA, times = self$n)
+      for (c in names(self$vertices))
+        components[self$vertices[[c]]] = c
+      
+      if (as.factor)
+      {
+        components = as.factor(components)
+        levels(components) = 1:length(self$vertices)
+      }
+      
+      components 
     }
   )
 )
 
+partition.contractedge = function(edges, num.components)
+{
+  cg = ContractibleGraph$new(edges)
+  n = max(edges$edge.mat)
+  assert_that(num.components < n)
+  
+  components = rep(NA, times = n)
+  for (c in 1:n)
+    components[c] = 1 - max(cg$get_edges(c))
+  names(components) = as.character(1:n)
+  
+  for (i in 1:(n - num.components))
+  {
+    a = names(which.min(components))
+    b = names(which.max(cg$get_edges(a)))
+    c = cg$contract_components(a, b)
+    assert_that(c == a)
+    components[a] = cg$get_size(a) - max(cg$get_edges(a))
+    components[b] = Inf
+  }
+  
+  cg$get_components()
+}
+
+"
 edges = list()
 edges$edge.mat = t(matrix(c(1, 2,
                             1, 3,
@@ -107,3 +152,6 @@ cg$get_edges(3)              # (0.8 + 0.5) / 2 = 0.65
 
 cg$contract_components(1, 3)
 cg$get_size(1)               # 4
+
+partition.contractedge(edges, num.components = 2) # 1 2 1 1
+"
