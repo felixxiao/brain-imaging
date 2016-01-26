@@ -42,7 +42,7 @@ w(e) := weight of edge e = (i,j)
      := sample energy distance correlation between voxels i and j
 N    := number of voxels (vertices)
 
-Size-Constrained
+Unconstrained Add-Edge
 
 The first and simplest algorithm starts with an empty graph of $N$ vertices and sequentially adds edges between adjacent voxels in order of highest sample distance correlation, until the graph has some prespecified number of connected components $K$. A naive implementation of this algorithm would re-compute the number of connected components in the graph (using linear-time bread-first or depth-first search) after each addition of an edge, resulting in a costly $O(EN)$ time complexity. A more efficient implementation takes advantage of the fact that each addition of an edge decreases the number of components in the graph by at most 1. Hence the algorithm needs only to compute the number of connected components after adding $k - K$ edges, where $k$ is the current number of connected components of the graph, beginning at $N$.
 
@@ -137,13 +137,24 @@ In addition to the baseline code above, there are two important optimizations. [
 
 [ Results of Size-Constrained Add-Edge compared with scrambled graph ]
 
-Optimal Number of Components
-
-[ ... ]
-
 Edge Contraction
 
 The Edge-Contraction algorithm attempts to address the problem of poor Adjacent-Score of the Add-Edge parcellations relative to the same algorithm applied to the randomized graph. We hypothesized that one reason for a relatively low Adjacent-Score might be the following scenario: when a vertex is added to a component, it might have multiple edges to that component. One edge might have a very high weight; this is the one that is officially "added". However, the other edges with far lower weights are implicitly added as well, lowering the average edge weights within the component.
 
 The Edge-Contraction algorithm handles this issue by maintaining that there can be at most one edge between any two components A and B, and further that the weight on such an edge is the mean of the weights on all edges that connect a vertex in A with a vertex in B.
 
+The graph starts out with $N$ components, each a single vertex. In every iteration
+
+- the smallest component with the largest edge to another component is selected
+- this largest edge is contracted, fusing two adjacent components to form a larger-sized component
+- for all components adjacent to the fused component, all edges connecting them to the fused component are averaged into a single edge
+
+The Edge-Contraction algorithm is thus a greedy heuristic that attempts to achieve the two objectives of balancing component size and maximizing the average edge weight within each component.
+
+Implementation
+
+[ ... ]
+
+Optimal Number of Components
+
+[ ... ]

@@ -38,6 +38,11 @@ ContractibleGraph = R6Class('ContractibleGraph',
       }
     },
     
+    get_component_names = function()
+    {
+      names(self$vertices)
+    },
+    
     get_edges = function(comp)
     {
       c = as.character(comp)
@@ -60,12 +65,14 @@ ContractibleGraph = R6Class('ContractibleGraph',
       
       if (is.null(self$edges[[a]][[b]]) | is.null(self$edges[[b]][[a]]))
       {
-        assert_that(is.null(self$edges[[b]][[a]]) & is.null(self$edges[[a]][[b]]))
+        assert_that(is.null(self$edges[[b]][[a]]) &
+                    is.null(self$edges[[a]][[b]]))
         warning(comp1, ' and ', comp2, ' are not connected')
         return()
       }
       
-      assert_that(length(intersect(self$vertices[[a]], self$vertices[[b]])) == 0)
+      assert_that(length(intersect(self$vertices[[a]],
+                                   self$vertices[[b]])) == 0)
       self$vertices[[a]] = c(self$vertices[[a]], self$vertices[[b]])
       
       for (b.adj in names(self$edges[[b]]))
@@ -83,7 +90,7 @@ ContractibleGraph = R6Class('ContractibleGraph',
       a
     },
     
-    get_components = function(as.factor = T)
+    get_vertex_components = function(as.factor = T)
     {
       components = rep(NA, times = self$n)
       for (c in names(self$vertices))
@@ -100,30 +107,37 @@ ContractibleGraph = R6Class('ContractibleGraph',
   )
 )
 
-partition.contractedge = function(edges, num.components,
-  return.graph = F, save.path, verbose = T)
+partition.contractedge = function(num.components, edges, contractible.graph,
+                                  return.graph = F, save.path, verbose = T)
 {
-  n = max(edges$edge.mat)
-  assert_that(num.components < n)
+  if (! missing(edges))
+  {
+    assert_that(num.components < max(edges$edge.mat))
+    if (verbose) cat('Initializing graph ')
+    cg = ContractibleGraph$new(edges, verbose)
+    if (verbose) cat('\n')
+  }
+  else
+  {
+    assert_that(class(contractible.graph) == 'ContractibleGraph')
+    cg = contractible.graph
+  }
   
-  if (verbose) cat('Initializing graph ')
-  cg = ContractibleGraph$new(edges, verbose)
-  if (verbose) cat('\n')
-  
-  components = rep(NA, times = n)
   if (verbose) cat('Computing initial order\n')
-  for (c in 1:n)
-    components[c] = 1 - max(cg$get_edges(c))
-  names(components) = as.character(1:n)
+  cg.components = cg$get_component_names()
+  n = length(cg.components)
+  priority = rep(NA, times = n)
+  names(priority) = cg.components
+  for (c in cg.components)
+    priority[c] = 1 - max(cg$get_edges(c))
   
   if (verbose) cat('Contracting edges; no. components =')
-  
   for (i in n:(num.components - 1))
   {
     if (verbose & i %% 10000 == 0) cat(' ', i)
-    a = names(which.min(components))
+    a = names(which.min(priority))
     b = names(which.max(cg$get_edges(a)))
-    c = cg$contract_components(a, b)
+    cg$contract_components(a, b)
 
     components[a] = cg$get_size(a) - max(cg$get_edges(a))
     components[b] = Inf
@@ -138,7 +152,7 @@ partition.contractedge = function(edges, num.components,
                            '.RData'))
 
   if (return.graph) return(cg)
-  cg$get_components()
+  cg$get_vertex_components()
 }
 
 "
