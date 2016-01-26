@@ -132,11 +132,11 @@ partition.addedge.uf = function(edges,
   uf$flatten()
 
   if (! missing(save.path))
-    save(uf, file = paste0(PATH_DATA,
+    save(uf, file = paste0(save.path,
                            'edge_connect_',
                            min.size, '_',
                            max.size, '_',
-                           DATE,
+                           Sys.Date(),
                            '.RData'))
 
   if (return.uf) return(uf)

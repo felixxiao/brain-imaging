@@ -100,7 +100,8 @@ ContractibleGraph = R6Class('ContractibleGraph',
   )
 )
 
-partition.contractedge = function(edges, num.components, verbose = T)
+partition.contractedge = function(edges, num.components,
+  return.graph = F, save.path, verbose = T)
 {
   n = max(edges$edge.mat)
   assert_that(num.components < n)
@@ -129,6 +130,14 @@ partition.contractedge = function(edges, num.components, verbose = T)
   }
   if (verbose) cat('\n')
   
+  if (! missing(save.path))
+    save(cg, file = paste0(save.path,
+                           'contractible_graph_',
+                           num.components, '_',
+                           Sys.Date(),
+                           '.RData'))
+
+  if (return.graph) return(cg)
   cg$get_components()
 }
 
