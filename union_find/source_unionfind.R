@@ -90,18 +90,24 @@ UnionFind = R6Class('UnionFind',
 partition.addedge.uf = function(edges,
                                 max.size = 15000,
                                 min.size = 1000,
+                                min.components = 1,
+                                return.uf = F,
                                 save.path,
                                 verbose = T)
 {
+  assert_that(max.size > min.size)
   edges$edge.mat = edges$edge.mat[order(edges$energy.vec, decreasing = T),]
   edges$energy.vec = edges$energy.vec[order(edges$energy.vec, decreasing = T)]
   
   n = max(edges$edge.mat)
+  assert_that(min.components < n)
+  
   uf = UnionFind$new(n)
   
   breaks = seq(0, nrow(edges$edge.mat), by = 25000)
   breaks = c(breaks, nrow(edges$edge.mat))
   
+  n.components = n
   for (edge.set in 2:length(breaks))
   {
     if (verbose) cat(paste(edge.set - 1, '/', length(breaks) - 1, '\n'))
@@ -111,13 +117,19 @@ partition.addedge.uf = function(edges,
       j = edges$edge.mat[e, 2]
       sizeI = uf$component_size(i)
       sizeJ = uf$component_size(j)
-      if ((sizeI < min.size || sizeJ < min.size) ||
-          sizeI + sizeJ <= max.size)
+      if (! connected(i, j) & 
+           ( (sizeI < min.size | sizeJ < min.size) |
+             (sizeI + sizeJ <= max.size) ) )
+      {
         uf$union(i, j)
+        n.components = n.components - 1
+        if (n.components == min.components) break
+      }
     }
+    if (n.components == min.components) break
   }
   
-  parcels = uf$get_parcels()
+  uf$flatten()
 
   if (! missing(save.path))
     save(uf, file = paste0(PATH_DATA,
@@ -126,6 +138,8 @@ partition.addedge.uf = function(edges,
                            max.size, '_',
                            DATE,
                            '.RData'))
-  
-  parcels
+
+  if (return.uf) return(uf)
+
+  uf$get_parcels()
 }

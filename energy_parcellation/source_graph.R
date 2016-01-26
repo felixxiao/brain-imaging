@@ -10,9 +10,10 @@ convert.adjList2edgeMat <- function(adj.list) {
 }
 
 #compute the distance covariance for the edge weights
-compute.edgeWeights = function(data, adj.list, func = dcor,
+compute.edgeWeights = function(data, adj.list, func = dcor, edge.mat = NULL,
                                verbose = FALSE, save = TRUE) {
-  edge.mat = convert.adjList2edgeMat(adj.list)
+  if (is.null(edge.mat))
+    edge.mat = convert.adjList2edgeMat(adj.list)
 
   batch.len = ceiling(nrow(edge.mat)/10)
   vec = numeric(nrow(edge.mat))
