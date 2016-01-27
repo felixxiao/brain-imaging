@@ -1,16 +1,44 @@
-I conducted all parcellation and validation procedures on the ABIDE 50002 fMRI data set provided by Kevin Lin. This data set contains 233305 voxels and 124 time samples. Spatial information is encoded as a graph; each voxel is represented by a vertex, and each vertex has up to 6 edges connecting the voxel to its cubically adjacent neighbors. The weights on the edges are sample energy distance correlations between the two connected voxels (Szekely 2013).
+I conducted all parcellation and validation procedures on the ABIDE 50002 fMRI
+data set provided by Kevin Lin. This data set contains 233305 voxels and 124
+time samples. Spatial information is encoded as a graph; each voxel is
+represented by a vertex, and each vertex has up to 6 edges connecting the voxel
+to its cubically adjacent neighbors. The weights on the edges are sample energy
+distance correlations between the two connected voxels (Szekely 2013).
 
-Functional parcellation of the human brain can be defined as the problem of partitioning the voxels into $k$ disjoint connected components with the goal that the voxels within each component are, in a rough sense, "similar" to each other and voxels in different components are less "similar". Such similarity has been defined in a multitude of ways in the literature [see lit review section ...]. For this project thus far I have taken similarity between voxels to mean statistical dependence.
+Functional parcellation of the human brain can be defined as the problem of
+partitioning the voxels into $k$ disjoint connected components with the goal
+that the voxels within each component are, in a rough sense, "similar" to each
+other and voxels in different components are less "similar". Such similarity has
+been defined in a multitude of ways in the literature [see lit review section
+...]. For this project thus far I have taken similarity between voxels to mean
+statistical dependence.
 
-To measure dependence, statisticians have traditionally used the Pearson correlation coefficient, in addition to the rank-based Kendall tau and Spearman rho. These statistics work well when the underlying relationship between the two random variables is linear, in the case of Pearson, or can be linear after a monotonic transformation, in the case of Kendall and Spearman. Due to their restrictions, these correlation coefficients will fail to capture many kinds of dependency relationships. The figure below illustrates several instanaces of pairs of random variables whose depencency structure is not detected by the three correlation coefficients.
+To measure dependence, statisticians have traditionally used the Pearson
+correlation coefficient, in addition to the rank-based Kendall tau and Spearman
+rho. These statistics work well when the underlying relationship between the two
+random variables is linear, in the case of Pearson, or can be linear after a
+monotonic transformation, in the case of Kendall and Spearman. Due to their
+restrictions, these correlation coefficients will fail to capture many kinds of
+dependency relationships. The figure below illustrates several instanaces of
+pairs of random variables whose depencency structure is not detected by the
+three correlation coefficients.
 
 [ insert figure here ]
 
-Non-linear dependency relationships also exist in the ABIDE 50002 fMRI data. The scatterplots below show time samples of spatially adjacent voxels. These instances were found by searching for the maximum difference in rank of energy distance correlation and the coefficient of determination, or Pearson squared.
+Non-linear dependency relationships also exist in the ABIDE 50002 fMRI data. The
+scatterplots below show time samples of spatially adjacent voxels. These
+instances were found by searching for the maximum difference in rank of energy
+distance correlation and the coefficient of determination, or Pearson squared.
 
 [ insert figure here ]
 
-Many studies on functional parcellation (Craddock 2012; Bellec 2006; Heller 2006) use Pearson's coefficient as the similarity measure between nearby voxels. Apart from underestimating the important of non-linear relationships, this method also distinguishes positive, upward-sloping correlation from negative [fact check needed here]. As a result in many of the edges between different parcels, the corresponding voxels would be strongly dependent with negative correlation [fact check needed here].
+Many studies on functional parcellation (Craddock 2012; Bellec 2006; Heller
+2006) use Pearson's coefficient as the similarity measure between nearby voxels.
+Apart from underestimating the important of non-linear relationships, this
+method also distinguishes positive, upward-sloping correlation from negative
+[fact check needed here]. As a result in many of the edges between different
+parcels, the corresponding voxels would be strongly dependent with negative
+correlation [fact check needed here].
 
 [ Chapter on energy statistics ]
 
@@ -27,13 +55,23 @@ ____________|__________________________|______________________________|
 Non-spatial |        Within-Score      |         Between-Score        |
 ____________|__________________________|______________________________|
 
-The non-spatial Within-Score and Between-Score involve extensive computation, and thus had to be obtained by subsampling. 
+The non-spatial Within-Score and Between-Score involve extensive computation,
+and thus had to be obtained by subsampling. 
 
-Stability is a criteria used for random parcellation algorithms to measure the similarity of multiple parcellations on the same data. Since none of the algorithms I have designed thus far are random, there was no need to measure stability.
+Stability is a criteria used for random parcellation algorithms to measure the
+similarity of multiple parcellations on the same data. Since none of the
+algorithms I have designed thus far are random, there was no need to measure
+stability.
 
-Reproducibility is another criteria that measures how similar parcellations on different brains using the same algorithm are. An algorithm that gives reproducible results is desirable. Because I have only worked with one brain thus far, I have not used a criterion for reproducibility.
+Reproducibility is another criteria that measures how similar parcellations on
+different brains using the same algorithm are. An algorithm that gives
+reproducible results is desirable. Because I have only worked with one brain
+thus far, I have not used a criterion for reproducibility.
 
-Related to reproducibility is the idea that it is more rigorous to compute the four validation scores on data that was not used for parcellation. When I use more brain data sets in my analysis in the future I will use cross-validation when computing the scores.
+Related to reproducibility is the idea that it is more rigorous to compute the
+four validation scores on data that was not used for parcellation. When I use
+more brain data sets in my analysis in the future I will use cross-validation
+when computing the scores.
 
 Chapter 4. Algorithms for Parcellation
 
@@ -44,7 +82,17 @@ N    := number of voxels (vertices)
 
 Unconstrained Add-Edge
 
-The first and simplest algorithm starts with an empty graph of $N$ vertices and sequentially adds edges between adjacent voxels in order of highest sample distance correlation, until the graph has some prespecified number of connected components $K$. A naive implementation of this algorithm would re-compute the number of connected components in the graph (using linear-time bread-first or depth-first search) after each addition of an edge, resulting in a costly $O(EN)$ time complexity. A more efficient implementation takes advantage of the fact that each addition of an edge decreases the number of components in the graph by at most 1. Hence the algorithm needs only to compute the number of connected components after adding $k - K$ edges, where $k$ is the current number of connected components of the graph, beginning at $N$.
+The first and simplest algorithm starts with an empty graph of $N$ vertices and
+sequentially adds edges between adjacent voxels in order of highest sample
+distance correlation, until the graph has some prespecified number of connected
+components $K$. A naive implementation of this algorithm would re-compute the
+number of connected components in the graph (using linear-time bread-first or
+depth-first search) after each addition of an edge, resulting in a costly
+$O(EN)$ time complexity. A more efficient implementation takes advantage of the
+fact that each addition of an edge decreases the number of components in the
+graph by at most 1. Hence the algorithm needs only to compute the number of
+connected components after adding $k - K$ edges, where $k$ is the current number
+of connected components of the graph, beginning at $N$.
 
 k := N
 i := 1
@@ -58,7 +106,12 @@ end
 
 [ worst case analysis of this algorithm ]
 
-Another implementation uses a binary search-type strategy and is $O((N + E) \log E)$. The idea is to "search" for the last edge to add to the graph by maintaining a range of possible last edges. In each iteration, the algorithm would add to the graph edges 1 to the midpoint of this range, compute the number of connected components, and adjust the range based on whether the number of components is higher or lower than the target $K$.
+Another implementation uses a binary search-type strategy and is $O((N + E) \log
+E)$. The idea is to "search" for the last edge to add to the graph by
+maintaining a range of possible last edges. In each iteration, the algorithm
+would add to the graph edges 1 to the midpoint of this range, compute the number
+of connected components, and adjust the range based on whether the number of
+components is higher or lower than the target $K$.
 
 l := 1
 h := E
@@ -75,15 +128,26 @@ repeat
     end
 end
 
-For this algorithm to work well on the data set, I had to account for several thousand voxels whose time samples were all zeros. All edges connected to these zero voxels also had a weight of zero. If the zero voxels were unaccounted for, the algorithm would return a graph with one massive component and K - 1 singleton components consisting of zero voxels. The solution to this problem removed all zero voxels and their edges from the graph, ran the algorithm on the remainder, and [added the zero voxels back in, connecting them to the nearest component].
+For this algorithm to work well on the data set, I had to account for several
+thousand voxels whose time samples were all zeros. All edges connected to these
+zero voxels also had a weight of zero. If the zero voxels were unaccounted for,
+the algorithm would return a graph with one massive component and K - 1
+singleton components consisting of zero voxels. The solution to this problem
+removed all zero voxels and their edges from the graph, ran the algorithm on the
+remainder, and [added the zero voxels back in, connecting them to the nearest
+component].
 
-I will refer to this whole procedure later as the "Unconstrained Add-Edge" algorithm.
+I will refer to this whole procedure later as the "Unconstrained Add-Edge"
+algorithm.
 
 [ Results of Unconstrained Add-Edge ]
 
 Size-Constrained Add-Edge
 
-To address the issue of parcel imbalance, I introduced a modification to the Unconstrained Add-Edge algorithm. The result, henceforth called the Size-Constrained Add-Edge algorithm is the following. Let $K$, $s_\min$ and $s_\max$ be input parameters.
+To address the issue of parcel imbalance, I introduced a modification to the
+Unconstrained Add-Edge algorithm. The result, henceforth called the
+Size-Constrained Add-Edge algorithm is the following. Let $K$, $s_\min$ and
+$s_\max$ be input parameters.
 
 sort edges in decreasing energy correlation order
 k := N, number of components
@@ -102,19 +166,33 @@ for e = 1, ..., E
     end
 end
 
-The naive implementation must use BFS/DFS in each iteration to compute the size of components $I$ and $J$, and hence must have  time complexity $O(EN)$. Fortunately, there is a way to sub-linearly update information on the components of the graph, using the union-find data structure.
+The naive implementation must use BFS/DFS in each iteration to compute the size
+of components $I$ and $J$, and hence must have  time complexity $O(EN)$.
+Fortunately, there is a way to sub-linearly update information on the components
+of the graph, using the union-find data structure.
 
 Union-Find
 
-The core Union-Find data structure begins with an empty graph of $N$ vertices and supports two operations. union(i, j) adds an edge between vertices $i$ and $j$. root(i) returns an identifier for the component to which vertex $i$ belongs. All vertices in the same component have the same root. We modified Union-Find to support an additional operation. component_size(i) returns the number of vertices belonging to the component containing $i$.
+The core Union-Find data structure begins with an empty graph of $N$ vertices
+and supports two operations. union(i, j) adds an edge between vertices $i$ and
+$j$. root(i) returns an identifier for the component to which vertex $i$
+belongs. All vertices in the same component have the same root. We modified
+Union-Find to support an additional operation. component_size(i) returns the
+number of vertices belonging to the component containing $i$.
 
-Union-Find represents each component as a rooted tree, with vertices in the graph mapping to nodes in the tree. Information about the tree is stored in two arrays of length $N$, parent and size, which are subject to the following invariants.
+Union-Find represents each component as a rooted tree, with vertices in the
+graph mapping to nodes in the tree. Information about the tree is stored in two
+arrays of length $N$, parent and size, which are subject to the following
+invariants.
 
-1. For each node i, parent[i] = node i's parent on the tree, unless i is a root node. If i is a root node, then parent[i] = i.
+1. For each node i, parent[i] = node i's parent on the tree, unless i is a root
+node. If i is a root node, then parent[i] = i.
 
-2. Nodes i and j are in the same component if and only if they are in the same tree, if and only if they share the same root node.
+2. Nodes i and j are in the same component if and only if they are in the same
+tree, if and only if they share the same root node.
 
-3. If i is a root node, then size[i] = the size of the component, or the number of nodes in the tree. If i is not a root node, then size[i] can be anything.
+3. If i is a root node, then size[i] = the size of the component, or the number
+of nodes in the tree. If i is not a root node, then size[i] can be anything.
 
 A baseline implementation of the three functions is
 
@@ -133,23 +211,42 @@ function component_size(i)
     return size[root(i)]
 end
 
-In addition to the baseline code above, there are two important optimizations. [...] With these two optimizations, the time complexity of root, union, and component_size was proven in (Hopcroft 1973) to be at least as good as $O(\log^* N)$ where $\log^*$ is the iterated logarithm, defined as the number of times the natural log must be applied to $N$ so that it becomes less than or equal to 1.
+In addition to the baseline code above, there are two important optimizations.
+[...] With these two optimizations, the time complexity of root, union, and
+component_size was proven in (Hopcroft 1973) to be at least as good as $O(\log^*
+N)$ where $\log^*$ is the iterated logarithm, defined as the number of times the
+natural log must be applied to $N$ so that it becomes less than or equal to 1.
 
 [ Results of Size-Constrained Add-Edge compared with scrambled graph ]
 
 Edge Contraction
 
-The Edge-Contraction algorithm attempts to address the problem of poor Adjacent-Score of the Add-Edge parcellations relative to the same algorithm applied to the randomized graph. We hypothesized that one reason for a relatively low Adjacent-Score might be the following scenario: when a vertex is added to a component, it might have multiple edges to that component. One edge might have a very high weight; this is the one that is officially "added". However, the other edges with far lower weights are implicitly added as well, lowering the average edge weights within the component.
+The Edge-Contraction algorithm attempts to address the problem of poor
+Adjacent-Score of the Add-Edge parcellations relative to the same algorithm
+applied to the randomized graph. We hypothesized that one reason for a
+relatively low Adjacent-Score might be the following scenario: when a vertex is
+added to a component, it might have multiple edges to that component. One edge
+might have a very high weight; this is the one that is officially "added".
+However, the other edges with far lower weights are implicitly added as well,
+lowering the average edge weights within the component.
 
-The Edge-Contraction algorithm handles this issue by maintaining that there can be at most one edge between any two components A and B, and further that the weight on such an edge is the mean of the weights on all edges that connect a vertex in A with a vertex in B.
+The Edge-Contraction algorithm handles this issue by maintaining that there can
+be at most one edge between any two components A and B, and further that the
+weight on such an edge is the mean of the weights on all edges that connect a
+vertex in A with a vertex in B.
 
-The graph starts out with $N$ components, each a single vertex. In every iteration
+The graph starts out with $N$ components, each a single vertex. In every
+iteration
 
 - the smallest component with the largest edge to another component is selected
-- this largest edge is contracted, fusing two adjacent components to form a larger-sized component
-- for all components adjacent to the fused component, all edges connecting them to the fused component are averaged into a single edge
+- this largest edge is contracted, fusing two adjacent components to form a
+larger-sized component
+- for all components adjacent to the fused component, all edges connecting them
+to the fused component are averaged into a single edge
 
-The Edge-Contraction algorithm is thus a greedy heuristic that attempts to achieve the two objectives of balancing component size and maximizing the average edge weight within each component.
+The Edge-Contraction algorithm is thus a greedy heuristic that attempts to
+achieve the two objectives of balancing component size and maximizing the
+average edge weight within each component.
 
 Implementation
 
@@ -158,3 +255,4 @@ Implementation
 Optimal Number of Components
 
 [ ... ]
+
