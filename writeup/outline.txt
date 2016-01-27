@@ -159,4 +159,3 @@ Optimal Number of Components
 
 After running the Edge-Contraction algorithm for a variety of different target components, we arrived at the following result:
 
-
