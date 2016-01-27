@@ -13,6 +13,7 @@ ContractibleGraph = R6Class('ContractibleGraph',
     # - in edges$edge.mat, vertices are numbered 1:n
     initialize = function(edges, verbose = F)
     {
+      if (is.null(edges)) return()
       edge.mat = edges$edge.mat
       self$n = max(edge.mat)
       energy.vec = edges$energy.vec
@@ -107,25 +108,24 @@ ContractibleGraph = R6Class('ContractibleGraph',
   )
 )
 
-partition.contractedge = function(num.components, edges, contractible.graph,
+# data is either edges or a Contractible Graph
+partition.contractedge = function(num.components, data,
                                   return.graph = F, save.path, verbose = T)
 {
-  if (! missing(edges))
+  if (class(data)[1] != 'ContractibleGraph')
   {
-    assert_that(num.components < max(edges$edge.mat))
+    assert_that(num.components < max(data$edge.mat))
     if (verbose) cat('Initializing graph ')
-    cg = ContractibleGraph$new(edges, verbose)
+    cg = ContractibleGraph$new(data, verbose)
     if (verbose) cat('\n')
   }
   else
-  {
-    assert_that(class(contractible.graph) == 'ContractibleGraph')
-    cg = contractible.graph
-  }
+    cg = data
   
   if (verbose) cat('Computing initial order\n')
   cg.components = cg$get_component_names()
   n = length(cg.components)
+  assert_that(num.components < n)
   priority = rep(NA, times = n)
   names(priority) = cg.components
   for (c in cg.components)
@@ -139,8 +139,8 @@ partition.contractedge = function(num.components, edges, contractible.graph,
     b = names(which.max(cg$get_edges(a)))
     cg$contract_components(a, b)
 
-    components[a] = cg$get_size(a) - max(cg$get_edges(a))
-    components[b] = Inf
+    priority[a] = cg$get_size(a) - max(cg$get_edges(a))
+    priority[b] = Inf
   }
   if (verbose) cat('\n')
   
