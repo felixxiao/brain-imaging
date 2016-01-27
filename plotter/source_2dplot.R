@@ -21,7 +21,7 @@ plot.partition2D <- function(partition, templateMRI, mask, filename,
 
   #now plot the partition
   col.vec = c("black", sample(rainbow(length(lev))))
-  
+
   res = .compute.plotLayout(num.slices)
 
   png(file = paste0(PATH_SAVE, "partition_", filename, "_" ,
@@ -32,7 +32,7 @@ plot.partition2D <- function(partition, templateMRI, mask, filename,
 
   for(i in 1:length(image.slices)){
     image(image.slices[[i]], col = col.vec,
-     breaks = seq(-0.5, 20.5, length.out = length(col.vec)+1), 
+     breaks = seq(-0.5, length(col.vec)+0.5, length.out = length(col.vec)+1), 
      zlim = c(0, max(lev)), bty = "n", xaxt = "n", yaxt = "n",
      asp = ncol(image.slices[[1]])/nrow(image.slices[[1]]))
   }

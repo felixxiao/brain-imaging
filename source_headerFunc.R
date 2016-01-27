@@ -4,12 +4,16 @@ suppressPackageStartupMessages(library(testthat))
 #set global variables
 #path will vary from user to user
 #where are you reading the data from?
-#PATH_DATA = "/home/smile/klsix/felix_senior_thesis_2015-16/data/"
-PATH_DATA = "C:/Users/Felix/Dropbox/Felix_Kevin_Han-seniorthesis2015-16/data/"
+USER = "kevin"
+#USER = "felix"
 
-#where are the saving the outputs to?
-#PATH_SAVE = "/home/smile/klsix/felix_senior_thesis_2015-16/results/"
-PATH_SAVE = PATH_DATA
+if(USER == "kevin") {
+  PATH_DATA = "/home/smile/klsix/felix_senior_thesis_2015-16/data/"
+  PATH_SAVE = "/home/smile/klsix/felix_senior_thesis_2015-16/results/"
+} else if(USER == "felix") {
+  PATH_DATA = "C:/Users/Felix/Dropbox/Felix_Kevin_Han-seniorthesis2015-16/data/"
+  PATH_SAVE = PATH_DATA
+}
 
 #test PATHs
 #if PATHs don't end with a backslash, fail and purposely don't load the
