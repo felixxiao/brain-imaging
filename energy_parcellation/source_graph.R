@@ -1,11 +1,16 @@
-#onvert adj.list into a matrix
-#TODO: There are duplicates in this list
-# Felix: please keep this version with duplicates -- my code uses them
-convert.adjList2edgeMat <- function(adj.list) {
+# convert adj.list into a matrix
+convert.adjList2edgeMat <- function(adj.list, duplicates = F) {
   v1 = rep(1:length(adj.list), times = lapply(adj.list, length))
   v2 = unlist(adj.list)
 
   assert_that(length(v1) == length(v2))
+
+  if (! duplicates)
+  {
+    not.dup = v1 >= v2
+    v1 = v1[not.dup]
+    v2 = v2[not.dup]
+  }
 
   cbind(v1, v2)
 }
