@@ -132,7 +132,7 @@ partition.contractedge = function(num.components, data,
     priority[c] = 1 - max(cg$get_edges(c))
   
   if (verbose) cat('Contracting edges; no. components =')
-  for (i in n:(num.components - 1))
+  for (i in n:(num.components + 1))
   {
     if (verbose & i %% 10000 == 0) cat(' ', i)
     a = names(which.min(priority))
