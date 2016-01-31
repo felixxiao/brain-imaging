@@ -9,7 +9,7 @@ ContractibleGraph = R6Class('ContractibleGraph',
     n = NA,
     
     # Assumptions
-    # - edges has duplicates
+    # - edges has NO duplicates
     # - in edges$edge.mat, vertices are numbered 1:n
     initialize = function(edges, verbose = F)
     {
@@ -34,7 +34,7 @@ ContractibleGraph = R6Class('ContractibleGraph',
         {
           a = as.character(edge.mat[e,1])
           b = as.character(edge.mat[e,2])
-          self$edges[[a]][[b]] = energy.vec[e]
+          self$edges[[a]][[b]] = self$edges[[b]][[a]] = energy.vec[e]
         }
       }
     },
@@ -63,7 +63,7 @@ ContractibleGraph = R6Class('ContractibleGraph',
     {
       a = as.character(comp1)
       b = as.character(comp2)
-      
+
       if (is.null(self$edges[[a]][[b]]) | is.null(self$edges[[b]][[a]]))
       {
         assert_that(is.null(self$edges[[b]][[a]]) &
