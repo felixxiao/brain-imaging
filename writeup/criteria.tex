@@ -1,0 +1,99 @@
+% 1. in between-score and boundary-score, split summation indexation
+%    into 2 lines
+%#######################################################################
+
+In chapter one we discussed our graphical approach to the brain
+parcellation problem. We construct a weighted undirected graph where
+each vertex is a voxel. The graph reflects the spatial position of the
+voxels; it connects each vertex to the vertices representing the voxel's
+six cubically adjacent neighbors. The weights on these edges are sample
+energy distance correlation statistics between the adjacent voxels in
+the time series and they measure statistical dependence between the
+voxels. Let $G(V, E)$ denote this graph, its vertices, and its edges.
+
+In this context, a $k$-fold partition of the graph is a collection of
+$k$ disjoint vertex subsets (called parcels) $P_1, ..., P_k \subset V$
+satisfying $P_1 \cup ... \cup P_k = V$. We impose the additional
+requirement that each parcel is a connected component; i.e. that there
+exists a path between any pair of vertices in a parcel. For this reason
+we'll use the terms parcel and component interchangeably.
+
+In this chapter we will suggest various criteria for measuring the
+goodness-of-fit of partitions. We will argue why these criteria are
+sensible from a neuroscience perspective.
+
+\section{Within-Parcel Similarity}
+
+Voxels in the same parcel are ideally highly dependent on one another in
+the time series of fMRI data. As discussed in the previous chapter,
+distance correlation is a good measure of dependence. The distance
+correlation between two random vectors equals zero if and only if the
+two random vectors are independent, which is not true of correlation
+statistics such as Pearson's.
+
+Let $\mathcal{R}(X,Y)$ denote the distance correlation between two
+voxels $X$ and $Y$. Let $\mathcal{P} = \{P_1, ..., P_k\}$ be a $k$-fold partition. We define the following criterion
+
+\begin{definition} \label{within-score}
+Within-Score.
+\[ \frac{1}{k} \sum_{P \in \mathcal{P}}
+   \frac{1}{|P|^2} \sum_{X,Y \in P} \mathcal{R}(X,Y)
+\]
+\end{definition}
+
+The Within-Score is non-spatial; it considers all pairs of voxels
+equally regardless of whether they are adjacent. As a result, it is a
+good measure of how much the voxels within each parcel are dependent on
+each other as a set. The downside of this criterion is that it is very
+expensive to compute. With over 300,000 voxels in an fMRI data set we
+would potentially have to compute tens of billions of distance
+correlation statistics if the number of parcels is small.
+
+There are two solutions to this. One is to subsample: for every parcel,
+compute the distance correlation matrix for a small subset of the voxels
+in the parcel and construct a confidence interval around an estimate of
+the Within-Score. Another solution is to reduce the image resolution:
+merge multiple adjacent voxels into a single voxel by averaging the time
+series and then compute the Within-Score.
+
+An alternative and far less expensive criterion that measures within-
+parcel similarity works by counting distance correlations between
+adjacent pairs of voxels. For some parcel $P$ let
+$E_P = \{ (i,j) \in E : i \in P \text{ and } j \in P \}$.
+
+\begin{definition} \label{adjacent-score}
+Adjacent-Score.
+\[ \frac{1}{k} \sum_{P \in \mathcal{P}}
+   \frac{1}{|E_P|} \sum_{(X,Y) \in E_P} \mathcal{R}(X,Y)
+\]
+\end{definition}
+
+Rather than treat parcels as sets with no spatial information, the
+Adjacent-Score does the opposite by only considering the pairwise
+dependency of adjacent voxels.
+
+Other possibilities that we did not explore are considering all pairs
+of voxels up to some maximum spatial distance from each other and
+performing a weighted averaging of sample pairwise distance
+correlations, with weights that depend on spatial distance.
+
+\section{Between-Parcel Dissimilarity}
+
+\begin{definition} \label{between-score}
+Between-Score.
+\[ \frac{2}{|\mathcal{P}|(|\mathcal{P}| - 1)}
+     \sum_{P, P' \in \mathcal{P} \\ P \neq P'}
+   \frac{1}{|P| |P'|} \sum_{X \in P \\ Y \in P'} \mathcal{R}(X,Y)
+\]
+\end{definition}
+
+For two different parcels $P$ and $P'$, let
+$E_{P,P'} = \{ (i,j) \in E : i \in P \text{ and } j \in P' \}$
+
+\begin{definition} \label{boundary-score}
+Boundary-Score.
+\[ \frac{2}{|\mathcal{P}|(|\mathcal{P}| - 1)}
+     \sum_{P, P' \in \mathcal{P} \\ P \neq P'}
+   \frac{1}{|E_{P,P'}|} \sum_{(X,Y) \in E_{P,P'}} \mathcal{R}(X,Y)
+\]
+\end{definition}

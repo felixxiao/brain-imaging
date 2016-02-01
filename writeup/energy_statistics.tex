@@ -1,0 +1,95 @@
+%#######################################################################
+
+\section{Energy Covariance}
+
+For some positive weight function
+$w : \R^p \times \R^q \mapsto [0, \infty)$ define the norm
+$\|\cdot\|_w : \{\gamma : \R^p \times \R^q \mapsto \mathbb{C}\}
+               \mapsto [0, \infty)$ as
+$$ \| \gamma \|_w^2 = \int_{\R^{p+q}} | \gamma(s,t) |^2 w(s,t) ds dt $$
+
+\begin{definition}
+(Distance covariance). Let $X$ and $Y$ be two $d$-dimensional random
+vectors with $\Expect\|X\| + \Expect\|Y\| < \infty$. Their distance
+covariance is
+\begin{align*}
+\mathcal{V}^2 (X,Y)
+&= \| \varphi_{X,Y}(s,t) - \varphi_X(s)\varphi_Y(t) \|_w^2 \\
+&= \int_{\R^{p+q}} \dfrac{|\varphi_{X,Y}(s,t) - \varphi_X(s)\varphi_Y(t)|^2}
+                         {\|s\|^{1+p} \|t\|^{1+q}} ds dt
+\end{align*}
+where $w(s,t) = \dfrac{1}{\|s\|^{1+p} \|t\|^{1+q}}$.
+\end{definition}
+
+It is clear that $\mathcal{V}^2(X,Y) = 0 \iff X \indep Y$.
+
+\begin{prop}
+\begin{align*}
+\mathcal{V}^2 (X,Y)
+&= \Expect[\|X - X'\| \|Y - Y'\|]
+ + \Expect[\|X - X'\|] \Expect[\|Y - Y'\|]
+ - 2 \Expect[ \|X - X'\| \|Y - Y''\| ] \\
+&= \Cov( \|X - X'\|, \|Y - Y'\| ) - 2 \Cov (\|X - X'\|, \|Y - Y''\| ) 
+\end{align*}
+\end{prop}
+\textit{Proof.}
+
+\begin{definition}
+(Distance variance).
+$$ \mathcal{V}^2 (X) = \mathcal{V}^2 (X,X) $$
+\end{definition}
+
+\begin{definition}
+(Distance correlation).
+$$ \mathcal{R}^2 (X,Y) = \dfrac{\mathcal{V}^2(X,Y)}
+                               {\mathcal{V}(X) \mathcal{V}(Y)} $$
+\end{definition}
+
+For iid sample realizations $\{(X_i, Y_i)\}_1^n$, let
+$\widehat{\varphi_X} (t) = \frac{1}{n} \sum_{i=1}^n e^{i t^T X_i}$ be
+the empirical characteristic function for $X$ and likewise for $Y$. An
+estimate of $\mathcal{V}^2(X,Y)$ replaces the unknown characteristic
+functions with the empirical characteristic functions.
+
+\begin{prop}
+$$ \widehat{\mathcal{V}}^2 (X,Y) \equiv
+\| \widehat{\varphi_{X,Y}}(s,t) - \widehat{\varphi_X}(s) \widehat{\varphi_Y}(t) \|_w^2 = S_1 + S_2 - 2 S_3 $$
+where $w(s,t)$ as above and
+\begin{align*}
+S_1 &= \frac{1}{n^2} \sum_{k=1}^n \sum_{l=1}^n \|X_k - X_l\| \|Y_k - Y_l\| \\
+S_2 &= \left( \frac{1}{n^2} \sum_{k=1}^n \sum_{l=1}^n \|X_k - X_l\| \right) \frac{1}{n^2} \sum_{k=1}^n \sum_{l=1}^n \|Y_k - Y_l\| \\
+S_3 &= \frac{1}{n^3} \sum_{k=1}^n \sum_{l=1}^n \sum_{m=1}^n \|X_k - X_l\| \|Y_k - Y_m\|
+\end{align*}
+Alternatively, we can let $A, B \in \R^{n \times n}$ such that
+$A_{kl} = \|X_k - X_l\|$ and $B_{kl} = \|Y_k - Y_l\|$ ($A$ and $B$ are
+symmetric elementwise nonnegative). Let
+$\overline{X} = \frac{1}{n^2} \sum_{k,l = 1}^n X_{kl}$. Then
+$$ \hat{\mathcal{V}}^2 (X,Y)
+ = \overline{A \circ B} + \overline{A} \cdot \overline{B} - \frac{2}{n}
+   \overline{(A B)} $$
+where $\circ$ means element-wise multiplication.
+\end{prop}
+
+Estimates of distance variance and distance correlation are defined analogously.
+
+\begin{prop}
+$$ \mathcal{V}(v_1 + a_1 Q_1 X, v_2 + a_2 Q_2 Y)
+ = \sqrt{|a_1 a_2|} \mathcal{V}(X,Y) $$
+\end{prop}
+
+\begin{definition}
+($\alpha$-distance covariance). For $0 < \alpha < 2$
+$$ \mathcal{V}_\alpha^2 (X,Y)
+ = \frac{1}{C(p,\alpha) C(q,\alpha)}
+   \int_{\R^{p+q}} \frac{|\varphi_{X,Y}(s,t) - \varphi_X(s) \varphi_Y(t)|^2}
+                        {\|s\|^{\alpha + p} \|t\|^{\alpha + q}} ds dt $$
+\end{definition}
+
+\begin{prop}
+If $\Expect[\|X\|^\alpha] + \Expect[\|Y\|^\alpha] < \infty$ then
+$$ \mathcal{V}_\alpha^2 (X,Y) = \Expect[ \|X - X'\|^\alpha \|Y - Y'\|^\alpha ] + \Expect \|X - X'\|^\alpha \Expect \|Y - Y'\|^\alpha - 2 \Expect[ \|X - X'\|^\alpha \|Y - Y''\|^\alpha ]$$
+\end{prop}
+
+\begin{corollary}
+For $\alpha = 2$, $p = q = 1$, the distance correlation is the absolute value of Pearson's correlation coefficient.
+\end{corollary}

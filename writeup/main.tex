@@ -1,0 +1,39 @@
+\documentclass{report}
+
+\title{Brain Functional Parcellation with Energy Distance Correlation}
+\author{Felix Xiao}
+
+\usepackage[letterpaper, margin = 1in]{geometry}
+\usepackage{amsmath, amsfonts, graphicx, enumerate}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{prop}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Expect}{{\rm I\kern-.3em E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\chapter{Functional MRI Data and Brain Parcellation}
+\input{intro.tex}
+
+\chapter{Energy Statistics}
+\input{energy_statistics.tex}
+
+\chapter{Criteria for Evaluating Parcellations}
+\input{criteria.tex}
+
+\chapter{Local Search and Graph Growing Heuristics}
+\input{local_search.tex}
+
+\chapter{Optimization Approaches}
+\input{optimization.tex}
+
+\end{document}
