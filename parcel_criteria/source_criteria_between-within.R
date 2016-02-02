@@ -87,7 +87,7 @@ criterion.within_pairwise_ecor = function(dat, parcel, subsample = 1000,
   if (verbose) cat('\n')
   
   list(mean = within.mean, var = within.var, n = within.n,
-       total.mean = mean(within.mean))
+       total.mean = mean(within.mean, na.rm = T))
 }
 
 # Arguments
@@ -179,7 +179,7 @@ criterion.adjacent_pairwise_ecor = function(edges, parcel)
   }
 
   list(mean = adjacent.mean, var = adjacent.var,
-       total.mean = mean(adjacent.mean))
+       total.mean = mean(adjacent.mean, na.rm = T))
 }
 
 criterion.boundary_pairwise_ecor = function(edges, parcel)

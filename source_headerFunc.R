@@ -4,15 +4,15 @@ suppressPackageStartupMessages(library(testthat))
 #set global variables
 #path will vary from user to user
 #where are you reading the data from?
-USER = "kevin"
-#USER = "felix"
+#USER = "kevin"
+USER = "felix"
 
 if(USER == "kevin") {
   PATH_DATA = "/home/smile/klsix/felix_senior_thesis_2015-16/data/"
   PATH_SAVE = "/home/smile/klsix/felix_senior_thesis_2015-16/results/"
 } else if(USER == "felix") {
   PATH_DATA = "C:/Users/Felix/Dropbox/Felix_Kevin_Han-seniorthesis2015-16/data/"
-  PATH_SAVE = PATH_DATA
+  PATH_SAVE = 'C:/Users/Felix/Dropbox/Felix_Kevin_Han-seniorthesis2015-16/figs/'
 }
 
 #test PATHs
