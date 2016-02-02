@@ -100,10 +100,33 @@ other, then a simple re-formulation might be
 With this additional constraint, now the problem becomes NP-complete [fetch citation from Buluc 2013]
 Fortunately, a widely used relaxation of the first constraint to
 $\| x \|_2 = n$ converts the combinatorial optimization problem into a
-tractable continuous optimization problem, for which there exists an
-analytic solution derived using Lagrange multipliers.
+tractable continuous optimization problem. The resulting problem now
+becomes one of finding the eigenvalues and eigenvectors of the Laplacian
+matrix (Bichot 2011). There is a trivial eigenvector of all ones that is
+associated with the eigenvalue 0. The eigenvectors associated with the
+next smallest eigenvalues are thus useful for partitioning. In the
+literature the second eigenvector is called the Fiedler vector.
 
+To enforce the size constraint, discretize all the components of the
+Fiedler vector above the 50th percentile to 1 and all below to -1. A
+balanced bipartition using the Fiedler vector is shown below.
 
+\begin{center}
+\includegraphics[scale = 0.8]{5_spectral_2_axial.png}
+
+Axial
+
+\includegraphics[scale = 0.8]{5_spectral_2_coronal.png}
+
+Coronal
+
+\includegraphics[scale = 0.8]{5_spectral_2_sagittal.png}
+
+Sagittal
+\end{center}
+
+As anticipated, the minimum cut approach effectively smoothens the
+boundaries of the parcels.
 
 \section{Constrained k-Part Graph Partitioning}
 

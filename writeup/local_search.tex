@@ -1,5 +1,8 @@
 % 1. in union-find subsection make function names in text a different
 %    font
+% 2. include parameters of size-constrained add-edge on randomized graph
+%    in table
+% 3. more analysis of SC AE results
 %#######################################################################
 
 We introduce several algorithms for generating brain parcellations. The
@@ -194,13 +197,42 @@ the two resulting parcellations on the fMRI data used to generate the
 distance correlation graph. The results of the in-sample evaluation are
 shown in the table below:
 
+\begin{tabular}{c c | c c c c}
+    $s_{\min}$ & $s_{\max}$ & Within & Adjacent & Between & Boundary \\
+    \hline
+    \input{4_constrained_addedge.txt}
+\end{tabular}
 
+The criterion that has seen the most significant improvement compared
+with the random graph parcellation is the Boundary-Score, with a
+decrease from 0.719 in the random graph parcellation to the range of
+0.514 - 0.521. The Within- and Adjacent-Scores saw smaller but still
+noticeable improvements, and Between-Score saw no improvement from the
+random baseline.
 
+We display the parcellation obtained from setting parameters
+$s_{\min} = 1000$ and $s_{\max} = 7500$ below. While the sizes of the
+parcels are much more balanced than the result of the Unconstrained
+Add-Edge, there are still noticeable differences in parcel size.
+
+\begin{center}
+\includegraphics[scale = 0.6]{4_scae_1000_7500_axial.png}
+
+Axial
+
+\includegraphics[scale = 0.6]{4_scae_1000_7500_coronal.png}
+
+Coronal
+
+\includegraphics[scale = 0.6]{4_scae_1000_7500_sagittal.png}
+
+Sagittal
+\end{center}
 \section{Edge Contraction}
 
-The Edge-Contraction algorithm attempts to address the problem of poor
-Adjacent-Score of the Add-Edge parcellations relative to the same
-algorithm applied to the randomized graph. We hypothesized that one
+The Edge-Contraction algorithm attempts to address two problems of
+the Size-Constrained Add-Edge algorithm: poor Adjacent-Score relative
+to randomized graph and unbalanced parcels. We hypothesized that one
 reason for a relatively low Adjacent-Score might be the following
 scenario: when a vertex is added to a component, it might have multiple
 edges to that component. One edge might have a very high weight; this is
@@ -216,17 +248,38 @@ all edges that connect a vertex in A with a vertex in B.
 The graph starts out with $N$ components, each a single vertex. In every
 iteration
 
-- the smallest component with the largest edge to another component is selected
-- this largest edge is contracted, fusing two adjacent components to form a larger-sized component
-- for all components adjacent to the fused component, all edges connecting them to the fused component are averaged into a single edge
+\begin{enumerate}[1.]
+\item
+The smallest component with the largest edge to another component is
+selected.
 
-The Edge-Contraction algorithm is thus a greedy heuristic that attempts to achieve the two objectives of balancing component size and maximizing the average edge weight within each component.
+\item
+This largest edge is contracted, fusing two adjacent components to form
+a larger-sized component.
 
-\subsection{Implementation}
+\item
+For all components adjacent to the fused component, all edges connecting
+them to the fused component are averaged into a single edge.
+\end{enumerate}
 
-[ ... ]
+In short, the Edge-Contraction algorithm is a greedy heuristic that
+attempts to achieve the two objectives of balancing component size
+and maximizing the average edge weight within each component.
 
-Optimal Number of Components
+\subsection{Implementation using Augmented Adjacency List}
 
-After running the Edge-Contraction algorithm for a variety of different target components, we arrived at the following result:
 
+\subsection{Optimal Number of Components}
+
+The Edge-Contraction algorithm has the benefit of requiring only one
+parameter, the target component number. We assessed the validity of EC
+parcellations with varying numbers of components. The plots below show
+how the Adjacent-Score and Boundary-Score varied according to the
+number of components in the EC algorithm. The peak in the Adjacent-Score
+occurred at 6 components.
+
+\includegraphics[scale = 0.8]{4_ec_sizes.png}
+
+\begin{center}
+
+\end{center}

@@ -79,6 +79,13 @@ correlations, with weights that depend on spatial distance.
 
 \section{Between-Parcel Dissimilarity}
 
+To evaluate parcellation quality, it is also useful to measure how
+dependent voxels belonging to different parcels are on each other. To
+this end we define two criterion similar to the Within-Parcel criterion;
+a non-spatial metric called the Between-Score and a spatial metric
+called the Boundary-Score. For two different parcels $P$ and $P'$, let
+$E_{P,P'} = \{ (i,j) \in E : i \in P \text{ and } j \in P' \}$.
+
 \begin{definition} \label{between-score}
 Between-Score.
 \[ \frac{2}{|\mathcal{P}|(|\mathcal{P}| - 1)}
@@ -86,9 +93,6 @@ Between-Score.
    \frac{1}{|P| |P'|} \sum_{X \in P \\ Y \in P'} \mathcal{R}(X,Y)
 \]
 \end{definition}
-
-For two different parcels $P$ and $P'$, let
-$E_{P,P'} = \{ (i,j) \in E : i \in P \text{ and } j \in P' \}$
 
 \begin{definition} \label{boundary-score}
 Boundary-Score.

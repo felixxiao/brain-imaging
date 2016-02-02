@@ -1,13 +1,6 @@
+% 1. fact check claim that other brain parcellation studies use
+%    Pearson's correlation (not absolute value) as edge weights
 %#######################################################################
-
-    [Need to find somewhere to put this]
-    I conducted all parcellation and validation procedures on the ABIDE
-    50002 fMRI data set provided by Kevin Lin. This data set contains 233305
-    voxels and 124 time samples. Spatial information is encoded as a graph;
-    each voxel is represented by a vertex, and each vertex has up to 6 edges
-    connecting the voxel to its cubically adjacent neighbors. The weights on
-    the edges are sample energy distance correlations between the two
-    connected voxels (Szekely 2013).
 
 Functional parcellation of the human brain can be defined as the problem
 of partitioning the voxels into $k$ disjoint connected components with
@@ -28,7 +21,7 @@ relationships. The figure below illustrates several instances of pairs
 of random variables whose depencency structure is not detected by the
 three correlation coefficients.
 
-[ insert figure here ]
+\includegraphics[scale = 0.8]{1_nonlinear_depend.png}
 
 Non-linear dependency relationships also exist in the ABIDE 50002 fMRI
 data. The scatterplots below show time samples of spatially adjacent
@@ -42,6 +35,14 @@ Many studies on functional parcellation (Craddock 2012; Bellec 2006;
 Heller 2006) use Pearson's coefficient as the similarity measure between
 nearby voxels. Apart from underestimating the important of non-linear
 relationships, this method also distinguishes positive, upward-sloping
-correlation from negative [fact check needed here]. As a result in many
-of the edges between different parcels, the corresponding voxels would
-be strongly dependent with negative correlation [fact check needed here].
+correlation from negative. As a result in many of the edges between
+different parcels, the corresponding voxels would be strongly dependent
+with negative correlation.
+
+In this investigation, all parcellation and validation procedures were
+conducted on the ABIDE 50002 fMRI data set. This data set contains
+233305 voxels and 124 time samples. Spatial information is encoded as a
+graph; each voxel is represented by a vertex, and each vertex has up to
+6 edges connecting the voxel to its cubically adjacent neighbors. The
+weights on the edges are sample energy distance correlations between the
+two connected voxels (Szekely 2013).
