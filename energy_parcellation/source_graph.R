@@ -1,19 +1,72 @@
-#onvert adj.list into a matrix
-#TODO: There are duplicates in this list
-# Felix: please keep this version with duplicates -- my code uses them
-convert.adjList2edgeMat <- function(adj.list) {
+# convert adj.list into a matrix
+convert.adjList2edgeMat = function(adj.list, duplicates = F)
+{
   v1 = rep(1:length(adj.list), times = lapply(adj.list, length))
   v2 = unlist(adj.list)
 
   assert_that(length(v1) == length(v2))
 
+  if (! duplicates)
+  {
+    not.dup = v1 >= v2
+    v1 = v1[not.dup]
+    v2 = v2[not.dup]
+  }
+
   cbind(v1, v2)
 }
 
+# Arguments
+#   edge.mat  : matrix, each row contains the indices of two vertices
+#               joined in an edge
+#   map       : numeric, vertex index --> new index (positive integer)
+#   inverse   : logical(1), if TRUE, map new index back to original
+#   na.rm     : logical(1), if TRUE, any edge containing a vertex that
+#               did not map will be removed. If FALSE, edges will be left
+#               with NA vertices. Default TRUE.
+# Return
+#   edge.mat copy with old vertices mapped to new ones
+preprocess.map_vertices = function(edge.mat, map, inverse = F, na.rm = T)
+{
+  assert_that(all(map > 0))
+  
+  if (inverse)
+  {
+    assert_that(! any(duplicated(map)))
+    map.inv = rep(NA, times = max(edge.mat, map))
+    map.inv[map] = 1:length(map)
+    map = map.inv
+  }
+
+  edge.mat[,1] = mapvalues(edge.mat[,1], 1:length(map), map,
+                           warn_missing = F)
+  edge.mat[,2] = mapvalues(edge.mat[,2], 1:length(map), map,
+                           warn_missing = F)
+
+  edge.mat
+}
+
+
+# Parameter
+#   data  : matrix of fMRI values with voxel columns
+# Return
+#   $data : matrix of fMRI values with zero-voxel columns removed
+#   $map  : numeric, for each voxel column in the new data matrix,
+#           which voxel column it corresponded with in the old
+preprocess.remove_zero_vertices = function(data)
+{
+  n.vertices = ncol(data)
+  nonzero_vertices = which(apply(data, 2, function(x) any(x != 0)))
+
+  list(data = data[,nonzero_vertices],
+       map  = which(1:n.vertices %in% nonzero_vertices))
+}
+
 #compute the distance covariance for the edge weights
-compute.edgeWeights = function(data, adj.list, func = dcor,
+compute.edgeWeights = function(data, adj.list, func = dcor, edge.mat = NULL,
                                verbose = FALSE, save = TRUE) {
-  edge.mat = convert.adjList2edgeMat(adj.list)
+  if (is.null(edge.mat))
+    edge.mat = convert.adjList2edgeMat(adj.list)
 
   batch.len = ceiling(nrow(edge.mat)/10)
   vec = numeric(nrow(edge.mat))
@@ -31,8 +84,8 @@ compute.edgeWeights = function(data, adj.list, func = dcor,
   }
   edges = list(edge.mat = edge.mat, energy.vec = vec)
   
-  if(save) save(edges, file = paste0(PATH_SAVE, "edges_", 
-                                     DATE, ".RData"))
+  if (save) save(edges, file = paste0(PATH_SAVE, "edges_", 
+                                      Sys.Date(), ".RData"))
   
   edges
 }
