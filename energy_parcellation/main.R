@@ -1,13 +1,20 @@
-rm(list=ls())
+source('energy_parcellation/header_energy.R')
 
-source("header_energy.R")
 load(paste0(PATH_DATA, 'ABIDE_50002_matrix_2015-12-07.RData')) #loads dat
-load(paste0(PATH_DATA, 'template_2015-12-07.RData')) #loads template
-load(paste0(PATH_SAVE, 'edges_2016-01-14.RData')) #loads edges
+#load(paste0(PATH_DATA, 'template_2015-12-07.RData')) #loads template
+#load(paste0(PATH_DATA, 'edges_2016-01-14.RData')) #loads edges
 
-g = construct.graph(NULL, NULL, edges, component.num = 20)
-save(g, file = paste0(PATH_SAVE, "graph_", DATE, ".RData"))
+rm.zero = preprocess.remove_zero_vertices(dat$dat)
+dat = rm.zero$data
+map = rm.zero$map
+rm(rm.zero)
 
-comp = components(g)
-unique(dat$dat[,which(comp$membership %in% 2:20)])
-zeros = which(apply(dat$dat, 2, function(x) all(unique(x) == 0)))
+#edge.mat = preprocess.map_vertices(edges$edge.mat, map, inverse = T)
+#edges = compute.edgeWeights(dat, NULL, edge.mat = edge.mat)
+
+load(paste0(PATH_DATA, 'edges_2016-01-29.RData'))
+
+part100 = partition.addedge.unconstrained(edges, 100)
+table(part100)
+table(table(part100))
+

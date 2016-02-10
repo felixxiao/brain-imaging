@@ -1,3 +1,5 @@
+# TODO: add comments
+
 ContractibleGraph = R6Class('ContractibleGraph',
   public = list(
     # list, for each component, the vertices that constitute it
