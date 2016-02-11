@@ -1,7 +1,7 @@
-suppressPackageStartupMessages(library(oro.nifti))
-suppressPackageStartupMessages(library(assertthat))
-suppressPackageStartupMessages(library(argparse))
-suppressPackageStartupMessages(library(Matrix))
-
 source('header_global.R')
-source('preprocess/source_convert.R')
+
+load.library(c('oro.nifti', 'argparse', 'Matrix'))
+
+load.source()
+
+

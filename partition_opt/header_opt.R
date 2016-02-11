@@ -1,6 +1,6 @@
 source('header_global.R')
 
-library(rARPACK)
-library(Matrix)
+load.library(c('rARPACK', 'Matrix'))
 
-source('partition_opt/source_opt.R')
+load.source()
+

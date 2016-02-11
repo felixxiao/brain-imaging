@@ -1,9 +1,7 @@
-suppressPackageStartupMessages(library(R6))
+source('header_global.R')
 
-set.seed(10)
-DATE = Sys.Date()
+load.library(c('R6'))
 
-PATH_DATA = 'C:/Users/Felix/DropBox/Felix_Kevin_Han-seniorthesis2015-16/data/'
-PATH_SAVE = PATH_DATA
+load.source()
 
-source('union_find/source_unionfind.R')
+
