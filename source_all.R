@@ -11,12 +11,10 @@ folder.vec = c(
  "preprocess"
 )
 
-#rint(folder.vec)
-
 for(i in folder.vec){
   #find the one file with the keyword "header"
   name = paste0(i, '/', grep("^header_", dir(i), value = T))
-  if(length(name) != ) stop(paste0("Too many header files in", paste0))
+  if(length(name) != 1) stop(paste0("Too many header files in", paste0))
 
   source(name)
 }
