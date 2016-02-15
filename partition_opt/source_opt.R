@@ -35,7 +35,7 @@ partition.spectral = function(edges, balanced = T)
   partition
 }
 
-write.ampl_data = function(laplacian, num.components, file, verbose = T)
+write.ampl_data = function(laplacian, num.components, file)
 {
   L = laplacian
   k = num.components

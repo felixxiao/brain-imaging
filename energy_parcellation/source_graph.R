@@ -70,7 +70,7 @@ preprocess.remove_zero_vertices = function(data)
 
 # compute the distance covariance for the edge weights
 compute.edgeWeights = function(data, adj.list, func = dcor,
-                               edge.mat = NULL, verbose = F, save = T)
+                               edge.mat = NULL, verbose = T, save = F)
 {
   if (is.null(edge.mat))
     edge.mat = convert.adjList2edgeMat(adj.list)
