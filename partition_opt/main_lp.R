@@ -32,3 +32,14 @@ parcel = as.factor(parcel)
 source('plotter/header_plotter.R')
 
 plot.partition2D(parcel, comp.4$template, comp.4$mask, filename = 'comp_4_lp')
+
+############# Contract edges to reduce the number of vertices #######
+source('partition_edgecontract/header_contraction.R')
+load(paste0(PATH_DATA, 'edges_2016-01-29.RData'))
+partition.contractedge(4000, edges, T, paste0(PATH_SAVE, 'cg_4000.RData'))
+
+############# Try QP decomposition method ###########################
+X = t(sapply(1:1000, function(x) diff(sort(c(0, runif(10 - 1), 1)))))
+Z = as.matrix(read.csv('partition_opt/Z_1000_10.csv', header = F))[,-1001]
+Z = unname(Z)
+compute.factor_qp(Z, X, 1)
