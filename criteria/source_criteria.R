@@ -167,12 +167,15 @@ criterion.adjacent_pairwise_ecor = function(edges, parcel)
   names(adjacent.mean) = levels(parcel)
   adjacent.var  = adjacent.mean
 
-  parcels1 = parcel[edges$edge.mat[,1]]
-  parcels2 = parcel[edges$edge.mat[,2]]
+  # list, for each component, the indices of the edges for which the
+  #   1st node is in that component
+  parcels1 = split(1:nrow(edges$edge.mat), parcel[edges$edge.mat[,1]])
+  # ditto for 2nd node
+  parcels2 = split(1:nrow(edges$edge.mat), parcel[edges$edge.mat[,2]])
 
   for (p in levels(parcel))
   {
-    ecor = edges$energy.vec[parcels1 == p & parcels2 == p]
+    ecor = edges$energy.vec[intersect(parcels1[[p]], parcels2[[p]])]
 
     adjacent.mean[p] = mean(ecor)
     adjacent.var[p] = var(ecor)
@@ -184,22 +187,28 @@ criterion.adjacent_pairwise_ecor = function(edges, parcel)
 
 criterion.boundary_pairwise_ecor = function(edges, parcel)
 {
+  levels(parcel) = 1:nlevels(parcel)
   boundary.mean = matrix(NA, nrow = nlevels(parcel), ncol = nlevels(parcel),
                          dimnames = list(levels(parcel), levels(parcel)))
   boundary.var  = boundary.mean
   boundary.n    = boundary.mean
   boundary.n[]  = 0
 
-  parcels1 = parcel[edges$edge.mat[,1]]
-  parcels2 = parcel[edges$edge.mat[,2]]
+  # list, for each component, the indices of the edges for which the
+  #   1st node is in that component
+  parcels1 = split(1:nrow(edges$edge.mat), parcel[edges$edge.mat[,1]])
+  # ditto for 2nd node
+  parcels2 = split(1:nrow(edges$edge.mat), parcel[edges$edge.mat[,2]])
 
   component_pairs = combn(levels(parcel), 2)
   for (pair in 1:ncol(component_pairs))
   {
     comp1 = component_pairs[1, pair]
     comp2 = component_pairs[2, pair]
+    cat('(', comp1, ', ', comp2, ')')
 
-    ecor = edges$energy.vec[parcels1 == comp1 & parcels2 == comp2]
+    ecor = edges$energy.vec[c(intersect(parcels1[[comp1]], parcels2[[comp2]]),
+                              intersect(parcels2[[comp1]], parcels2[[comp2]]))]
 
     if (length(ecor) > 0)
     {
