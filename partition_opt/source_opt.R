@@ -27,8 +27,51 @@ compute.laplacian = function(edges)
   L
 }
 
+partition.spectral.multiway = function(edges, n.eigen = 2, laplacian = NULL)
+{
+  if (is.null(laplacian))
+    L = compute.laplacian(edges)
+
+  cat('Computing eigenvectors\n')
+  eig = eigs_sym(L, n.eigen + 1, 'SM')
+
+  V = eig$vectors[,n.eigen:1]
+
+  ## cosine similarity k-means
+  # initialize seed centroids
+  U = matrix(rnorm(n.eigen * n.eigen), nrow = n.eigen)
+  U = apply(U, 2, function(u) u / sqrt(sum(u * u)))
+  # k-means
+  ITER = 10
+  TOL = 10^-4
+  sim = rep(NA, length = ITER + 1)
+  sim[1] = sum(apply(V %*% U, 1, max))
+  for (t in 1:ITER)
+  {
+    cat(t, ' ')
+    part = apply(V %*% U, 1, which.max)
+    for (k in 1:n.eigen)
+    {
+      idx = which(part == k)
+      if (length(idx) > 1)
+        U[,k] = colSums(V[part == k,])
+      else if (length(idx) == 1)
+        U[,k] = V[part == k,]
+      else
+        U[,k] = rnorm(n.eigen)
+    }
+    U = apply(U, 2, function(u) u / sqrt(sum(u * u)))
+    sim[t+1] = sum(apply(V %*% U, 1, max))
+    if (abs(sim[t+1] - sim[t]) < TOL)
+      break
+  }
+
+  #list(part = as.factor(part), obj = sim[1:(t+1)])
+  as.factor(part)
+}
+
 # recursive bipartitioning using Laplacian spectrum
-partition.spectral = function(edges, max.depth = 1)
+partition.spectral.recursive = function(edges, max.depth = 1)
 {
   as.factor(.partition.spectral(edges$edge.mat, edges$energy.vec, 1, 1, max.depth))
 }
