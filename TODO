@@ -9,3 +9,7 @@ I'll slowly introduce these over time so it's not overwhelming)
 - parallel computing (foreach and DoMC)
 - TIGER account
 - Show iPython using R
+- Split data into data and results
+- Fix the way we do sourcing to follow Felix's procedure
+- add testing for union find
+- make sure we keep the readme up to date

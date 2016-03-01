@@ -1,5 +1,6 @@
 rm(list = ls())
 
+setwd('plotter')
 source("header_plotter.R")
 
 load(paste0(PATH_DATA, 'template_2015-12-07.RData')) 
@@ -10,6 +11,5 @@ partition = as.factor(sample(1:20, length(template$mask), replace = TRUE))
 plot.partition2D(partition, MNI, template$mask, "test")
 plot.partition2D(partition, MNI, template$mask, "test", view = VIEWS[2])
 plot.partition2D(partition, MNI, template$mask, "test", view = VIEWS[3])
-
 
 
