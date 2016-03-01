@@ -3,19 +3,22 @@
 \title{Approaches to Brain Parcellation using Energy Statistics and Graph Partitioning}
 \author{Felix Xiao}
 
-\usepackage[letterpaper, margin = 1in]{geometry}
-\usepackage{amsmath, amsfonts, graphicx, enumerate}
+\usepackage[a5paper, margin = 1cm]{geometry}
+\usepackage{amsmath, amsfonts, graphicx, enumerate, amssymb}
 
 \newtheorem{definition}{Definition}[section]
 \newtheorem{prop}[definition]{Proposition}
 \newtheorem{lemma}[definition]{Lemma}
 \newtheorem{corollary}[definition]{Corollary}
+\newtheorem{theorem}[definition]{Theorem}
 
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\Expect}{{\rm I\kern-.3em E}}
 \newcommand{\Var}{\mathrm{Var}}
 \newcommand{\Cov}{\mathrm{Cov}}
 \newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
+
+\let\emptyset\varnothing
 
 \begin{document}
 \maketitle
@@ -33,7 +36,10 @@
 \chapter{Local Search and Graph Growing Heuristics}
 \input{local_search.tex}
 
-\chapter{Optimization Approaches}
+\chapter{Spectral Methods}
+\input{spectral.tex}
+
+\chapter{Linear and Semidefinite Optimization}
 \input{optimization.tex}
 
 \end{document}

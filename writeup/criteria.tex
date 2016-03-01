@@ -11,12 +11,24 @@ energy distance correlation statistics between the adjacent voxels in
 the time series and they measure statistical dependence between the
 voxels. Let $G(V, E)$ denote this graph, its vertices, and its edges.
 
-In this context, a $k$-fold partition of the graph is a collection of
-$k$ disjoint vertex subsets (called parcels) $P_1, ..., P_k \subset V$
-satisfying $P_1 \cup ... \cup P_k = V$. We impose the additional
-requirement that each parcel is a connected component; i.e. that there
-exists a path between any pair of vertices in a parcel. For this reason
-we'll use the terms parcel and component interchangeably.
+In this context, a valid $k$-fold partition $\mathcal{P}_k$ of the
+graph $G$ is a collection of vertex subsets $(V_1, ..., V_k)$
+satisfying the following:
+
+\begin{enumerate}[1.]
+\item
+$V_i \neq \emptyset$ for all $V_i \in \mathcal{P}_k$
+
+\item
+$\bigcup\limits_{i=1}^k V_i = V$
+
+\item
+$V_i \cap V_j = \emptyset$ for all $V_i, V_j \in \mathcal{P}_k$
+
+\item
+$V_i$ is connected (i.e. for every two vertices in $V_i$, there is a
+path between them) for all $V_i \in \mathcal{P}_k$
+\end{enumerate}
 
 In this chapter we will suggest various criteria for measuring the
 goodness-of-fit of partitions. We will argue why these criteria are
