@@ -193,9 +193,71 @@ Sagittal
 
 One can recursively apply this bipartitioning method to the component
 subgraphs to obtain $k$-partitions, but there is a more elegant
-approach involving additional eigenvectors that we shall discuss next.
+approach involving additional eigenvectors that requires the
+construction of only one Laplacian matrix, which we shall discuss next.
 
 \section{Spectral k-partitioning}
 
+We'll begin with two definitions to set up the machinery for
+partitioning into $k$ components.
+
+\begin{definition}
+Assignment matrix. $X \in \{0, 1\}^{n \times k}$ has entries
+\[ X_{ih} = \begin{cases}
+		1 & \mbox{if vertex } i \in V_h \\
+		0 & \mbox{otherwise}
+\end{cases} \]
+\end{definition}
+
+Let $u_m$ denote a vector of $m$ ones.
+An assignment matrix characterizes a valid partition only if it
+satisfies $X u_k = u_n$ and $X^T u_n > 0$. It is also important
+to note that the columns of $X$ are orthogonal.
+
+\begin{definition}
+Partition matrix. $P \in \{0, 1\}^{n \times n}$ has entries
+\[ P_{ij} = \begin{cases}
+		1 & \mbox{if vertices } i \mbox{ and } j
+		    \mbox{ are in the same component} \\
+		0 & \mbox{otherwise}
+\end{cases} \]
+\end{definition}
+
+It is easy to see that $P = X X^T$.
+
+In the $k$-component case, we define the weight of a partition
+$C(P_k)$ as the sum of weights of edges between different components
+(between-edges).
+This is equal to the sum of the weights of all edges in the graph minus
+the sum of the weights of all edges connecting vertices in the same
+component (within-edges).
+
+In addition, if $D$ is the degree matrix, then
+\begin{align*}
+\Tr(P D) &= \sum_{i,j = 1}^n P_{ij} D_{ij} \\
+         &= \sum_{i=1}^n P_{ii} D_{ii}  \\
+         &= \sum_{i=1}^n P_{ii} \sum_{j=1}^n A_{ij} \\
+         &= \sum_{i=1}^n \sum_{j=1}^n A_{ij}
+\end{align*}
+is the sum of the weights of all edges in the graph. Using the same
+expansion of the trace operator, it is easy to show that $\Tr(P A)$
+equals the sum of weights of all within-edges. From the trace
+property $\Tr(A B) = \Tr(B A)$ for any $A \in \R^{p \times q}$,
+$B \in \R^{q \times p}$, and property
+$\Tr(A - B) = \Tr(A) - \Tr(B)$ the following fact is thus
+proven.
+
+\begin{prop}
+Let $P_k$ be a valid partition of $G = (V,E)$
+with assignment matrix $X$ and Laplacian $L$. Then
+\[ C(P_k) = \Tr(X^T L X) \]
+\end{prop}
+
+Deriving the spectral relaxation for the multi-partition problem is
+similar to the bipartition case. We rescale the columns of $X$ and
+allow it to take on values in $\R$ so that the feasible set is
+defined by the constraint $X^T X = I_k$.
+
+Rescaling changes the value of the objective ...
 
 %#######################################################################
