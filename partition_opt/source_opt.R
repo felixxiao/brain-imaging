@@ -36,6 +36,7 @@ partition.spectral.multiway = function(edges, n.eigen = 2, laplacian = NULL)
   eig = eigs_sym(L, n.eigen + 1, 'SM')
 
   V = eig$vectors[,n.eigen:1]
+  V = apply(V, 1, function(v), v / sqrt(sum(v * v)))
 
   ## cosine similarity k-means
   # initialize seed centroids
@@ -54,9 +55,9 @@ partition.spectral.multiway = function(edges, n.eigen = 2, laplacian = NULL)
     {
       idx = which(part == k)
       if (length(idx) > 1)
-        U[,k] = colSums(V[part == k,])
+        U[,k] = colSums(V[idx,])
       else if (length(idx) == 1)
-        U[,k] = V[part == k,]
+        U[,k] = V[idx,]
       else
         U[,k] = rnorm(n.eigen)
     }
