@@ -211,8 +211,8 @@ Assignment matrix. $X \in \{0, 1\}^{n \times k}$ has entries
 
 Let $u_m$ denote a vector of $m$ ones.
 An assignment matrix characterizes a valid partition only if it
-satisfies $X u_k = u_n$ and $X^T u_n > 0$. It is also important
-to note that the columns of $X$ are orthogonal.
+satisfies $X u_k = u_n$ and $X^T u_n > 0$.
+The columns of $X$ are orthogonal.
 
 \begin{definition}
 Partition matrix. $P \in \{0, 1\}^{n \times n}$ has entries
@@ -223,11 +223,20 @@ Partition matrix. $P \in \{0, 1\}^{n \times n}$ has entries
 \end{cases} \]
 \end{definition}
 
-It is easy to see that $P = X X^T$.
+If $P$ and $X$ refer to the same partitioning, then $P = X X^T$.
 
 In the $k$-component case, we define the weight of a partition
 $C(P_k)$ as the sum of weights of edges between different components
-(between-edges).
+(between-edges). This is equivalent to the definition below:
+
+\begin{definition}
+[Cut weight] For a partition $P_k = (V_1, ..., V_k)$, the cut weight
+is defined as
+\[ C(P_k) = \sum_{h=1}^k E_h \]
+where $E_h$ is the sum of the weights of all edges with one vertex in
+$V_h$ and one vertex not in it.
+\end{definition}
+
 This is equal to the sum of the weights of all edges in the graph minus
 the sum of the weights of all edges connecting vertices in the same
 component (within-edges).
@@ -239,25 +248,84 @@ In addition, if $D$ is the degree matrix, then
          &= \sum_{i=1}^n P_{ii} \sum_{j=1}^n A_{ij} \\
          &= \sum_{i=1}^n \sum_{j=1}^n A_{ij}
 \end{align*}
-is the sum of the weights of all edges in the graph. Using the same
-expansion of the trace operator, it is easy to show that $\Tr(P A)$
-equals the sum of weights of all within-edges. From the trace
-property $\Tr(A B) = \Tr(B A)$ for any $A \in \R^{p \times q}$,
-$B \in \R^{q \times p}$, and property
-$\Tr(A - B) = \Tr(A) - \Tr(B)$ the following fact is thus
-proven.
-
-\begin{prop}
-Let $P_k$ be a valid partition of $G = (V,E)$
-with assignment matrix $X$ and Laplacian $L$. Then
+is the sum of the weights of all edges in the graph.
+Similarly, $\Tr(P A)$ equals the sum of weights of all within-edges.
+It follows that 
 \[ C(P_k) = \Tr(X^T L X) \]
-\end{prop}
 
-Deriving the spectral relaxation for the multi-partition problem is
-similar to the bipartition case. We rescale the columns of $X$ and
-allow it to take on values in $\R$ so that the feasible set is
-defined by the constraint $X^T X = I_k$.
+The derivation of the spectral relaxation for the multi-partition
+problem in [Chan 1994] actually doesn't attempt to minimize $C(P_k)$
+directly for reasons to be elaborated below. Rather, it minimizes a
+related objective called the ratio-cut cost.
 
-Rescaling changes the value of the objective ...
+\begin{definition}
+[Ratio-cut cost] For a given partition $P_k = (V_1, ..., V_k)$ the
+ratio-cut cost $C_R$ is defined
+\[ C_R(P_k) = \sum_{h=1}^k \frac{E_h}{|V_h|} \]
+where $E_h$ is the sum of the weights of all edges with one vertex in
+$V_h$ and one vertex not in it.
+\end{definition}
+
+[Chan 1994] defines a new decision variable $R$, of the same form as
+$X$ but with columns rescaled so that the column sum is $\sqrt{|V_h|}$
+for each component $V_h$.
+
+\begin{definition}
+[Ratioed Assignment Matrix] $R \in \R^{n \times k}$ has entries
+\[ R_{ih} = \begin{cases}
+		\frac{1}{\sqrt{|V_h|}} & \mbox{if vertex } i \in V_h \\
+		0 & \mbox{otherwise}
+\end{cases} \]
+\end{definition}
+
+The ratioed assignment matrix relates to the ratio-cut cost in the same
+way the assignment matrix relates to cut weight; namely, if $R$
+characterizes a partition $P_k$ then
+\[ C_R(P_k) = \Tr(R^T L R) \]
+$R$ has the additional useful property that $R^T R = I$. This property
+leads to a closed form optimal solution to
+
+\begin{equation} \label{spectral_k-partition}
+\begin{aligned}
+\min_{R \in \R^{n \times k}} &\;& \Tr(R^T L R) \\
+\text{s.t.}                  &\;& R^T R = I    \\
+\end{aligned}
+\end{equation}
+
+[Fan 1949] proved that an optimal solution $\hat{R}$ to the above
+consists of $k$ orthonormal eigenvectors corresponding to the $k$
+smallest eigenvalues of $L$. Analogously to $P = X X^T$,
+$\hat{R}$ can be thought of as $n$ $k$-dimensional points where the
+dot products of the $i$th and $j$th rows measure the affinity of
+vertices $i$ and $j$ to be in the same component.
+
+As [Chan 1994] pointed out, recovery of the discrete assignment matrix
+$X$ from the continuous assignment matrix $\hat{R}$ would be more
+accurate if $\hat{R}$ were un-ratioed (i.e. if each row of $R$ had the
+same length), since the ratioed assignment matrix $R$ has the
+problematic property that for any $i,j$ in the same component, the dot product $R_i^T R_j$ depends on the size of that component.
+The un-ratioed version of $\hat{R}$ be recovered by dividing each row
+by its Euclidean norm. The result, $\hat{X}$, can be thought of as $n$
+points in $\R^k$ embedded on the surface of the unit hypersphere.
+
+Obtaining the partition assignment matrix $X$, from this spherical
+embedding is a clustering problem. We used k-means with cosine
+similarity $s(x,y) = x^T y$ for this purpose. For each cluster $h$
+and its associated points matrix $H \in \R^{m \times k}$, the
+location of the cluster centroid $c_h$ in the next iteration satisfies
+$ \sum_{i=1}^m H_i = \lambda c_h $ for some positive scalar $\lambda$
+such that $ \| c_h \| = 1$.
+
+To summarize, [Chan 1994] introduced a spectral relaxation of the graph
+$k$-partitioning to minimize the ratio cut. From the Laplacian matrix's
+smallest $k$ eigenvectors we obtain a continuous approximation $\hat{R}$
+to the optimal ratioed assignment matrix $R$. The rows of $\hat{R}$ are
+standardized to length 1 to get the continuous approximation $\hat{X}$
+to optimal (unratioed) assignment matrix $X$. Our modification of
+this method uses k-means clustering with cosine similarity to recover
+the component assignments from $\hat{X}$.
+
+\section{Comparison of Parcellations using Recursive Bipartitioning
+and k-Partitioning}
 
 %#######################################################################
