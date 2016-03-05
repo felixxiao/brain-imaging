@@ -1,5 +1,5 @@
 source('package.R')
-suppressMessages(.ipak(c("testthat", "assertthat")))
+suppressMessages(.ipak(c("testthat", "assertthat", 'oro.nifti')))
 
 #USER = "kevin"
 USER = "felix"
