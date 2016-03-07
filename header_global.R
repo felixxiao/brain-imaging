@@ -1,15 +1,17 @@
 source('package.R')
 suppressMessages(.ipak(c("testthat", "assertthat", 'oro.nifti')))
 
-#USER = "kevin"
-USER = "felix"
+USER = paste(Sys.getenv(c('USER', 'USERNAME')), collapse = '')
 
 if (USER == "kevin") {
   PATH_DATA = "/home/smile/klsix/felix_senior_thesis_2015-16/data/"
   PATH_SAVE = "/home/smile/klsix/felix_senior_thesis_2015-16/results/"
-} else if (USER == "felix") {
+} else if (USER == "Felix") {
   PATH_DATA = "C:/Users/Felix/Dropbox/Felix_Kevin_Han-seniorthesis2015-16/data/"
   PATH_SAVE = 'C:/Users/Felix/Dropbox/Felix_Kevin_Han-seniorthesis2015-16/figs/'
+} else if (USER == 'feixiao') {
+  PATH_DATA = '/home/smile/feixiao/Thesis_data/'
+  PATH_SAVE = PATH_DATA
 }
 
 # verify PATHs end in '/'
