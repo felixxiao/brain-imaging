@@ -11,18 +11,27 @@ neighbor.indices = function(dist_sqrd)
       for (k in 1:n)
         A[i,j,k] = (i-1)^2 + (j-1)^2 + (k-1)^2
   idx.nonneg = arrayInd(which(A == dist_sqrd), dim(A)) - 1
+  if (nrow(idx.nonneg) == 0)
+  {
+    warning(dist_sqrd, ' has no valid vertex pairs')
+    return()
+  }
   signs = gtools::permutations(2, 3, c(1,-1), repeats.allowed = T)
   idx = mapply(kronecker, split(signs, col(signs)),
                split(idx.nonneg, col(idx.nonneg)))
-  unique(idx, MARGIN = 1)
+  unname(unique(idx, MARGIN = 1))
 }
 
 edgemat = function(dist_sqrd, loc, dimen, mask)
 {
   idx = neighbor.indices(dist_sqrd)
+  if (is.null(idx)) return()
   edge.mat = lapply(1:ncol(loc), function(j)
     {
-      neighbors.1D = apply(sweep(idx, 2, loc[,j], '+'), 1,
+      neighbors.3D = sweep(idx, 2, loc[,j], '+')
+      neighbors.3D = neighbors.3D[apply(neighbors.3D, 1,
+                                        function(row) all(row > 0)),]
+      neighbors.1D = apply(neighbors.3D, 1,
                            .convert.3Dto2Dloc, dimen = dimen)
       cbind(mask[j], neighbors.1D, deparse.level = 0)
     })
