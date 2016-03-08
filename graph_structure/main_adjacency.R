@@ -30,6 +30,7 @@ load(paste0(PATH_DATA, 'ABIDE_50002_matrix_2015-12-07.RData'))
 weights = list()
 for (e in 1:length(edge.mat))
 {
+  cat(e, ' ')
   weights[[e]] = compute.edgeWeights(dat$dat, NULL, dcor, edge.mat[[e]],
                                      verbose = T, save = F)$energy.vec
   save(weights, file = paste0(PATH_SAVE, 'weights_dist_1-16.RData'))
