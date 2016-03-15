@@ -17,11 +17,15 @@
 \newcommand{\Var}{\mathrm{Var}}
 \newcommand{\Cov}{\mathrm{Cov}}
 \newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
+\newcommand{\argmin}[1]{\underset{#1}{\text{arg min}}}
+\newcommand{\argmax}[1]{\underset{#1}{\text{arg max}}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
 
 \DeclareMathOperator{\Tr}{Tr}
 \let\emptyset\varnothing
 
 \begin{document}
+
 \maketitle
 \tableofcontents
 
@@ -40,7 +44,10 @@
 \chapter{Spectral Methods}
 \input{spectral.tex}
 
-\chapter{Linear and Semidefinite Optimization}
-\input{optimization.tex}
+\chapter{Symmetric Nonnegative Matrix Factorization}
+\input{factorization.tex}
+
+\bibliography{ref}
+\bibliographystyle{apalike}
 
 \end{document}
