@@ -13,5 +13,6 @@ nohup.out
 *.out
 *.toc
 *.swp
+.ipynb_checkpoints/
 *.Rhistory
 *.png
