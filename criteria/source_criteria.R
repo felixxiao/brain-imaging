@@ -185,7 +185,7 @@ criterion.adjacent_pairwise_ecor = function(edges, parcel)
        total.mean = mean(adjacent.mean, na.rm = T))
 }
 
-criterion.boundary_pairwise_ecor = function(edges, parcel)
+criterion.boundary_pairwise_ecor = function(edges, parcel, verbose = F)
 {
   levels(parcel) = 1:nlevels(parcel)
   boundary.mean = matrix(NA, nrow = nlevels(parcel), ncol = nlevels(parcel),
@@ -205,7 +205,7 @@ criterion.boundary_pairwise_ecor = function(edges, parcel)
   {
     comp1 = component_pairs[1, pair]
     comp2 = component_pairs[2, pair]
-    cat('(', comp1, ', ', comp2, ')')
+    if (verbose) cat('(', comp1, ', ', comp2, ')')
 
     ecor = edges$energy.vec[c(intersect(parcels1[[comp1]], parcels2[[comp2]]),
                               intersect(parcels2[[comp1]], parcels2[[comp2]]))]
