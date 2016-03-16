@@ -1,6 +1,6 @@
 ######################################################################
 
-compute.laplacian = function(edges)
+compute.adjacency = function(edges)
 {
   V = sort(unique(as.numeric(edges$edge.mat)))
   n = length(V)
@@ -11,11 +11,16 @@ compute.laplacian = function(edges)
   assert_that(max(edges$edge.mat) == n)
 
   # adjacency matrix
-  A = Matrix::sparseMatrix(i = edges$edge.mat[,1],
-                           j = edges$edge.mat[,2],
-                           x = edges$energy.vec,
-                           dims = c(n, n),
-                           symmetric = T)
+  Matrix::sparseMatrix(i = edges$edge.mat[,1],
+                       j = edges$edge.mat[,2],
+                       x = edges$energy.vec,
+                       dims = c(n, n),
+                       symmetric = T)
+}
+
+compute.laplacian = function(edges)
+{
+  A = compute.adjacency(edges)
   
   # degree matrix
   D = Matrix::Diagonal(x = colSums(A))
@@ -27,16 +32,20 @@ compute.laplacian = function(edges)
   L
 }
 
-partition.spectral.multiway = function(edges, n.eigen = 2, laplacian = NULL)
+# Spectral relaxation of ratio-cut minimization
+partition.spectral.multiway = function(edges, k, laplacian = NULL,
+                                       output.objective = F)
 {
+  assert_that(k > 1)
+
   if (is.null(laplacian))
     L = compute.laplacian(edges)
 
   cat('Computing eigenvectors\n')
   eig = eigs_sym(L, n.eigen + 1, 'SM')
 
-  V = eig$vectors[,n.eigen:1]
-  V = apply(V, 1, function(v), v / sqrt(sum(v * v)))
+  V = eig$vectors[,(n.eigen+1):2]
+  V = t(apply(V, 1, function(v) v / sqrt(sum(v * v))))
 
   ## cosine similarity k-means
   # initialize seed centroids
@@ -67,13 +76,15 @@ partition.spectral.multiway = function(edges, n.eigen = 2, laplacian = NULL)
       break
   }
 
-  #list(part = as.factor(part), obj = sim[1:(t+1)])
+  if (output.objective)
+    return(list(part = as.factor(part), obj = sim[1:(t+1)]))
   as.factor(part)
 }
 
-# recursive bipartitioning using Laplacian spectrum
-partition.spectral.recursive = function(edges, max.depth = 1)
+# recursive (equal) bipartitioning using Laplacian spectrum
+partition.spectral.recursive = function(edges, max.depth)
 {
+  assert_that(max.depth > 0)
   as.factor(.partition.spectral(edges$edge.mat, edges$energy.vec, 1, 1, max.depth))
 }
 
@@ -105,85 +116,4 @@ partition.spectral.recursive = function(edges, max.depth = 1)
     label + 2^(max.depth - depth), depth + 1, max.depth)
 
   partition
-}
-
-
-write.ampl_data = function(laplacian, num.components, file)
-{
-  L = laplacian
-  k = num.components
-  n = nrow(L)
-
-  sink(file)
-
-  cat('param n := ', n, ';\n\n', sep = '')
-  cat('param k := ', k, ';\n\n', sep = '')
-
-  cat('set V := ')
-  cat(1:n)
-  cat(';\n\n')
-
-  cat('param L : ')
-  cat(sprintf('%8d', 1:n))
-  cat(' :=\n')
-  for (i in 1:n)
-  {
-    cat(sprintf('%9d ', i))
-    cat(sprintf('%.6f', L[i,]))
-    cat('\n')
-  }
-  cat(';\n\n')
-
-  sink()
-}
-
-# needs work
-compute.factor_01.julia = function(csv.file, num.components, iter = 5)
-{
-  julia.file = 'partition_opt/source_factor.jl'
-  shell(paste('julia', julia.file, csv.file, num.components, iter))
-
-  X = read.table('partition_opt/X.csv', sep = ',')
-  parcel = rep(NA, times = nrow(X))
-  for (j in 1:ncol(X)) parcel[which(X[,j])] = j
-
-  as.factor(parcel)
-}
-
-compute.factor_qp = function(Z, X_init, lambda, ITER = 10)
-{
-#  Z = as.matrix(read.csv(csv.file, header = F))
-  assert_that(isSymmetric(Z))
-  assert_that(class(lambda) %in% c('function', 'numeric'))
-  n = nrow(Z)
-  X = X_init
-  k = ncol(X)
-  cost = rep(NA, times = ITER)
-
-  if (class(lambda) == 'function')
-    lambda = sapply(1:ITER, lambda)
-  else if (length(lambda) == 1)
-    lambda = rep(lambda, times = ITER)
-  else
-    assert_that(length(lambda) == ITER)
-
-  for (t in 1:ITER)
-  {
-    cat(t, ' ')
-    # \| Z - X X^T \|_F^2
-    cost[t] = norm(Z - X %*% t(X), 'F')
-
-    # min. 1/2 x^T Q x - p^T x
-    p = as.vector(crossprod(X, Z + lambda[t] * diag(n)))
-    Q = kronecker(diag(n), crossprod(X)) + lambda[t] * diag(n * k)
-
-    # s.t. A^T x >= b
-    A = - kronecker(diag(n), matrix(1, nrow = k))
-    A = cbind(A, diag(n*k))
-    b = c(rep(-1, times = n), rep(0, times = n*k))
-
-    opt = solve.QP(Q, p, A, b, n)
-    X = t(matrix(opt$solution, nrow = k))
-  }
-  X
 }

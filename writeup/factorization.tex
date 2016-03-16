@@ -104,10 +104,48 @@ entry in each row. There is no need for $k$-means.
 
 \cite{Kuang:15} re-formulates \ref{sym_nmf} as a non-symmetric NMF
 with a penalty on the difference between the two matrix factors:
-\[ \min_{W,H \geq 0}
-   \|A - W H^T\|_F^2 + \alpha \|W - H\|_F^2
-\]
-where $W,H \in \R^{n \times k}$. The objective is equivalent to
-\[ \norm{ \begin{bmatrix} W \\ \sqrt{\alpha} I_k \end{bmatrix} H^T
-        - \begin{bmatrix} A \\ \sqrt{\alpha} W^T \end{bmatrix} }_F^2
-\]
+\begin{equation} \label{nonsym_nmf}
+\min_{W,H \geq 0} \|A - W H^T\|_F^2 + \alpha \|W - H\|_F^2
+\end{equation}
+where $W,H \in \R^{n \times k}$. The $\alpha$ parameter 
+
+The rationale for this to use known methods for solving the
+non-symmetric NMF and adapt them to the symmetric problem.
+One powerful framework for solving NMF is Alternating Nonnegative
+Least Squares (ANLS), which factors $A$ into nonnegative $W$ and $H$
+by fixing the $H$ matrix and solving for $W$:
+$$ W \gets \argmin{W \geq 0} \|A - W H^T\|_F^2 $$
+and fixing this new matrix $W$ and solving for $H$:
+$$ H \gets \argmin{H \geq 0} \|A - W H^T\|_F^2 $$
+and repeating the two steps until convergence.
+Both subproblems in the ANLS framework are convex, and the algorithm
+requires only an initial $W$ to get started.
+
+\cite{Kuang:15} describes an algorithm for solving SymNMF that uses
+the ANLS framework. The objective function in \ref{nonsym_nmf} can be
+re-written as
+\begin{equation} \label{nls}
+\norm{ \begin{bmatrix} W \\ \sqrt{\alpha} I_k \end{bmatrix} H^T
+     - \begin{bmatrix} A \\ \sqrt{\alpha} W^T \end{bmatrix} }_F^2
+\end{equation}
+with $\begin{bmatrix} W \\ \sqrt{\alpha} I_k \end{bmatrix}$ taking on
+the part of the fixed matrix and $H$ the decision matrix. The ANLS
+algorithm for SymNMF is the following:
+
+\begin{algorithm}
+\caption{ANLS algorithm for SymNMF}
+\begin{algorithmic}[1]
+\State Initialize $H$
+\Repeat
+  \State $W \gets H$
+  \State $H \gets \argmin{H \geq 0}
+    \norm{ \begin{bmatrix} W \\ \sqrt{\alpha} I_k \end{bmatrix} H^T
+         - \begin{bmatrix} A \\ \sqrt{\alpha} W^T \end{bmatrix} }_F^2$
+\Until{convergence}
+\end{algorithmic}  
+\end{algorithm}
+
+The $\alpha$ can be increased each iteration.
+
+\subsection{Block Principal Pivoting for Nonnegative Least Squares}
+\cite{Kim:11}

@@ -4,7 +4,7 @@
 \author{Felix Xiao}
 
 \usepackage[a5paper, margin = 1cm]{geometry}
-\usepackage{amsmath, amsfonts, graphicx, enumerate, amssymb}
+\usepackage{amsmath, amsfonts, graphicx, enumerate, amssymb, algpseudocode, algorithm}
 
 \newtheorem{definition}{Definition}[section]
 \newtheorem{prop}[definition]{Proposition}
@@ -17,8 +17,8 @@
 \newcommand{\Var}{\mathrm{Var}}
 \newcommand{\Cov}{\mathrm{Cov}}
 \newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
-\newcommand{\argmin}[1]{\underset{#1}{\text{arg min}}}
-\newcommand{\argmax}[1]{\underset{#1}{\text{arg max}}}
+\newcommand{\argmin}[1]{\underset{#1}{\mathrm{arg min}}}
+\newcommand{\argmax}[1]{\underset{#1}{\mathrm{arg max}}}
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
 
 \DeclareMathOperator{\Tr}{Tr}
@@ -29,20 +29,20 @@
 \maketitle
 \tableofcontents
 
-\chapter{Functional MRI Data and Brain Parcellation}
-\input{intro.tex}
+%\chapter{Functional MRI Data and Brain Parcellation}
+%\input{intro.tex}
 
-\chapter{Energy Statistics}
-\input{energy_statistics.tex}
+%\chapter{Energy Statistics}
+%\input{energy_statistics.tex}
 
-\chapter{Criteria for Evaluating Parcellations}
-\input{criteria.tex}
+%\chapter{Criteria for Evaluating Parcellations}
+%\input{criteria.tex}
 
-\chapter{Local Search and Graph Growing Heuristics}
-\input{local_search.tex}
+%\chapter{Local Search and Graph Growing Heuristics}
+%\input{local_search.tex}
 
-\chapter{Spectral Methods}
-\input{spectral.tex}
+%\chapter{Spectral Methods}
+%\input{spectral.tex}
 
 \chapter{Symmetric Nonnegative Matrix Factorization}
 \input{factorization.tex}
