@@ -42,14 +42,14 @@ partition.spectral.multiway = function(edges, k, laplacian = NULL,
     L = compute.laplacian(edges)
 
   cat('Computing eigenvectors\n')
-  eig = eigs_sym(L, n.eigen + 1, 'SM')
+  eig = eigs_sym(L, k + 1, 'SM')
 
-  V = eig$vectors[,(n.eigen+1):2]
+  V = eig$vectors[,(k+1):2]
   V = t(apply(V, 1, function(v) v / sqrt(sum(v * v))))
 
   ## cosine similarity k-means
   # initialize seed centroids
-  U = matrix(rnorm(n.eigen * n.eigen), nrow = n.eigen)
+  U = matrix(rnorm(k * k), nrow = k)
   U = apply(U, 2, function(u) u / sqrt(sum(u * u)))
   # k-means
   ITER = 10
@@ -60,7 +60,7 @@ partition.spectral.multiway = function(edges, k, laplacian = NULL,
   {
     cat(t, ' ')
     part = apply(V %*% U, 1, which.max)
-    for (k in 1:n.eigen)
+    for (k in 1:k)
     {
       idx = which(part == k)
       if (length(idx) > 1)
@@ -68,7 +68,7 @@ partition.spectral.multiway = function(edges, k, laplacian = NULL,
       else if (length(idx) == 1)
         U[,k] = V[idx,]
       else
-        U[,k] = rnorm(n.eigen)
+        U[,k] = rnorm(k)
     }
     U = apply(U, 2, function(u) u / sqrt(sum(u * u)))
     sim[t+1] = sum(apply(V %*% U, 1, max))

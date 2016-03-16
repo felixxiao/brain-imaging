@@ -17,6 +17,24 @@ convert.adjList2edgeMat = function(adj.list, duplicates = F)
 }
 
 # Arguments
+#   part  : factor, partitioning assignments of graph A vertices
+#   map   : integer, maps vertices from graph A to graph B
+#   N     : numeric(1), number of vertices in graph B
+# Return
+#   factor(N), with partitioning assignments in A mapped to B vertices
+#     and NA values for B vertices with no corresponding A vertices
+preprocess.map_partition = function(part, map, N)
+{
+  assert_that(length(part) == length(map))
+  assert_that(length(part) <= N)
+  
+  part.map = factor(rep(NA, times = N), levels = 1:(nlevels(part) + 1))
+  part.map[map] = part
+  part[is.na(part)] = nlevels(part) + 1
+  part.map
+}
+
+# Arguments
 #   edge.mat  : matrix, each row contains the indices of two vertices
 #               joined in an edge
 #   map       : numeric, vertex index --> new index (positive integer)
