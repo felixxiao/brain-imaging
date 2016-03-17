@@ -224,3 +224,15 @@ criterion.boundary_pairwise_ecor = function(edges, parcel, verbose = F)
   list(mean = boundary.mean, var = boundary.var, n = boundary.n,
        total.mean = total.mean)
 }
+
+# type can be 'ratio', 'normalized'
+#   if left unspecified,  
+criterion.cut_weight = function(edges, part, type = '')
+{
+  L = compute.laplacian(edges)
+
+  X = convert.factor.assignment_mat(part, ratioed = type == 'ratio')
+
+  matrix.trace(as.matrix(t(X) %*% L %*% X))
+}
+
