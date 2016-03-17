@@ -1,6 +1,6 @@
 #plot slices of the 3d cube
 plot.partition2D <- function(partition, templateMRI, mask, filename,
-  num.slices = 12, view = "sagittal") {
+  num.slices = 12, view = "sagittal", height = 4, width = 6) {
   assert_that(length(dim(templateMRI)) == 3)
   assert_that(length(partition) == length(mask))
   assert_that(length(partition) <= prod(dim(templateMRI)))
@@ -26,7 +26,7 @@ plot.partition2D <- function(partition, templateMRI, mask, filename,
 
   png(file = paste0(PATH_SAVE, "partition_", filename, "_" ,
    view, "_", DATE, ".png"), 
-   height = 4, width = 6, units = "in", res = 600)
+   height = height, width = width, units = "in", res = 600)
 
   par(mfrow = c(res$num.row, res$num.col), mar = rep(0.2, 4), bg = "black")
 

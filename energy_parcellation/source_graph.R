@@ -106,7 +106,8 @@ construct.graph <- function(data, adj.list, edges = NULL,
 
   #number of vertices
   n = max(edges$edge.mat)
-  g.base = .construct.graphBase(data, edges$edge.mat, n)
+  zero.voxels = which(apply(data, 2, function(x){sum(abs(x))}) == 0) 
+  g.base = .construct.graphBase(zero.voxel, edges$edge.mat, n)
 
   #for each voxel, add the largest associated edge
   #g.base = add.initalEdges(g.base, data, edges) 
@@ -146,16 +147,14 @@ construct.graph <- function(data, adj.list, edges = NULL,
 }
 
 
-.construct.graphBase <- function(data, edge.mat, n, verbose = FALSE){
+.construct.graphBase <- function(zero.voxels, edge.mat, n, verbose = FALSE){
   assert_that(is.numeric(n) & length(n) == 1)
   assert_that(is.matrix(edge.mat) & is.numeric(edge.mat))#initialize the graph
-  assert_that(is.matrix(data) & is.numeric(data))
-
+ 
   #initialize the graph
   g = graph.empty(n, directed = F)
   
   #determine which columns are all 0
-  zero.voxels = which(apply(data, 2, function(x){sum(abs(x))}) == 0)
   iter = 1
 
   #do this recursively: find all edge-pairs such that one edge
@@ -167,14 +166,29 @@ construct.graph <- function(data, adj.list, edges = NULL,
 
     #find voxels between nonzero and zero
     sum.mat = apply(bool.mat, 1, sum)
-    boundary.voxels = which(sum.mat == 1)  
+    boundary.edgeidx = which(sum.mat == 1)  
+
+    #now for the annoying part: you want to make sure you don't add
+    # the same zero.voxel in twice
+    boundary.edge = edge.mat[boundary.edgeidx,]
+    idx = which(boundary.edge %in% zero.voxels)
+    accounted.voxels = boundary.edge[idx]
+    duplicated.zerovoxels = duplicated(accounted.voxels)
+    #if(sum(duplicated.zerovoxels) > 0) {
+      idx = idx[-which(duplicated.zerovoxels == TRUE)]
+    #}
+ 
+    #now remove the duplicated zero.voxels
+    idx = idx %% nrow(boundary.edge)
+    idx[idx == 0] = nrow(boundary.edge)
+    boundary.edge = boundary.edge[idx,]
 
     #add edges to g
-    g = add.edges(g, t(edge.mat[boundary.voxels,]))
+    g = add.edges(g, t(boundary.edge))
 
     #mark zero edges as nonzero
     zero.voxels = zero.voxels[!zero.voxels %in% 
-     unique(as.vector(edge.mat[boundary.voxels,]))]
+     unique(as.vector(boundary.edge))]
 
     #remove extra edges
     edge.mat = edge.mat[-which(sum.mat == 0),, drop = FALSE]
