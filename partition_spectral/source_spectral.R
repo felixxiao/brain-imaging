@@ -2,6 +2,8 @@
 
 compute.adjacency = function(edges)
 {
+  .validate.edges(edges)
+  
   V = sort(unique(as.numeric(edges$edge.mat)))
   n = length(V)
 
