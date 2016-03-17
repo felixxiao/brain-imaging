@@ -58,6 +58,21 @@ convert.mask.template = function(mask, dimen)
   template
 }
 
+convert.factor.assignment_mat = function(f, ratioed = F)
+{
+  k = nlevels(f)
+  X = t(sapply(f, function(j) {
+    x = integer(k)
+    x[as.integer(j)] = 1
+    x
+  }, simplify = 'array'))
+
+  if (ratioed)
+    X = apply(X, 2, function(x) x / sqrt(sum(x)))
+
+  X
+}
+
 compress.data = function(array.4d, mask, factor = 2, verbose = T)
 {
   dimen = dim(array.4d)[1:3]
@@ -95,6 +110,25 @@ compress.data = function(array.4d, mask, factor = 2, verbose = T)
 {
   assert_that(class(array.4d) == 'array')
   assert_that(length(dim(array.4d)) == 4)
+}
+
+.validate.edges = function(edges)
+{
+  mat = edges$edge.mat
+  assert_that(all(mat[,1] < mat[,2]))
+  assert_that(nrow(mat) == length(edges$energy.vec))
+}
+
+preprocess.validate.edges = function(edges)
+{
+  edges$edge.mat = t(apply(edges$edge.mat, 1, range))
+
+  dup = duplicated(edges$edge.mat, MARGIN = 1)
+
+  edges$edge.mat = edges$edge.mat[! dup,]
+  edges$energy.vec = edges$energy.vec[! dup]
+
+  edges
 }
 
 # given the MNI standard template, find out all the neighbors
