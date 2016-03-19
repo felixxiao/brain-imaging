@@ -236,3 +236,28 @@ criterion.cut_weight = function(edges, part, type = '')
   matrix.trace(as.matrix(t(X) %*% L %*% X))
 }
 
+criterion.balance = function(part)
+{
+  sizes = as.vector(table(part))
+  k = length(sizes)
+  max.size = max(sizes)
+  sizes = matrix(sizes, k, k)
+  sizes = abs(sizes - t(sizes))
+
+  1 - mean(sizes[upper.tri(sizes)]) / max.size
+}
+
+criterion.surface_volume_ratio = function(edges, part, detailed = F)
+{
+  surface = criterion.boundary_pairwise_ecor(edges, part)$n
+  surface = colSums(surface, na.rm = T)
+  volume = as.vector(table(part))
+  ratio = (surface)^(3/2) / volume
+  if (detailed) return(ratio)
+  mean(ratio)
+}
+
+criterion.adj_rand_similarity = function(part1, part2)
+{
+
+}
