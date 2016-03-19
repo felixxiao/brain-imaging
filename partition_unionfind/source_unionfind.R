@@ -88,11 +88,11 @@ UnionFind = R6Class('UnionFind',
 # Return
 #   a factor indicating the component number of each vertex
 partition.addedge.uf = function(edges,
-                                max.size = 15000,
-                                min.size = 1000,
-                                min.components = 1,
+                                max.size = 5000,
+                                min.size = 100,
+                                min.components = 116,
                                 return.uf = F,
-                                save.path,
+                                save.path = NULL,
                                 verbose = T)
 {
   assert_that(max.size > min.size)
@@ -117,7 +117,7 @@ partition.addedge.uf = function(edges,
       j = edges$edge.mat[e, 2]
       sizeI = uf$component_size(i)
       sizeJ = uf$component_size(j)
-      if (! connected(i, j) & 
+      if (! uf$connected(i, j) & 
            ( (sizeI < min.size | sizeJ < min.size) |
              (sizeI + sizeJ <= max.size) ) )
       {
@@ -129,9 +129,10 @@ partition.addedge.uf = function(edges,
     if (n.components == min.components) break
   }
   
+  if (verbose) cat('Flattening\n')
   uf$flatten()
 
-  if (! missing(save.path))
+  if (! is.null(save.path))
     save(uf, file = paste0(save.path,
                            'edge_connect_',
                            min.size, '_',

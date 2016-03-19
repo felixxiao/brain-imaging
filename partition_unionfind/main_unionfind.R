@@ -1,35 +1,32 @@
-setwd('~/GitHub/union_find')
-source('header_unionfind.R')
+source('partition_unionfind/header_unionfind.R')
 
-load(paste0(PATH_DATA, 'edges_2016-01-14.RData'))
+load(paste0(PATH_DATA, 'results/edges_ABIDE50002_nz.RData'))
 
-part1 = partition.addedge.uf(edges, max.size = 15000, min.size = 1000, PATH_SAVE)
-#load(paste0(PATH_DATA, 'edge_connect_1000_15000_2016-01-19.RData'))
-table(part1)
+uf1 = partition.addedge.uf(edges_nz, max.size = 5000, min.size = 100,
+                           min.components = 116, return.uf = T)
+part.uf = uf1$get_parcels()
+plot(as.vector(table(part.uf)),
+     criterion.adjacent_pairwise_ecor(edges_nz, part.uf)$mean)
+as.vector(table(part.uf))
+i = which(part.uf == 1)
 
-part2 = partition.addedge.uf(edges, max.size = 10000, min.size = 1000, PATH_SAVE)
-table(part2)
+edges_nz = preprocess.validate.edges(edges_nz)
+get.edges(edges_nz, i[2], NULL)
 
-part3 = partition.addedge.uf(edges, max.size = 7500, min.size = 1000, PATH_SAVE)
-table(part3)
+get.edges = function(edges, v, w, summary.func = NULL)
+{
+  .validate.edges(edges)
+  if (! is.null(w))
+  {
+    assert_that(v < w)
+    e = (edges$edge.mat[,1] == v & edges$edge.mat[,2] == w)
+  }
+  else
+  {
+    e = (edges$edge.mat[,1] == v | edges$edge.mat[,2] == v)
+  }
+  if (is.null(summary.func))
+    return(edges$energy.vec[e])
+  summary.func(edges$energy.vec[e])
+}
 
-
-setwd('~/GitHub/parcel_criteria')
-source('header_criteria.R')
-load(paste0(PATH_DATA, 'ABIDE_50002_matrix_2015-12-07.RData'))
-#load(paste0(PATH_DATA, 'template_2015-12-07.RData'))
-
-crit1 = list()
-crit2 = list()
-crit3 = list()
-
-crit1$within = criterion.within_pairwise_ecor(dat$dat, part1)
-crit1$between = criterion.between_pairwise_ecor(dat$dat, part1)
-
-crit2$within = criterion.within_pairwise_ecor(dat$dat, part2)
-crit2$between = criterion.between_pairwise_ecor(dat$dat, part2)
-
-crit3$within = criterion.within_pairwise_ecor(dat$dat, part3)
-
-# compute confidence interval
-object_size(crit1)
