@@ -18,10 +18,10 @@ chapter.
 
 The first and simplest algorithm starts with an empty graph of $N$
 vertices and sequentially adds edges between adjacent voxels in order of
-highest sample distance correlation, until the graph has some pre-
-specified number of connected components $K$.
+highest sample distance correlation, until the graph has some
+prespecified number of connected components $K$.
 
-We will refer to this algorithm as \"Unconstrained Add-Edge\". A naive
+We will refer to this algorithm as ``Unconstrained Add-Edge''. A naive
 implementation of would re-compute the number of connected components in
 the graph (using linear-time bread-first or depth-first search) after
 each addition of an edge, resulting in a costly $O(EN)$ time complexity.
@@ -44,7 +44,7 @@ end
 \end{verbatim}
 
 Another implementation uses a binary search-type strategy and is
-$O((N + E) \log E)$. The idea is to \"search\" for the last edge to add
+$O((N + E) \log E)$. The idea is to ``search'' for the last edge to add
 to the graph by maintaining a range of possible last edges. In each
 iteration, the algorithm would add to the graph edges 1 to the midpoint
 of this range, compute the number of connected components, and adjust
@@ -228,15 +228,69 @@ Coronal
 
 Sagittal
 \end{center}
-\section{Edge Contraction}
+\section{The Contractible Graph Data Structure and
+Edge-Contraction Algorithm}
 
+We propose a new data structure called the \textit{Contractible Graph}
+(CG) for brain parcellation. The rationale behind the CG is a heuristic
+procedure for partitioning a graph into somewhat balanced components
+so as to minimize the Boundary-Score (\ref{boundary_score}) or maximize
+the Adjacency-Score (\ref{adjacency_score}).
+
+The CG is a mapping of the vertices of the original graph to the
+vertices of a new graph. The vertices of the CG are called
+\textit{components} and between any two components there exists exactly
+one weighted edge, henceforth called a \textit{link}. The weight
+of a link $w(A,B)$ between two components $A$ and $B$ in the CG equals
+the average weight of all edges in the original graph between vertices
+mapped to $A$ and vertices mapped to $B$. If no such edges exist,
+the weight of the link is $0$. Formally,
+
+\[ E(A,B) = \{(i, j) \in E : i \in A, j \in B\} \]
+\[ w(A,B) = \begin{cases}
+    \frac{1}{|E(A,B)|} \sum_{(i,j) \in E(A,B)} w_{ij} &
+        \text{if } |E(A,B)| > 0 \\
+    0 & \text{otherwise}
+\end{cases} \]
+
+\includegraphics[scale = 0.5]{4_contractible_graph}
+
+The \textit{size} of a component is the number of vertices it contains.
+A \textit{contraction} of a link $(A,B)$ in a CG replaces components
+$A$ and $B$ with a new component (call it $C$) containing all vertices
+mapped to $A$ or $B$, as illustrated in the figure above.
+Component $C$ has one link to every other component in the CG, whose
+weights are the mean of the weights of the corresponding vertex edges,
+or $0$ if no edge exists. Thus the contraction operation maintains the
+link-invariant property of CG. This leads to the Edge-Contraction
+algorithm, which begins with the original graph with all vertices as
+singleton components and contracts edges in a certain order until the
+graph has only $k$ components in all.
+
+\begin{algorithm}
+\caption{Edge-Contraction}
+\begin{algorithmic}
+\State \textbf{Input:} Undirected positive-weighted graph $G$ and
+       target component number $k$
+\State Create a CG from $G$ so that every vertex maps to
+       a unique component
+\Repeat
+\State $\mathcal{S} \gets$ smallest component(s) in the CG
+\State $(A,B) \gets \argmax{A \in \mathcal{S}} w(A,B)$
+\State Contract $(A,B)$
+\Until{CG has $k$ components}
+\State \textbf{Output:} Components of CG
+\end{algorithmic}
+\end{algorithm}
+
+Why does Edge-Contraction work better than the previous algorithms?
 The Edge-Contraction algorithm attempts to address two problems of
 the Size-Constrained Add-Edge algorithm: poor Adjacent-Score relative
 to randomized graph and unbalanced parcels. We hypothesized that one
 reason for a relatively low Adjacent-Score might be the following
 scenario: when a vertex is added to a component, it might have multiple
 edges to that component. One edge might have a very high weight; this is
-the one that is officially \"added\". However, the other edges with far
+the one that is officially ``added''. However, the other edges with far
 lower weights are implicitly added as well, lowering the average edge
 weights within the component.
 
@@ -245,31 +299,112 @@ there can be at most one edge between any two components A and B, and
 further that the weight on such an edge is the mean of the weights on
 all edges that connect a vertex in A with a vertex in B.
 
-The graph starts out with $N$ components, each a single vertex. In every
-iteration
+\subsection{Implementation using Multi-Edge Adjacency List and
+Priority Queue}
 
-\begin{enumerate}[1.]
+The adjacency list is the most common implementation choice for sparse
+graphs and it lists, for each node in the graph, the nodes connected to
+it by an edge and the weight of that edge.
+
+In a Contractible Graph, the weight of the link between two components
+$A$ and $B$ depends on all edges between vertices in $A$ and vertices in
+$B$. Therefore our implementation of the CG data structure uses an
+extended variant of the adjacency list that allows for multiple edges
+between two nodes.
+
+The Multi-Edge Adjacency List associates every \textit{pair} of
+components connected by a non-zero link to the set of edges that
+comprise that link. In \textbf{R}, this is achieved by a list of lists.
+
+\includegraphics[scale = 0.5]{4_cg_implement}
+
+Implementing the contraction of components $B$ and $C$ into a new
+component $D$ on this list of lists requires the following steps:
+
+\begin{enumerate}
 \item
-The smallest component with the largest edge to another component is
-selected.
+Compute $\mathcal{X}$, the set of all components that either $B$ or $C$
+is linked to.
 
 \item
-This largest edge is contracted, fusing two adjacent components to form
-a larger-sized component.
+Create a new element in the outer list, $D$, and associate it with an
+empty inner list.
 
 \item
-For all components adjacent to the fused component, all edges connecting
-them to the fused component are averaged into a single edge.
+For each component $X \in \mathcal{X}$,
+\begin{itemize}
+\item
+Find $E(X)$, the weights of the set of all edges connecting $X$ to $B$
+and $X$ to $C$.
+
+\item
+Delete elements $B$ and $C$ from the inner list of $X$. Add a new element
+$D$ and map it to $E(X)$.
+
+\item
+In the inner list of $D$, add a new element $X$ and map it to $E(X)$.
+\end{itemize}
+
+\item
+Delete $B$ and $C$ from the outer list.
 \end{enumerate}
 
-In short, the Edge-Contraction algorithm is a greedy heuristic that
-attempts to achieve the two objectives of balancing component size
-and maximizing the average edge weight within each component.
+Incidentally, we note that it is also possible to implement the average
+edge property of the CG without the Multi-Edge Adjacency List, by
+recording for each pair of components, the \textit{sum} of edge weights
+and the number of edges rather than a set of all original edge weights.
+This allows for a more space and time efficient implementation, but this
+simplification was unfortunately overlooked in the first implementation
+of Edge-Contract.
 
-\subsection{Implementation using Augmented Adjacency List}
+Having described the contraction step, we will next discuss how to
+efficiently locate the link to be contracted.
+In computer science, a \textit{Priority Queue} data type is a set of
+ordered (in the sense that for any two objects one has greater or equal
+priority to the other) objects that supports the following operations:
 
+\begin{itemize}
+\item
+\textit{add(obj)}: Adds an object to the set.
 
-\subsection{Optimal Number of Components}
+\item
+\textit{remove\_minimum()}: Removes and returns an object with the
+smallest priority in the set.
+\end{itemize}
+
+Using the heap data structure, the above two operations both run in
+$O(\log n)$ time.
+
+Each component on the CG will be associated with an element of the
+priority queue. The priority of component $A$ is defined as
+\[ |A| - \max\;w(A) \]
+where $w(A)$ is the set of weights of links between $A$ and any other
+component. Since our graph edge weights are all between 0 and 1,
+the smallest priority element in the queue is the first to undergo
+contraction in our algorithm, provided the max link weight is up-to-date.
+
+If components $A$ and $B$ are contracted, and there is a component $C$
+with positive links to both $A$ and $B$, then the $C-A$ and $C-B$ links
+will be replaced by a $C-(AB)$ link with a different weight. If either
+$C-A$ or $C-B$ links happened to be the maximum-weighted links of $C$,
+then $C$'s position on the priority queue may no longer be accurate, and
+its true position may be further down the queue.
+
+To address this issue, the max weight link of the minimum priority
+component must be re-computed when the element is removed from the queue.
+If the component's actual priority is not the minimum, then it is
+re-inserted into the queue with updated priority.
+Additionally, the minimum priority component may no longer exist in the
+CG due to contraction with another component. In this case it is simply
+discarded.
+
+Without using an efficient priority queue, the linear searching method
+of finding the next link to contract results in a $O\big(n (n-k)\big)$
+time algorithm. Using the priority queue the time complexity of
+Edge-Contraction is $O \big((n - k) (m + \log n)\big)$, where $m$ is
+the average number of positve links a component has.
+
+\subsection{Results and Optimal Number of Components}
 
 The Edge-Contraction algorithm has the benefit of requiring only one
 parameter, the target component number. We assessed the validity of EC
