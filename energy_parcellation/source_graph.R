@@ -17,6 +17,26 @@ convert.adjList2edgeMat = function(adj.list, duplicates = F)
 }
 
 # Arguments
+#   map   : integer, maps non-zero graph vertices to original graph
+#   edges : original graph with unmapped vertices
+#   N     : size of original graph
+#   partition : factor, partitioning of non-zero graph
+# Return
+#   factor, partition of original graph
+preprocess.assign_unmapped_vertices = function(map, edges, N, partition)
+{
+  g = .construct.graphBase((1:N)[-map], edges$edge.mat, N)
+  part.list = split(1:length(partition), partition)
+  for (p in part.list)
+  {
+    if (length(p) == 1) next
+    group = as.vector(rbind(p[-1], p[-length(p)]))
+    g = add.edges(g, map[group])
+  }
+  as.factor(components(g)$membership)
+}
+
+# Arguments
 #   part  : factor, partitioning assignments of graph A vertices
 #   map   : integer, maps vertices from graph A to graph B
 #   N     : numeric(1), number of vertices in graph B
