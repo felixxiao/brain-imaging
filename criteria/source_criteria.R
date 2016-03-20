@@ -167,12 +167,15 @@ criterion.adjacent_pairwise_ecor = function(edges, parcel)
   names(adjacent.mean) = levels(parcel)
   adjacent.var  = adjacent.mean
 
-  parcels1 = parcel[edges$edge.mat[,1]]
-  parcels2 = parcel[edges$edge.mat[,2]]
+  # list, for each component, the indices of the edges for which the
+  #   1st node is in that component
+  parcels1 = split(1:nrow(edges$edge.mat), parcel[edges$edge.mat[,1]])
+  # ditto for 2nd node
+  parcels2 = split(1:nrow(edges$edge.mat), parcel[edges$edge.mat[,2]])
 
   for (p in levels(parcel))
   {
-    ecor = edges$energy.vec[parcels1 == p & parcels2 == p]
+    ecor = edges$energy.vec[intersect(parcels1[[p]], parcels2[[p]])]
 
     adjacent.mean[p] = mean(ecor)
     adjacent.var[p] = var(ecor)
@@ -182,24 +185,30 @@ criterion.adjacent_pairwise_ecor = function(edges, parcel)
        total.mean = mean(adjacent.mean, na.rm = T))
 }
 
-criterion.boundary_pairwise_ecor = function(edges, parcel)
+criterion.boundary_pairwise_ecor = function(edges, parcel, verbose = F)
 {
+  levels(parcel) = 1:nlevels(parcel)
   boundary.mean = matrix(NA, nrow = nlevels(parcel), ncol = nlevels(parcel),
                          dimnames = list(levels(parcel), levels(parcel)))
   boundary.var  = boundary.mean
   boundary.n    = boundary.mean
   boundary.n[]  = 0
 
-  parcels1 = parcel[edges$edge.mat[,1]]
-  parcels2 = parcel[edges$edge.mat[,2]]
+  # list, for each component, the indices of the edges for which the
+  #   1st node is in that component
+  parcels1 = split(1:nrow(edges$edge.mat), parcel[edges$edge.mat[,1]])
+  # ditto for 2nd node
+  parcels2 = split(1:nrow(edges$edge.mat), parcel[edges$edge.mat[,2]])
 
   component_pairs = combn(levels(parcel), 2)
   for (pair in 1:ncol(component_pairs))
   {
     comp1 = component_pairs[1, pair]
     comp2 = component_pairs[2, pair]
+    if (verbose) cat('(', comp1, ', ', comp2, ')')
 
-    ecor = edges$energy.vec[parcels1 == comp1 & parcels2 == comp2]
+    ecor = edges$energy.vec[c(intersect(parcels1[[comp1]], parcels2[[comp2]]),
+                              intersect(parcels2[[comp1]], parcels2[[comp2]]))]
 
     if (length(ecor) > 0)
     {
@@ -214,4 +223,41 @@ criterion.boundary_pairwise_ecor = function(edges, parcel)
 
   list(mean = boundary.mean, var = boundary.var, n = boundary.n,
        total.mean = total.mean)
+}
+
+# type can be 'ratio', 'normalized'
+#   if left unspecified,  
+criterion.cut_weight = function(edges, part, type = '')
+{
+  L = compute.laplacian(edges)
+
+  X = convert.factor.assignment_mat(part, ratioed = type == 'ratio')
+
+  matrix.trace(as.matrix(t(X) %*% L %*% X))
+}
+
+criterion.balance = function(part)
+{
+  sizes = as.vector(table(part))
+  k = length(sizes)
+  max.size = max(sizes)
+  sizes = matrix(sizes, k, k)
+  sizes = abs(sizes - t(sizes))
+
+  1 - mean(sizes[upper.tri(sizes)]) / max.size
+}
+
+criterion.surface_volume_ratio = function(edges, part, detailed = F)
+{
+  surface = criterion.boundary_pairwise_ecor(edges, part)$n
+  surface = colSums(surface, na.rm = T)
+  volume = as.vector(table(part))
+  ratio = (surface)^(3/2) / volume
+  if (detailed) return(ratio)
+  mean(ratio)
+}
+
+criterion.adj_rand_similarity = function(part1, part2)
+{
+
 }

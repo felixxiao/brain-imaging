@@ -48,3 +48,31 @@ criteria.rand$between  = criterion.between_pairwise_ecor(dat$dat, parcel.rand, s
 criteria.rand$adjacent = criterion.adjacent_pairwise_ecor(edges, parcel.rand)
 criteria.rand$boundary = criterion.boundary_pairwise_ecor(edges, parcel.rand)
 save(list = ls(), paste0(PATH_SAVE, 'parcel_addedge_eval_', DATE, '.RData'))
+
+#load(paste0(PATH_DATA, 'parcel_addedge_eval_2016-01-23.RData'))
+
+sink('writeup/3_constrained_addedge.txt')
+for (i in 1:length(criteria))
+{
+  cat(sprintf('%5d', size[i, c('min', 'max')]), sep = ' & ')
+  cat(' & ')
+  crit = sapply(c('within', 'adjacent', 'between', 'boundary'),
+                function(x) criteria[[i]][[x]]$total.mean)
+  crit = sprintf('%.3f', crit)
+  cat(crit, sep = ' & ')
+  cat('\\\\ \n')
+}
+cat('\\hline\n')
+cat('& Random &')
+cat(sprintf('%.3f', sapply(c('within', 'adjacent', 'between', 'boundary'),
+                           function(x) criteria.rand[[x]]$total.mean)),
+    sep = ' & ')
+cat('\n')
+sink()
+
+load(paste0(PATH_DATA, 'template_2015-12-07.RData'))
+source('plotter/header_plotter.R')
+MNI = load.nifti(paste0(PATH_DATA, 'MNI152_T1_2mm_brain_symmetric.nii.gz'))
+
+plot.partition2D(parcel[[3]], MNI, template$mask,
+                 'sc_addedge_1000_7500', view = VIEWS[3])

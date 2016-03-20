@@ -1,3 +1,5 @@
+# TODO: add comments
+
 ContractibleGraph = R6Class('ContractibleGraph',
   public = list(
     # list, for each component, the vertices that constitute it
@@ -59,6 +61,23 @@ ContractibleGraph = R6Class('ContractibleGraph',
       length(self$vertices[[c]])
     },
     
+    get_adjacency_matrix = function()
+    {
+    	comp = names(self$vertices)
+    	n = length(comp)
+
+      map = 1:n
+      names(map) = comp
+
+      A = matrix(0, nrow = n, ncol = n)
+      for (c in 1:n)
+      {
+        edges = self$get_edges(comp[c])
+        A[c, map[names(edges)]] = edges
+      }
+      A
+    },
+
     contract_components = function(comp1, comp2)
     {
       a = as.character(comp1)

@@ -1,10 +1,5 @@
-suppressPackageStartupMessages(library(igraph))
-suppressPackageStartupMessages(library(energy))
-suppressPackageStartupMessages(library(testthat))
-suppressPackageStartupMessages(library(assertthat))
-suppressPackageStartupMessages(library(plyr))
+source('header_global.R')
 
-PATH_DATA = 'C:/Users/Felix/Dropbox/Felix_Kevin_Han-seniorthesis2015-16/data/'
-PATH_SAVE = PATH_DATA
+load.library(c('igraph', 'energy', 'testthat', 'assertthat', 'plyr'))
 
-source('energy_parcellation/source_graph.R')
+load.source()

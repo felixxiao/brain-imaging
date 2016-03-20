@@ -1,7 +1,6 @@
 source('header_global.R')
 
-load.library(c('oro.nifti', 'plyr'))
+load.library(c('R6'))
 
 load.source()
-
 

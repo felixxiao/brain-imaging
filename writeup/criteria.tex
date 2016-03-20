@@ -11,12 +11,24 @@ energy distance correlation statistics between the adjacent voxels in
 the time series and they measure statistical dependence between the
 voxels. Let $G(V, E)$ denote this graph, its vertices, and its edges.
 
-In this context, a $k$-fold partition of the graph is a collection of
-$k$ disjoint vertex subsets (called parcels) $P_1, ..., P_k \subset V$
-satisfying $P_1 \cup ... \cup P_k = V$. We impose the additional
-requirement that each parcel is a connected component; i.e. that there
-exists a path between any pair of vertices in a parcel. For this reason
-we'll use the terms parcel and component interchangeably.
+In this context, a valid $k$-fold partition $\mathcal{P}_k$ of the
+graph $G$ is a collection of vertex subsets $(V_1, ..., V_k)$
+satisfying the following:
+
+\begin{enumerate}[1.]
+\item
+$V_i \neq \emptyset$ for all $V_i \in \mathcal{P}_k$
+
+\item
+$\bigcup\limits_{i=1}^k V_i = V$
+
+\item
+$V_i \cap V_j = \emptyset$ for all $V_i, V_j \in \mathcal{P}_k$
+
+\item
+$V_i$ is connected (i.e. for every two vertices in $V_i$, there is a
+path between them) for all $V_i \in \mathcal{P}_k$
+\end{enumerate}
 
 In this chapter we will suggest various criteria for measuring the
 goodness-of-fit of partitions. We will argue why these criteria are
@@ -31,13 +43,14 @@ correlation between two random vectors equals zero if and only if the
 two random vectors are independent, which is not true of correlation
 statistics such as Pearson's.
 
-Let $\mathcal{R}(X,Y)$ denote the distance correlation between two
-voxels $X$ and $Y$. Let $\mathcal{P} = \{P_1, ..., P_k\}$ be a $k$-fold partition. We define the following criterion
+Let $\mathcal{R}(x,y)$ denote the distance correlation between two
+voxels $x$ and $y$.
+Let $V$ and $W$ be any parcels. We will use $E_V$ to denote the set of edges with one end in $V$ and one end not in $V$, and $E_{V,W}$ the set
+of edges with one end in $V$ and one in $W$.
 
-\begin{definition} \label{within-score}
-Within-Score.
-\[ \frac{1}{k} \sum_{P \in \mathcal{P}}
-   \frac{1}{|P|^2} \sum_{X,Y \in P} \mathcal{R}(X,Y)
+\begin{definition}[Within-Score] \label{within-score}
+\[ \frac{1}{k} \sum_{V \in \mathcal{P}_k}
+   \frac{1}{|V|^2} \sum_{x,y \in V} \mathcal{R}(x,y)
 \]
 \end{definition}
 
@@ -58,13 +71,11 @@ series and then compute the Within-Score.
 
 An alternative and far less expensive criterion that measures within-
 parcel similarity works by counting distance correlations between
-adjacent pairs of voxels. For some parcel $P$ let
-$E_P = \{ (i,j) \in E : i \in P \text{ and } j \in P \}$.
+adjacent pairs of voxels.
 
-\begin{definition} \label{adjacent-score}
-Adjacent-Score.
-\[ \frac{1}{k} \sum_{P \in \mathcal{P}}
-   \frac{1}{|E_P|} \sum_{(X,Y) \in E_P} \mathcal{R}(X,Y)
+\begin{definition}[Adjacent-Score] \label{adjacent-score}
+\[ \frac{1}{k} \sum_{V \in \mathcal{P}_k}
+   \frac{1}{|E_{V,V}|} \sum_{(x,y) \in E_{V,V}} \mathcal{R}(x,y)
 \]
 \end{definition}
 
@@ -83,21 +94,44 @@ To evaluate parcellation quality, it is also useful to measure how
 dependent voxels belonging to different parcels are on each other. To
 this end we define two criterion similar to the Within-Parcel criterion;
 a non-spatial metric called the Between-Score and a spatial metric
-called the Boundary-Score. For two different parcels $P$ and $P'$, let
-$E_{P,P'} = \{ (i,j) \in E : i \in P \text{ and } j \in P' \}$.
+called the Boundary-Score.
 
-\begin{definition} \label{between-score}
-Between-Score.
-\[ \frac{2}{|\mathcal{P}|(|\mathcal{P}| - 1)}
-     \sum_{P, P' \in \mathcal{P} \\ P \neq P'}
-   \frac{1}{|P| |P'|} \sum_{X \in P \\ Y \in P'} \mathcal{R}(X,Y)
+\begin{definition}[Between-Score] \label{between-score}
+\[ \frac{1}{\binom{k}{2}} \sum_{V, W \in \mathcal{P}_k, V \neq W}
+   \frac{1}{|V||W|} \sum_{x \in V, y \in W} \mathcal{R}(x,y)
 \]
 \end{definition}
 
-\begin{definition} \label{boundary-score}
-Boundary-Score.
-\[ \frac{2}{|\mathcal{P}|(|\mathcal{P}| - 1)}
-     \sum_{P, P' \in \mathcal{P} \\ P \neq P'}
-   \frac{1}{|E_{P,P'}|} \sum_{(X,Y) \in E_{P,P'}} \mathcal{R}(X,Y)
+\begin{definition}[Boundary-Score] \label{boundary-score}
+\[ \frac{1}{\binom{k}{2}} \sum_{V, W \in \mathcal{P}_k, V \neq W}
+   \frac{1}{|V||W|} \sum_{(x,y) \in E_{V,W}} \mathcal{R}(x,y)
 \]
 \end{definition}
+
+For computational reasons, parcellation algorithms will be evaluated
+primarily using the spatial Adjacency- and Boundary- scores.
+
+\section{Graph Cuts}
+
+Closely related to the Boundary-Score is the notion of a graph cut.
+
+\section{Balance and Compactness}
+
+\begin{definition}[Balance-Score] \label{balance-score}
+\[ 1 - \frac{1}{\binom{k}{2}} \frac{1}{\max_{V \in P_k} |V|}
+   \sum_{V,W \in P_k : V \neq W} \big| |V| - |W| \big| \]
+\end{definition}
+
+The Balance-Score ranges from 1 (all equally sized parcels) to
+0 (two parcels with one of size zero).
+
+\begin{definition}[Compactness-Score] \label{compactness-score}
+\[ \frac{1}{k} \sum_{V \in \mathcal{P}_k} \frac{|E_V|^\frac{3}{2}}{|V|}
+\]
+\end{definition}
+
+The $\frac{3}{2}$ power makes the ratio invariant on parcel size.
+For instance, a $n \times n \times n$ cube of vertices would have
+a compactness of $6^{\frac{3}{2}}$.
+
+\section{Comparing Multiple Parcellations: Similarity}

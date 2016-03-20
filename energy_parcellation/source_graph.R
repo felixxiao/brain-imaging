@@ -17,18 +17,59 @@ convert.adjList2edgeMat = function(adj.list, duplicates = F)
 }
 
 # Arguments
+#   map   : integer, maps non-zero graph vertices to original graph
+#   edges : original graph with unmapped vertices
+#   N     : size of original graph
+#   partition : factor, partitioning of non-zero graph
+# Return
+#   factor, partition of original graph
+preprocess.assign_unmapped_vertices = function(map, edges, N, partition)
+{
+  g = .construct.graphBase((1:N)[-map], edges$edge.mat, N)
+  part.list = split(1:length(partition), partition)
+  for (p in part.list)
+  {
+    if (length(p) == 1) next
+    group = as.vector(rbind(p[-1], p[-length(p)]))
+    g = add.edges(g, map[group])
+  }
+  as.factor(components(g)$membership)
+}
+
+# Arguments
+#   part  : factor, partitioning assignments of graph A vertices
+#   map   : integer, maps vertices from graph A to graph B
+#   N     : numeric(1), number of vertices in graph B
+# Return
+#   factor(N), with partitioning assignments in A mapped to B vertices
+#     and NA values for B vertices with no corresponding A vertices
+preprocess.map_partition = function(part, map, N)
+{
+  assert_that(length(part) == length(map))
+  assert_that(length(part) <= N)
+  
+  part.map = factor(rep(NA, times = N), levels = 1:(nlevels(part) + 1))
+  part.map[map] = part
+  part[is.na(part)] = nlevels(part) + 1
+  part.map
+}
+
+# Arguments
 #   edge.mat  : matrix, each row contains the indices of two vertices
 #               joined in an edge
 #   map       : numeric, vertex index --> new index (positive integer)
 #   inverse   : logical(1), if TRUE, map new index back to original
 #   na.rm     : logical(1), if TRUE, any edge containing a vertex that
-#               did not map will be removed. If FALSE, edges will be left
-#               with NA vertices. Default TRUE.
+#               did not map will be removed. If FALSE, edges will be
+#               left with NA vertices. Default TRUE.
 # Return
 #   edge.mat copy with old vertices mapped to new ones
-preprocess.map_vertices = function(edge.mat, map, inverse = F, na.rm = T)
+preprocess.map_vertices = function(edge.mat, map, inverse = F,
+                                   na.rm = T)
 {
   assert_that(all(map > 0))
+  if (length(map) > max(edge.mat))
+    map = c(map, rep(NA, times = max(edge.mat) - length(map)))
   
   if (inverse)
   {
@@ -42,10 +83,13 @@ preprocess.map_vertices = function(edge.mat, map, inverse = F, na.rm = T)
                            warn_missing = F)
   edge.mat[,2] = mapvalues(edge.mat[,2], 1:length(map), map,
                            warn_missing = F)
-
+  if (na.rm)
+  {
+    na.edges = is.na(edge.mat[,1]) | is.na(edge.mat[,2])
+    return(edge.mat[! na.edges,])
+  }
   edge.mat
 }
-
 
 # Parameter
 #   data  : matrix of fMRI values with voxel columns
@@ -62,19 +106,21 @@ preprocess.remove_zero_vertices = function(data)
        map  = which(1:n.vertices %in% nonzero_vertices))
 }
 
-#compute the distance covariance for the edge weights
-compute.edgeWeights = function(data, adj.list, func = dcor, edge.mat = NULL,
-                               verbose = FALSE, save = TRUE) {
+# compute the distance covariance for the edge weights
+compute.edgeWeights = function(data, adj.list, func = dcor,
+                               edge.mat = NULL, verbose = T, save = F)
+{
   if (is.null(edge.mat))
     edge.mat = convert.adjList2edgeMat(adj.list)
 
   batch.len = ceiling(nrow(edge.mat)/10)
   vec = numeric(nrow(edge.mat))
 
-  #split edge computation into 10 batches
-  for(i in 1:10){
-    #form the indices we're going to work over
-    idx = ((i-1)*batch.len+1):(min(i*batch.len, nrow(edge.mat)))
+  # split edge computation into 10 batches
+  for (i in 1:10)
+  {
+    # form the indices we're going to work over
+    idx = ((i-1)*batch.len + 1):(min(i*batch.len, nrow(edge.mat)))
 
     vec[idx] = sapply(idx, function(x){
       func(data[,edge.mat[x,1]], data[,edge.mat[x,2]])
@@ -90,16 +136,44 @@ compute.edgeWeights = function(data, adj.list, func = dcor, edge.mat = NULL,
   edges
 }
 
+partition.addedge.unconstrained = function(edges, component.num)
+{
+  edge.mat = edges$edge.mat
+  weights = edges$energy.vec
+  assert_that(nrow(edge.mat) == length(weights))
+  assert_that(! any(is.na(edge.mat)) & ! any(is.na(weights)))
+
+  edge.mat = edge.mat[order(weights, decreasing = T),]
+
+  n = max(edge.mat)
+  g = graph.empty(n, directed = F)
+  n.comp = n
+  i = 1
+  while (n.comp > component.num)
+  {
+    edges = edge.mat[i:(i + n.comp - component.num - 1),]
+    g = add_edges(g, t(edges))
+    i = i + n.comp - component.num
+    n.comp = components(g)$no
+    assert_that(n.comp >= component.num)
+    cat(n.comp, ' components\n')
+  }
+
+  as.factor(components(g)$membership)
+}
+
 # construct a graph by adding edges in descending order of
 #   energy dist. stop at specified number of connected components
 # data and adj.list are ignored if edges are given
 construct.graph <- function(data, adj.list, edges = NULL,
                             component.num = 20,
                             verbose = TRUE, save = TRUE) {
-  assert_that(is.numeric(data) & is.matrix(data))
-  assert_that(is.list(adj.list))
-
-  if(is.null(edges)) {
+  if (is.null(edges))
+  {
+    cat('Edges are null\n')
+    assert_that(is.numeric(data) & is.matrix(data))
+    assert_that(is.list(adj.list))
+    
     edges = compute.edgeWeights(data, adj.list, dcor, save = save)
     if(verbose) cat("Edges done computing.")
   }
