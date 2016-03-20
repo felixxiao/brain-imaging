@@ -225,6 +225,29 @@ criterion.boundary_pairwise_ecor = function(edges, parcel, verbose = F)
        total.mean = total.mean)
 }
 
+criterion.multi_boundary_ecor = function(dat, parcel)
+{
+  assert_that(ncol(dat) == length(parcel))
+  parcel.list = split(1:ncol(dat), parcel)
+  m = nrow(dat)
+
+  A = sapply(parcel.list, function(cols) {
+        a = array(dat[,cols], dim = c(m, length(cols), m))
+        a = apply(a - aperm(a, c(3,2,1)), c(1,3),
+              function(x) sqrt(sum(x * x)))
+        colmeans.a = colMeans(a)
+        a = sweep(a, 1, colmeans.a, '-')
+        a = sweep(a, 2, colmeans.a, '-')
+        as.vector(a + mean(colmeans.a))
+      }, simplify = 'array')
+
+  V = crossprod(A)
+  sqrt.diag.V = sqrt(diag(V))
+  V = sweep(V, 1, sqrt.diag.V, '/')
+  V = sweep(V, 2, sqrt.diag.V, '/')
+  sqrt(V)
+}
+
 # type can be 'ratio', 'normalized'
 #   if left unspecified,  
 criterion.cut_weight = function(edges, part, type = '')

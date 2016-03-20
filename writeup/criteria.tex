@@ -31,8 +31,9 @@ path between them) for all $V_i \in \mathcal{P}_k$
 \end{enumerate}
 
 In this chapter we will suggest various criteria for measuring the
-goodness-of-fit of partitions. We will argue why these criteria are
-sensible from a neuroscience perspective.
+goodness-of-fit of partitions and discuss their statistical and
+computational advantages and drawbacks.
+
 
 \section{Within-Parcel Similarity}
 
@@ -60,14 +61,8 @@ good measure of how much the voxels within each parcel are dependent on
 each other as a set. The downside of this criterion is that it is very
 expensive to compute. With over 300,000 voxels in an fMRI data set we
 would potentially have to compute tens of billions of distance
-correlation statistics if the number of parcels is small.
-
-There are two solutions to this. One is to subsample: for every parcel,
-compute the distance correlation matrix for a small subset of the voxels
-in the parcel and construct a confidence interval around an estimate of
-the Within-Score. Another solution is to reduce the image resolution:
-merge multiple adjacent voxels into a single voxel by averaging the time
-series and then compute the Within-Score.
+correlation statistics, each of which takes time proportional to the
+number of samples squared.
 
 An alternative and far less expensive criterion that measures within-
 parcel similarity works by counting distance correlations between
@@ -81,20 +76,22 @@ adjacent pairs of voxels.
 
 Rather than treat parcels as sets with no spatial information, the
 Adjacent-Score does the opposite by only considering the pairwise
-dependency of adjacent voxels.
+dependency of adjacent voxels. For sparse graphs such as ours, the number
+of distance correlation computations is proportional to the number of
+vertices.
 
-Other possibilities that we did not explore are considering all pairs
+An intermediate possibility we did not explore is to consider all pairs
 of voxels up to some maximum spatial distance from each other and
-performing a weighted averaging of sample pairwise distance
-correlations, with weights that depend on spatial distance.
+perform a weighted averaging of sample pairwise distance correlations,
+with weights that depend on spatial distance.
 
 \section{Between-Parcel Dissimilarity}
 
 To evaluate parcellation quality, it is also useful to measure how
 dependent voxels belonging to different parcels are on each other. To
 this end we define two criterion similar to the Within-Parcel criterion;
-a non-spatial metric called the Between-Score and a spatial metric
-called the Boundary-Score.
+a non-spatial metric called the Between-Score and its spatial metric
+the Boundary-Score.
 
 \begin{definition}[Between-Score] \label{between-score}
 \[ \frac{1}{\binom{k}{2}} \sum_{V, W \in \mathcal{P}_k, V \neq W}
@@ -108,14 +105,54 @@ called the Boundary-Score.
 \]
 \end{definition}
 
-For computational reasons, parcellation algorithms will be evaluated
-primarily using the spatial Adjacency- and Boundary- scores.
+Generally both of these quantities are more expensive to compute than
+their Within-Parcel counterparts. Boundary-Score is easy enough to
+compute for validation purposes, but does not convey much additional
+information beyond what the Adjacency-Score does, in the sense that
+the edges used in the computation of Adjacency-Score are the complement
+of the edges used in the Boundary-Score.
+
+The ability of distance correlation to generalize to pairs of random
+vectors of arbitrary dimension gives us another way of computing
+the dependency between two parcels. The Multivariate Between-Score
+defined below treats parcels as random vectors and computes the distance
+correlation at the parcel level rather than voxel level. The result is
+a measure of non-spatial between-parcel similarity that is also
+computationally feasible. For this reason we will use Multivariate
+Between-Score as our primary measure of parcel dissimilarity.
+
+\begin{definition}[Multivariate Between-Score]
+\label{multi-between-score}
+\[ \frac{1}{\binom{k}{2}} \sum_{V, W \in \mathcal{P}_k, V \neq W}
+   \mathcal{R}(V, W)
+\]
+\end{definition}
+
 
 \section{Graph Cuts}
 
-Closely related to the Boundary-Score is the notion of a graph cut.
+Closely related to the Boundary-Score is the notion of a graph cut from
+computer science. A \textit{cut set} is the set of edges with endpoints
+in different parcels. The \textit{cut weight} is the sum of weights of
+all edges in the cut set and can be expressed as
+\[ \frac{1}{2} \sum_{V \in \mathcal{P}_k}
+   \sum_{x,y \in E_V} \mathcal{R}(x,y) \]
+The \textit{ratio cut} defined below is a weighted version of the cut
+weight:
+\[ \frac{1}{2} \sum_{V \in \mathcal{P}_k} \frac{1}{|V|}
+   \sum_{x,y \in E_V} \mathcal{R}(x,y)
+\]
+The subfield of graph partitioning is concerned with minimizing
+cut weight, ratio cut, and several other related quantities. Over the
+last several decades a number of highly effective approximation
+algorithms have been developed to find partitions of graphs that
+minimize these quantities. Later chapters will explore how these methods
+work for brain parcellation.
 
 \section{Balance and Compactness}
+
+In addition to the above distance correlation based criteria, there are
+two additional metrics concerned with parcel shape.
 
 \begin{definition}[Balance-Score] \label{balance-score}
 \[ 1 - \frac{1}{\binom{k}{2}} \frac{1}{\max_{V \in P_k} |V|}
@@ -134,4 +171,4 @@ The $\frac{3}{2}$ power makes the ratio invariant on parcel size.
 For instance, a $n \times n \times n$ cube of vertices would have
 a compactness of $6^{\frac{3}{2}}$.
 
-\section{Comparing Multiple Parcellations: Similarity}
+\section{Comparing Multiple Parcellations}
