@@ -225,7 +225,7 @@ criterion.boundary_pairwise_ecor = function(edges, parcel, verbose = F)
        total.mean = total.mean)
 }
 
-criterion.multi_boundary_ecor = function(dat, parcel)
+criterion.multi_boundary_ecor = function(dat, parcel, detailed = F)
 {
   assert_that(ncol(dat) == length(parcel))
   parcel.list = split(1:ncol(dat), parcel)
@@ -245,7 +245,9 @@ criterion.multi_boundary_ecor = function(dat, parcel)
   sqrt.diag.V = sqrt(diag(V))
   V = sweep(V, 1, sqrt.diag.V, '/')
   V = sweep(V, 2, sqrt.diag.V, '/')
-  sqrt(V)
+  V = sqrt(V)
+  if (detailed) return(V)
+  mean(V[upper.tri(V)])
 }
 
 # type can be 'ratio', 'normalized'
