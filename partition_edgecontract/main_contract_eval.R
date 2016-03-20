@@ -7,7 +7,7 @@ load(paste0(PATH_DATA, 'ABIDE_50002_matrix_2015-12-07.RData'))
 dat = dat$dat[,map_nz]
 rm(edges_nz, map_nz)
 
-K = c(250, 200, 150, 100)
+K = c(500, 400, 300, 250, 200, 150, 100)
 for (k in K)
 {
   cg = partition.contractedge(k, cg, T)
