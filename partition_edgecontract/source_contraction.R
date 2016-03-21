@@ -83,6 +83,9 @@ ContractibleGraph = R6Class('ContractibleGraph',
       a = as.character(comp1)
       b = as.character(comp2)
 
+      if (! all(c(a, b) %in% self$get_component_names()))
+        error(a, ' or ', b, ' is not a component')
+
       if (is.null(self$edges[[a]][[b]]) | is.null(self$edges[[b]][[a]]))
       {
         assert_that(is.null(self$edges[[b]][[a]]) &
@@ -129,7 +132,8 @@ ContractibleGraph = R6Class('ContractibleGraph',
 
 # data is either edges or a Contractible Graph
 partition.contractedge = function(num.components, data,
-                                  return.graph = F, save.path, verbose = T)
+                                  return.graph = F, filename = NULL,
+                                  verbose = T)
 {
   if (class(data)[1] != 'ContractibleGraph')
   {
@@ -145,29 +149,62 @@ partition.contractedge = function(num.components, data,
   cg.components = cg$get_component_names()
   n = length(cg.components)
   assert_that(num.components < n)
-  priority = rep(NA, times = n)
-  names(priority) = cg.components
-  for (c in cg.components)
-    priority[c] = 1 - max(cg$get_edges(c))
+
+  # PQ not updated immediately when priorities change (from contraction)
+  pq = MinPriorityQueue$new()
+  # vectors updated immediately
+  priority = c()
+  endpoint = c()
+
+  # updates the vectors; optionally updates the PQ
+  compute.priority = function(c, insert = F)
+  {
+    c = as.character(c)
+    c.edges = cg$get_edges(c)
+    if (length(c.edges) > 0)
+    {
+      priority[c] <<- cg$get_size(c) - max(c.edges)
+      endpoint[c] <<- names(which.max(c.edges))
+      if (insert) pq$insert(c, priority[c])
+    }
+    else # c is either disconnected or no longer exists
+      priority[c] <<- Inf
+  }
   
+  # initialize vectors and PQ
+  lapply(cg.components, compute.priority, insert = T)
+
   if (verbose) cat('Contracting edges; no. components =')
-  for (i in n:(num.components + 1))
+  i = n
+  while (i > num.components)
   {
     if (verbose & i %% 10000 == 0) cat(' ', i)
-    a = names(which.min(priority))
-    b = names(which.max(cg$get_edges(a)))
-    cg$contract_components(a, b)
 
-    priority[a] = cg$get_size(a) - max(cg$get_edges(a))
-    priority[b] = Inf
+    pq.min = pq$remove_min()
+    a = pq.min$item
+    if (is.infinite(priority[a])) {}           # a does not exist
+    else if (priority[a] != pq.min$priority)   # a doesn't have this
+      pq$insert(a, priority[a])                #   link weight
+    else
+    {
+      b = endpoint[a]
+      assert_that(! is.infinite(priority[b]))
+      cg$contract_components(a, b)
+      i = i - 1
+      
+      # update priority values of neighbors in the vector, not the PQ
+      lapply(names(cg$get_edges(a)), compute.priority)
+      compute.priority(a)
+      priority[b] = Inf
+    }
   }
   if (verbose) cat('\n')
   
-  if (! missing(save.path))
-    save(cg, file = paste0(save.path,
-                           'contractible_graph_',
+  if (! is.null(filename))
+    save(cg, file = paste0(PATH_DATA, 'results/cg_',
+                           filename, '_',
                            num.components, '_',
-                           Sys.Date(),
+                           DATE,
                            '.RData'))
 
   if (return.graph) return(cg)
@@ -178,14 +215,10 @@ partition.contractedge = function(num.components, data,
 edges = list()
 edges$edge.mat = t(matrix(c(1, 2,
                             1, 3,
-                            2, 1,
                             2, 4,
-                            3, 1,
-                            3, 4,
-                            4, 2,
-                            4, 3),
+                            3, 4),
                           nrow = 2))
-edges$energy.vec = c(0.7, 0.8, 0.7, 0.5, 0.8, 0.9, 0.5, 0.9)
+edges$energy.vec = c(0.7, 0.8, 0.5, 0.9)
 #        0.7
 #    (1) --- (2)
 # 0.8 |       | 0.5

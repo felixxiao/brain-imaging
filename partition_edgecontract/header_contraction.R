@@ -4,3 +4,4 @@ load.library(c('R6'))
 
 #load.source()
 source('partition_edgecontract/source_contraction.R')
+source('partition_edgecontract/source_pq.R')
