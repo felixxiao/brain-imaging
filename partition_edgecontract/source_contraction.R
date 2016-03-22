@@ -130,6 +130,11 @@ ContractibleGraph = R6Class('ContractibleGraph',
   )
 )
 
+partition.contractedge.python = function(num.components, edges)
+{
+  
+}
+
 # data is either edges or a Contractible Graph
 partition.contractedge = function(num.components, data,
                                   return.graph = F, filename = NULL,
@@ -178,8 +183,9 @@ partition.contractedge = function(num.components, data,
   i = n
   while (i > num.components)
   {
-    if (verbose & i %% 10000 == 0) cat(' ', i)
-
+    if (i %% 10000 == 0)
+      save(pq, cg, priority, file = paste0('part_ce_', DATE, '.RData'))
+    
     pq.min = pq$remove_min()
     a = pq.min$item
     if (is.infinite(priority[a])) {}           # a does not exist
@@ -194,8 +200,11 @@ partition.contractedge = function(num.components, data,
       
       # update priority values of neighbors in the vector, not the PQ
       lapply(names(cg$get_edges(a)), compute.priority)
-      compute.priority(a)
+      # re-insert a back into PQs
+      compute.priority(a, insert = T)
       priority[b] = Inf
+
+      if (verbose & i %% 10000 == 0) cat(' ', i)
     }
   }
   if (verbose) cat('\n')
