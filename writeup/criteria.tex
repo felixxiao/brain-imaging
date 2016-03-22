@@ -149,20 +149,20 @@ algorithms have been developed to find partitions of graphs that
 minimize these quantities. Later chapters will explore how these methods
 work for brain parcellation.
 
-\section{Balance and Compactness}
+\section{Balance and Jaggedness}
 
 In addition to the above distance correlation based criteria, there are
 two additional metrics concerned with parcel shape.
 
-\begin{definition}[Balance-Score] \label{balance-score}
-\[ 1 - \frac{1}{\binom{k}{2}} \frac{1}{\max_{V \in P_k} |V|}
-   \sum_{V,W \in P_k : V \neq W} \big| |V| - |W| \big| \]
+\begin{definition}[Balance] \label{balance}
+\[ \frac{1}{k} \frac{1}{\max_{V \in \mathcal{P}_k} |V|}
+   \sum_{V \in \mathcal{P}_k} |V| \]
 \end{definition}
 
 The Balance-Score ranges from 1 (all equally sized parcels) to
 0 (two parcels with one of size zero).
 
-\begin{definition}[Compactness-Score] \label{compactness-score}
+\begin{definition}[Jaggedness] \label{jaggedness}
 \[ \frac{1}{k} \sum_{V \in \mathcal{P}_k} \frac{|E_V|^\frac{3}{2}}{|V|}
 \]
 \end{definition}

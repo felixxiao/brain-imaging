@@ -29,14 +29,30 @@
 \maketitle
 \tableofcontents
 
+\begin{abstract}
+We formulate the task of brain parcellation (dividing the
+brain into functionally homogenous regions) as a graph
+partitioning problem. We devise new model-free criteria
+for validating parcellations based on statistical
+dependency between parcels using distance correlation.
+Based off our criteria we pose a new graph cut-type
+problem called Max Average Within Edge, wherein the
+objective is to maximize, for each component, the summed
+weight of all edges with both endpoints in the component
+divided by the number of edges within the component.
+
+We propose a family of heuristic algorithms for attaining
+good solutions for MAWE.
+\end{abstract}
+
 %\chapter{Functional MRI Data and Brain Parcellation}
 %\input{intro.tex}
 
 %\chapter{Energy Statistics}
 %\input{energy_statistics.tex}
 
-%\chapter{Criteria for Evaluating Parcellations}
-%\input{criteria.tex}
+\chapter{Criteria for Evaluating Parcellations}
+\input{criteria.tex}
 
 \chapter{Local Search and Graph Growing Heuristics}
 \input{local_search.tex}
