@@ -148,19 +148,6 @@ criterion.between_pairwise_ecor = function(dat, parcel, subsample = 1000,
        total.mean = mean(between.mean, na.rm = T))
 }
 
-# Compute a confidence interval for the mean Within-Between score
-# Arguments
-#   within  : list containing mean, var, and n vectors for each component
-#             Return value of criterion.within_pairwise_ecor
-#   between : list containing mean (matrix), var (matrix), and n (vector)
-#             for pairs of components
-#             Return value of criterion.between_pairwise_ecor
-#   tail    : numeric(1), lower and upper quantile cutoff for interval
-criterion.between_within_interval = function(within, between, tail = 0.05)
-{
-
-}
-
 criterion.adjacent_pairwise_ecor = function(edges, parcel)
 {
   adjacent.mean = rep(NA, nlevels(parcel))
@@ -185,6 +172,22 @@ criterion.adjacent_pairwise_ecor = function(edges, parcel)
        total.mean = mean(adjacent.mean, na.rm = T))
 }
 
+criterion.adjacent_pairwise_ecor.slow = function(edges, parcel)
+{
+  edge.mat = edges$edge.mat
+  weights = edges$energy.vec
+  assert_that(nrow(edge.mat) == length(weights))
+
+  edge.mat = mapvalues(edge.mat, 1:length(parcel), parcel,
+    warn_missing = F)
+
+  idx = (edge.mat[,1] == edge.mat[,2])
+  
+  adj.score = sapply(split(weights[idx], edge.mat[idx,1]), mean)
+  list(mean = adj.score, total.mean = mean(adj.score, na.rm = T))
+}
+
+# may be incorrect
 criterion.boundary_pairwise_ecor = function(edges, parcel, verbose = F)
 {
   levels(parcel) = 1:nlevels(parcel)
@@ -264,18 +267,18 @@ criterion.cut_weight = function(edges, part, type = '')
 criterion.balance = function(part)
 {
   sizes = as.vector(table(part))
-  k = length(sizes)
-  max.size = max(sizes)
-  sizes = matrix(sizes, k, k)
-  sizes = abs(sizes - t(sizes))
-
-  1 - mean(sizes[upper.tri(sizes)]) / max.size
+  size.ratios = sizes / max(sizes)
+  mean(size.ratios)
 }
 
-criterion.surface_volume_ratio = function(edges, part, detailed = F)
-{
-  surface = criterion.boundary_pairwise_ecor(edges, part)$n
-  surface = colSums(surface, na.rm = T)
+criterion.smoothness_ratio = function(edges, part, detailed = F)
+{ 
+  .validate.edges(edges)
+  part.mat = mapvalues(edges$edge.mat, 1:length(part), part,
+    warn_missing = F)
+  surface = as.vector(part.mat[part.mat[,1] != part.mat[,2],])
+  surface = table(surface)
+
   volume = as.vector(table(part))
   ratio = (surface)^(3/2) / volume
   if (detailed) return(ratio)
