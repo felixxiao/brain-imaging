@@ -271,7 +271,7 @@ criterion.balance = function(part)
   mean(size.ratios)
 }
 
-criterion.smoothness_ratio = function(edges, part, detailed = F)
+criterion.jaggedness = function(edges, part, detailed = F)
 { 
   .validate.edges(edges)
   part.mat = mapvalues(edges$edge.mat, 1:length(part), part,

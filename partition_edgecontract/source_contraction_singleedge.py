@@ -83,7 +83,7 @@ def partition_contractedge(num_components, cg, disp_all = False):
     return
   print 'Computing priorities'
   compute_priority = lambda A, links: \
-    (len(cg.vertices[A]) - max(links.values()),
+    (len(cg.vertices[A]) - max(links.values()),  # <-- customizeable
      max(links, key = links.get))
   priority = {A: compute_priority(A, cg.get_links(A))
               for A in cg.vertices}
