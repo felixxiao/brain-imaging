@@ -11,11 +11,11 @@ class ContractibleGraph:
     self.vertices = {v: [v] for v in np.unique(edge_mat)}
     self.N = len(self.vertices)
     self.edges = {v: {} for v in self.vertices}
-    
+
     for i in xrange(edge_mat.shape[0]):
       v, w = edge_mat[i,:]
       # assert v != w
-      self.edges[v][w] = self.edges[w][v] = [weights[i]]
+      self.edges[v][w] = self.edges[w][v] = [weights[i], 1]
 
   def contract_components(self, A, B):
     # assert A and B in self.vertices.keys()
@@ -29,7 +29,8 @@ class ContractibleGraph:
       if B_adj in self.edges[A].keys():
         # assert A in self.edges[B_adj].keys()
         # assert self.edges[B_adj][A] is self.edges[A][B_adj]
-        self.edges[A][B_adj].extend(self.edges[B][B_adj])
+        self.edges[A][B_adj][0] += self.edges[B][B_adj][0]
+        self.edges[A][B_adj][1] += self.edges[B][B_adj][1]
       elif B_adj != A:
         # assert A not in self.edges[B_adj].keys()
         self.edges[A][B_adj] = self.edges[B_adj][A] = list(self.edges[B][B_adj])
@@ -38,7 +39,7 @@ class ContractibleGraph:
     self.edges.pop(B)
 
   def get_links(self, A):
-    return {B: np.mean(weights) for B, weights in self.edges[A].items()}
+    return {B: link[0] / link[1] for B, link in self.edges[A].items()}
 
   def get_vertex_components(self):
     return {v: k for k, V in self.vertices.items() for v in V}
@@ -68,9 +69,9 @@ def partition_contractedge(num_components, cg, disp_all = False):
       else:
         B = priority[A][1]
         # assert B in priority
-#        if disp_all:
-#          print A, '-', B, ':', cg.get_links(A)[B]
-#          print 'PQ length:', len(pq)
+        if disp_all:
+          print A, '-', B, ':', cg.get_links(A)[B]
+          print 'PQ length:', len(pq)
         cg.contract_components(A, B)
         k -= 1
         if k == 1: break
@@ -88,7 +89,7 @@ def partition_contractedge(num_components, cg, disp_all = False):
           start_time = datetime.now()
 
 
-
+#"""
 if __name__ == '__main__':
   # Arguments: edge_mat_file.csv  weights_file.csv  num_components
   edge_mat = np.genfromtxt(sys.argv[1], dtype = int, delimiter = ',')
