@@ -2,6 +2,7 @@ import numpy as np
 import heapq
 import sys
 from datetime import datetime
+import csv
 
 class ContractibleGraph:
   # assumption : every pair of vertices have at most one edge
@@ -89,15 +90,25 @@ def partition_contractedge(num_components, cg, disp_all = False):
           start_time = datetime.now()
 
 
+def write_partition_csv(cg, num_components, filename = 'partition.csv'):
+  f = open(filename, 'w')
+  writer = csv.writer(f)
+  writer.writerow(num_components)
+  for k in num_components:
+    partition_contractedge(k, cg)
+    partition = cg.get_vertex_components().values()
+    writer.writerow(partition)
+  f.close()
+
 #"""
 if __name__ == '__main__':
-  # Arguments: edge_mat_file.csv  weights_file.csv  num_components
-  edge_mat = np.genfromtxt(sys.argv[1], dtype = int, delimiter = ',')
-  weights  = np.genfromtxt(sys.argv[2])
-  print 'Initializing CG'
-  cg = ContractibleGraph(edge_mat, weights)
+  edge_mat = np.genfromtxt('edge_mat.csv', dtype = int, delimiter = ',')
+  weights  = np.genfromtxt('weights.csv')
+  
+  num_components = [int(k) for k in sys.argv[1:]]
 
-  partition_contractedge(int(sys.argv[3]), cg)
+  cg = ContractibleGraph(edge_mat, weights)
+  #write_partition_csv(cg, num_components)
 
 """
 edge_mat = np.array([[1, 2],
