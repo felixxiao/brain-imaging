@@ -130,9 +130,28 @@ ContractibleGraph = R6Class('ContractibleGraph',
   )
 )
 
-partition.contractedge.python = function(num.components, edges)
+partition.contractedge.python = function(num_components, edges)
 {
+  write.table(edges$edge.mat, 'partition_edgecontract/edge_mat.csv',
+              sep = ',', eol = '\n', row.names = F, col.names = F)
+  write.table(edges$energy.vec, 'partition_edgecontract/weights.csv',
+              eol = '\n', row.names = F, col.names = F)
+  setwd('partition_edgecontract')
+  command = 'python source_contraction_singleedge.py'
+  system(paste(command, paste(num_components, collapse = ' ')))
+  setwd('..')
   
+  partitions = lapply(strsplit(
+    readLines('partition_edgecontract/partition.csv'), ','),
+    as.integer)
+  assert_that(all(num_components == partitions[[1]]))
+  V = partitions[[2]]
+  partitions = lapply(partitions[3:length(partitions)], function(f) {
+    part = rep(NA, length = length(map_nz))
+    part[V] = f
+    as.factor(part)
+  })
+  list(partitions = partitions, num_components = num_components)
 }
 
 # data is either edges or a Contractible Graph

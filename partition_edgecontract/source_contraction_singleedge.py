@@ -3,12 +3,18 @@ import heapq
 import sys
 from datetime import datetime
 import csv
+import json
 
 class ContractibleGraph:
   # assumption : every pair of vertices have at most one edge
   # assumption : no vertex has an edge to itself
   # edge_mat   : numpy.array of shape (|E|, 2), no redundancies
-  def __init__(self, edge_mat, weights):
+  def __init__(self, edge_mat = None, weights = None):
+    if edge_mat is None:
+      self.vertices = {}
+      self.N = 0
+      self.edges = {}
+      return
     self.vertices = {v: [v] for v in np.unique(edge_mat)}
     self.N = len(self.vertices)
     self.edges = {v: {} for v in self.vertices}
@@ -17,6 +23,18 @@ class ContractibleGraph:
       v, w = edge_mat[i,:]
       # assert v != w
       self.edges[v][w] = self.edges[w][v] = [weights[i], 1]
+
+  @classmethod
+  def read_file(cls, filename = 'cg.json'):
+    f = open(filename, 'r')
+    objects = json.load(f)
+    f.close()
+    cg = cls()
+    cg.vertices = {int(C): V for C, V in objects['vertices'].items()}
+    cg.N        = objects['N']
+    cg.edges    = {int(A): {int(B): link for B, link in links.items()}
+                   for A, links in objects['edges'].items()}
+    return cg
 
   def contract_components(self, A, B):
     # assert A and B in self.vertices.keys()
@@ -44,6 +62,18 @@ class ContractibleGraph:
 
   def get_vertex_components(self):
     return {v: k for k, V in self.vertices.items() for v in V}
+
+  def get_vertices_sorted(self):
+    V = [v for C in self.vertices.values() for v in C]
+    return sorted(V)
+
+  def save_file(self, filename = 'cg.json'):
+    f = open(filename, 'w')
+    objects = {'vertices' : cg.vertices,
+               'N'        : cg.N,
+               'edges'    : cg.edges}
+    json.dump(objects, f, separators = (',',':'))
+    f.close()
 
 def partition_contractedge(num_components, cg, disp_all = False):
   k = len(cg.vertices)
@@ -90,13 +120,17 @@ def partition_contractedge(num_components, cg, disp_all = False):
           start_time = datetime.now()
 
 
+# num_components must be strictly decreasing
 def write_partition_csv(cg, num_components, filename = 'partition.csv'):
   f = open(filename, 'w')
   writer = csv.writer(f)
   writer.writerow(num_components)
+  V = cg.get_vertices_sorted()
+  writer.writerow(V)
   for k in num_components:
     partition_contractedge(k, cg)
-    partition = cg.get_vertex_components().values()
+    partition = cg.get_vertex_components()
+    partition = [partition[v] for v in V]
     writer.writerow(partition)
   f.close()
 
@@ -108,7 +142,7 @@ if __name__ == '__main__':
   num_components = [int(k) for k in sys.argv[1:]]
 
   cg = ContractibleGraph(edge_mat, weights)
-  #write_partition_csv(cg, num_components)
+  write_partition_csv(cg, num_components)
 
 """
 edge_mat = np.array([[1, 2],
