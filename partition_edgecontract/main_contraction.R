@@ -15,7 +15,7 @@ for (k in 1:length(num_components))
   cat(num_components[k], ' components\n')
   cat('Adjac: ', criterion.adjacent_pairwise_ecor(edges_nz, partitions[[k]])$total.mean, '\n')
 #  cat('Multi: ', criterion.multi_boundary_ecor(dat, partitions[[k]]), '\n')
-  cat('Smoot: ', criterion.smoothness_ratio(edges_nz, partitions[[k]]), '\n')
+  cat('Jaggd: ', criterion.jaggedness(edges_nz, partitions[[k]]), '\n')
   cat('Balan: ', criterion.balance(partitions[[k]]), '\n')
   cat('\n')
 }

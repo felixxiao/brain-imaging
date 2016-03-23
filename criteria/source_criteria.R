@@ -278,8 +278,7 @@ criterion.jaggedness = function(edges, part, detailed = F)
     warn_missing = F)
   surface = as.vector(part.mat[part.mat[,1] != part.mat[,2],])
   surface = table(surface)
-
-  volume = as.vector(table(part))
+  volume = table(part)
   ratio = (surface)^(3/2) / volume
   if (detailed) return(ratio)
   mean(ratio)

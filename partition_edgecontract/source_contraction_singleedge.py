@@ -60,6 +60,15 @@ class ContractibleGraph:
   def get_links(self, A):
     return {B: link[0] / link[1] for B, link in self.edges[A].items()}
 
+  def get_link_weight(self, A, B):
+    return self.edges[A][B][0] / self.edges[A][B][1]
+
+  def get_size(self, A):
+    return len(self.vertices[A])
+
+  def get_boundary(self, A, B):
+    return cg.edges[A][B][1] / min(cg.get_size(A), cg.get_size(B))
+
   def get_vertex_components(self):
     return {v: k for k, V in self.vertices.items() for v in V}
 
@@ -75,18 +84,19 @@ class ContractibleGraph:
     json.dump(objects, f, separators = (',',':'))
     f.close()
 
-def partition_contractedge(num_components, cg, disp_all = False):
+# priority_func(cg, A) returns a tuple (priority, endpoint)
+def partition_contractedge(num_components, cg, priority_func,
+                           disp_all = False):
   k = len(cg.vertices)
   assert num_components > 0
   if k <= num_components:
     print 'CG already has target number of components'
     return
   print 'Computing priorities'
-  compute_priority = lambda A, links: \
-    (len(cg.vertices[A]) - max(links.values()),  # <-- customizeable
-     max(links, key = links.get))
-  priority = {A: compute_priority(A, cg.get_links(A))
-              for A in cg.vertices}
+
+  min_argmin = lambda x: (min(x.values()), min(x, key = x.get))
+
+  priority = {A: min_argmin(priority_func(cg, A)) for A in cg.vertices}
   pq = [(x[0], A) for A, x in priority.items()]
   heapq.heapify(pq)
 
@@ -109,8 +119,8 @@ def partition_contractedge(num_components, cg, disp_all = False):
 
         for C in cg.get_links(A):
           # assert C in priority
-          priority[C] = compute_priority(C, cg.get_links(C))
-        priority[A] = compute_priority(A, cg.get_links(A))
+          priority[C] = min_argmin(priority_func(cg, C))
+        priority[A] = min_argmin(priority_func(cg, A))
         heapq.heappush(pq, (priority[A][0], A))
         priority.pop(B)
         if k % 10000 == 0:
@@ -121,14 +131,15 @@ def partition_contractedge(num_components, cg, disp_all = False):
 
 
 # num_components must be strictly decreasing
-def write_partition_csv(cg, num_components, filename = 'partition.csv'):
+def write_partition_csv(cg, num_components, priority,
+                        filename = 'partition.csv'):
   f = open(filename, 'w')
   writer = csv.writer(f)
   writer.writerow(num_components)
   V = cg.get_vertices_sorted()
   writer.writerow(V)
   for k in num_components:
-    partition_contractedge(k, cg)
+    partition_contractedge(k, cg, priority)
     partition = cg.get_vertex_components()
     partition = [partition[v] for v in V]
     writer.writerow(partition)
@@ -142,7 +153,12 @@ if __name__ == '__main__':
   num_components = [int(k) for k in sys.argv[1:]]
 
   cg = ContractibleGraph(edge_mat, weights)
-  write_partition_csv(cg, num_components)
+
+  f = lambda cg, A: {B: cg.get_size(B) * (1 \
+                      - cg.get_link_weight(A, B) \
+                      - cg.get_boundary(A, B)) for B in cg.edges[A]}
+
+  write_partition_csv(cg, num_components, f)
 
 """
 edge_mat = np.array([[1, 2],
@@ -163,5 +179,4 @@ weights = [0.9, 0.8, 0.69, 0.5, 0.6, 0.4, 0.7, 0.6]
 
 cg = ContractibleGraph(edge_mat, weights)
 
-partition_contractedge(1, cg, True)
 """
