@@ -25,7 +25,7 @@ class ContractibleGraph:
       self.edges[v][w] = self.edges[w][v] = [weights[i], 1]
 
   @classmethod
-  def read_file(cls, filename = 'cg.json'):
+  def read_file(cls, filename):
     f = open(filename, 'r')
     objects = json.load(f)
     f.close()
@@ -77,7 +77,9 @@ class ContractibleGraph:
     V = [v for C in self.vertices.values() for v in C]
     return sorted(V)
 
-  def save_file(self, filename = 'cg.json'):
+  def save_file(self, filename = None):
+    if filename is None:
+      filename = 'cg' + str(len(self.vertices)) + '.json'
     f = open(filename, 'w')
     objects = {'vertices' : cg.vertices,
                'N'        : cg.N,
@@ -86,6 +88,7 @@ class ContractibleGraph:
     f.close()
 
 # priority_func(cg, A) returns a tuple (priority, endpoint)
+# minimum priority is selected
 def partition_contractedge(num_components, cg, priority_func,
                            disp_all = False):
   k = len(cg.vertices)
@@ -103,26 +106,26 @@ def partition_contractedge(num_components, cg, priority_func,
   start_time = datetime.now()
   while k > num_components:
     val, A = heapq.heappop(pq)
-    if A in priority and priority[A][0] == val:
-      B = priority[A][1]
-      # assert B in priority
-      cg.contract_components(A, B)
-      k -= 1
-      if k == 1: break
+    if A in cg.vertices:
+      priority = priority_func(cg, A)
+      if val != priority[0] and val > pq[0][0]: # PQ entry out-of-date
+        heapq.heappush(pq, (priority[0], A))
+      else:
+        B = priority[1]
+        cg.contract_components(A, B)
+        k -= 1
+        if k == 1: break
 
-      for C in cg.get_links(A):
-        # assert C in priority
-        priority[C] = priority_func(cg, C)
-        heapq.heappush(pq, (priority[C][0], C))
-      priority[A] = priority_func(cg, A)
-      heapq.heappush(pq, (priority[A][0], A))
-      priority.pop(B)
-      if k % 10000 == 0:
-        print 'Number of components:', k
-        print '  len(pq)', len(pq)
-        print '  Time:', datetime.now() - start_time
-        start_time = datetime.now()
-
+        priority = priority_func(cg, A)
+        heapq.heappush(pq, (priority[0], A))
+        
+        if k % 10000 == 0:
+          print 'Number of components:', k
+          print '  len(pq)', len(pq)
+          print '  Time:', datetime.now() - start_time
+          cg.save_file()
+          start_time = datetime.now()
+  cg.save_file()
 
 # num_components must be strictly decreasing
 def write_partition_csv(cg, num_components, priority,
@@ -152,13 +155,14 @@ if __name__ == '__main__':
                       - cg.get_link_weight(A, B) \
                       - cg.get_boundary(A, B)) for B in cg.edges[A]}
 
+  # minimum priority is selected
   def priority_func(cg, A):
     size = cg.get_size(A)
     weights = cg.get_links(A)
     bounds = cg.get_boundaries(A)
     priorities = {B: weights[B]**6 * bounds[B] for B in weights}
     B = max(priorities, key = priorities.get)
-    return (priorities[B] / (size + 10), B)
+    return ((size + 10) / priorities[B], B)
 
   write_partition_csv(cg, num_components, priority_func)
 
