@@ -60,14 +60,15 @@ class ContractibleGraph:
   def get_links(self, A):
     return {B: link[0] / link[1] for B, link in self.edges[A].items()}
 
-  def get_link_weight(self, A, B):
-    return self.edges[A][B][0] / self.edges[A][B][1]
+#  def get_link_weight(self, A, B):
+#    return self.edges[A][B][0] / self.edges[A][B][1]
 
   def get_size(self, A):
     return len(self.vertices[A])
 
-  def get_boundary(self, A, B):
-    return cg.edges[A][B][1] / min(cg.get_size(A), cg.get_size(B))
+  def get_boundaries(self, A):
+    return {B: cg.edges[A][B][1] / min(cg.get_size(A), cg.get_size(B))
+            for B in self.edges[A]}
 
   def get_vertex_components(self):
     return {v: k for k, V in self.vertices.items() for v in V}
@@ -94,9 +95,7 @@ def partition_contractedge(num_components, cg, priority_func,
     return
   print 'Computing priorities'
 
-  min_argmin = lambda x: (min(x.values()), min(x, key = x.get))
-
-  priority = {A: min_argmin(priority_func(cg, A)) for A in cg.vertices}
+  priority = {A: priority_func(cg, A) for A in cg.vertices}
   pq = [(x[0], A) for A, x in priority.items()]
   heapq.heapify(pq)
 
@@ -104,30 +103,25 @@ def partition_contractedge(num_components, cg, priority_func,
   start_time = datetime.now()
   while k > num_components:
     val, A = heapq.heappop(pq)
-    if A in priority:
-      if priority[A][0] != val:
-        heapq.heappush(pq, (priority[A][0], A))
-      else:
-        B = priority[A][1]
-        # assert B in priority
-        if disp_all:
-          print A, '-', B, ':', cg.get_links(A)[B]
-          print 'PQ length:', len(pq)
-        cg.contract_components(A, B)
-        k -= 1
-        if k == 1: break
+    if A in priority and priority[A][0] == val:
+      B = priority[A][1]
+      # assert B in priority
+      cg.contract_components(A, B)
+      k -= 1
+      if k == 1: break
 
-        for C in cg.get_links(A):
-          # assert C in priority
-          priority[C] = min_argmin(priority_func(cg, C))
-        priority[A] = min_argmin(priority_func(cg, A))
-        heapq.heappush(pq, (priority[A][0], A))
-        priority.pop(B)
-        if k % 10000 == 0:
-          print 'Number of components:', k
-          print '  len(pq)', len(pq)
-          print '  Time:', datetime.now() - start_time
-          start_time = datetime.now()
+      for C in cg.get_links(A):
+        # assert C in priority
+        priority[C] = priority_func(cg, C)
+        heapq.heappush(pq, (priority[C][0], C))
+      priority[A] = priority_func(cg, A)
+      heapq.heappush(pq, (priority[A][0], A))
+      priority.pop(B)
+      if k % 10000 == 0:
+        print 'Number of components:', k
+        print '  len(pq)', len(pq)
+        print '  Time:', datetime.now() - start_time
+        start_time = datetime.now()
 
 
 # num_components must be strictly decreasing
@@ -158,7 +152,15 @@ if __name__ == '__main__':
                       - cg.get_link_weight(A, B) \
                       - cg.get_boundary(A, B)) for B in cg.edges[A]}
 
-  write_partition_csv(cg, num_components, f)
+  def priority_func(cg, A):
+    size = cg.get_size(A)
+    weights = cg.get_links(A)
+    bounds = cg.get_boundaries(A)
+    priorities = {B: weights[B]**6 * bounds[B] for B in weights}
+    B = max(priorities, key = priorities.get)
+    return (priorities[B] / (size + 10), B)
+
+  write_partition_csv(cg, num_components, priority_func)
 
 """
 edge_mat = np.array([[1, 2],
