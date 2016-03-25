@@ -155,28 +155,29 @@ Edge-Contraction Algorithm}
 We propose a new data structure called the \textit{Contractible Graph}
 (CG) for brain parcellation. The rationale behind the CG is a heuristic
 procedure for partitioning a graph into somewhat balanced components
-so as to minimize the Boundary-Score (\ref{boundary-score}) or maximize
-the Adjacency-Score (\ref{adjacency-score}).
+so as to maximize the Adjacent-Score (\ref{adjacent-score}).
 
 The CG is a mapping of the vertices of the original graph to the
 vertices of a new graph. The vertices of the CG are called
 \textit{components} and between any two components there exists exactly
 one weighted edge, henceforth called a \textit{link}. The weight
-of a link $w(A,B)$ between two components $A$ and $B$ in the CG equals
+of a link $w_{A,B}$ between two components $A$ and $B$ in the CG equals
 the average weight of all edges in the original graph between vertices
 mapped to $A$ and vertices mapped to $B$. If no such edges exist,
 the weight of the link is $0$. Formally,
 
-\[ E(A,B) = \{(i, j) \in E : i \in A, j \in B\} \]
-\[ w(A,B) = \begin{cases}
-    \frac{1}{|E(A,B)|} \sum_{(i,j) \in E(A,B)} w_{ij} &
-        \text{if } |E(A,B)| > 0 \\
+\[ E_{A,B} = \{(i, j) \in E : i \in A, j \in B\} \]
+\[ w_{A,B} = \begin{cases}
+    \frac{1}{|E_{A,B}|} \sum_{(i,j) \in E_{A,B}} w_{ij} &
+        \text{if } |E_{A,B}| > 0 \\
     0 & \text{otherwise}
 \end{cases} \]
 
 \includegraphics[scale = 0.5]{4_contractible_graph}
 
-The \textit{size} of a component is the number of vertices it contains.
+We say an edge $(i,j)$ is \textit{between} components $A$ and $B$ if
+$i$ is in one of $A$ or $B$ and $j$ is in the other. The \textit{size}
+of a component is the number of vertices it contains.
 A \textit{contraction} of a link $(A,B)$ in a CG replaces components
 $A$ and $B$ with a new component (call it $C$) containing all vertices
 mapped to $A$ or $B$, as illustrated in the figure above.
@@ -220,77 +221,70 @@ there can be at most one edge between any two components A and B, and
 further that the weight on such an edge is the mean of the weights on
 all edges that connect a vertex in A with a vertex in B.
 
-\subsection{Implementation using Multi-Edge Adjacency List and
-Priority Queue}
-
-The adjacency list is the most common implementation choice for sparse
-graphs and it lists, for each node in the graph, the nodes connected to
-it by an edge and the weight of that edge.
+\subsection{Implementation using Nested Hash Tables and Priority Queue}
 
 In a Contractible Graph, the weight of the link between two components
-$A$ and $B$ depends on all edges between vertices in $A$ and vertices in
-$B$. Therefore our implementation of the CG data structure uses an
-extended variant of the adjacency list that allows for multiple edges
-between two nodes.
+depends on the summed weight of all edges between them, and the number
+of such edges.
 
-The Multi-Edge Adjacency List associates every \textit{pair} of
-components connected by a non-zero link to the set of edges that
-comprise that link. In \textbf{R}, this is achieved by a list of lists.
+Our implementation of the CG uses \textit{nested hash tables},
+diagrammed below. The outer hash table maps each component $A$ to an
+inner hash table, which maps all components $B$ with a positive link to
+$A$ to 1) the summed weights of the edges and 2) the number of edges
+between $A$ and $B$.
 
 \includegraphics[scale = 0.5]{4_cg_implement}
 
 Implementing the contraction of components $B$ and $C$ into a new
-component $D$ on this list of lists requires the following steps:
+component $D$ on this nested hash table requires the following steps.
+The time complexity is stated assuming no hash collisions.
 
 \begin{enumerate}
 \item
 Compute $\mathcal{X}$, the set of all components that either $B$ or $C$
-is linked to.
+is linked to. $O(|E_B| + |E_C|)$
 
 \item
-Create a new element in the outer list, $D$, and associate it with an
-empty inner list.
+Create a new element in the outer hash table, $D$, and associate it
+with an empty inner hash table. $O(1)$
 
 \item
 For each component $X \in \mathcal{X}$,
 \begin{itemize}
 \item
-Find $w(X)$, the weights of the set of all edges connecting $X$ to $B$
-and $X$ to $C$.
+Retrieve $W(X,B) + W(X,C)$, the summed weights all edges between $X$
+and $B$ and between $X$ and $C$, and $|E_{X,B}| + |E_{X,C}|$, the
+number of such edges. These quantities are stored explicitly as a
+values in the inner hash table, so this operations is $O(1)$.
 
 \item
-Delete elements $B$ and $C$ from the inner list of $X$.
-Add a new element $D$ and map it to $w(X)$.
+Add a new component name $D$ to the inner hash table of $X$ and map it
+to $\big( W(X,B) + W(X,C), |E_{X,B}| + |E_{X,C}| \big)$. Delete
+elements $B$ and $C$ from the inner list of $X$. $O(1)$
 
 \item
-In the inner list of $D$, add a new element $X$ and map it to $w(X)$.
+In the $D$ inner hash table, add component name $X$ and map it to
+to the same $\big( W(X,B) + W(X,C), |E_{X,B}| + |E_{X,C}| \big)$.
+$O(1)$
 \end{itemize}
 
 \item
 Delete $B$ and $C$ from the outer list.
 \end{enumerate}
 
-Incidentally, we note that it is also possible to implement the average
-edge property of the CG without the Multi-Edge Adjacency List, by
-recording for each pair of components, the \textit{sum} of edge weights
-and the number of edges rather than a set of all original edge weights.
-This allows for a more space and time efficient implementation, but this
-simplification was unfortunately overlooked in the first implementation
-of Edge-Contract.
-
 Having described the contraction step, we will next discuss how to
 efficiently locate the link to be contracted.
-In computer science, a \textit{Priority Queue} data type is a set of
-ordered (in the sense that for any two objects one has greater or equal
-priority to the other) objects that supports the following operations:
+In computer science, a \textit{Maximum Priority Queue} (MaxPQ) data
+type is a set of well-ordered objects that supports the following
+operations:
 
 \begin{itemize}
 \item
 \textit{add(obj)}: Adds an object to the set.
 
 \item
-\textit{remove\_minimum()}: Removes and returns an object with the
-smallest priority in the set.
+\textit{remove\_maximum()}: Removes and returns an object with the
+largest priority in the set.
 \end{itemize}
 
 Using the heap data structure, the above two operations both run in
@@ -298,26 +292,29 @@ $O(\log n)$ time.
 
 Each component on the CG will be associated with an element of the
 priority queue. The priority of component $A$ is defined as
-\[ |A| - \max\;w(A) \]
-where $w(A)$ is the set of weights of links between $A$ and any other
-component. Since our graph edge weights are all between 0 and 1,
-the smallest priority element in the queue is the first to undergo
-contraction in our algorithm, provided the max link weight is up-to-date.
+\[ \max_{X}\;w_{A,X} - |A| \]
+Since our graph link and edge weights are all between 0 and 1, the
+highest priority element in the queue always has the smallest size.
+Therefore, if the priority queue is up-to-date with the CG, the
+next link to be contracted according to Edge-Contraction has
+an endpoint component whose priority is the highest in the queue.
 
-If components $A$ and $B$ are contracted, and there is a component $C$
-with positive links to both $A$ and $B$, then the $C-A$ and $C-B$ links
-will be replaced by a $C-(AB)$ link with a different weight. If either
-$C-A$ or $C-B$ links happened to be the maximum-weighted links of $C$,
-then $C$'s position on the priority queue may no longer be accurate, and
-its true position may be further down the queue.
+However, a complication arises from the fact that a contraction can
+change the priorities of components neighboring the contracting
+components, thereby making the priorities stored in the MaxPQ
+out-of-date. For instance, if components $A$ and $B$ are contracted, and
+there is a component $C$ with positive links to both $A$ and $B$, then
+the $C-A$ and $C-B$ links will be replaced by a $C-(AB)$ link with a
+different weight. If either $C-A$ or $C-B$ links happened to be the
+maximum-weighted links of $C$, then $C$'s priority will be lower,
+and $C$ ought to be further down the queue.
 
-To address this issue, the max weight link of the minimum priority
-component must be re-computed when the element is removed from the queue.
-If the component's actual priority is not the minimum, then it is
-re-inserted into the queue with updated priority.
-Additionally, the minimum priority component may no longer exist in the
-CG due to contraction with another component. In this case it is simply
-discarded.
+To address this issue, we could re-compute the priority of every
+component drawn from the MaxPQ. If the component's actual priority is
+not the maximum, then it is re-inserted into the queue with updated
+priority. Additionally, the maximum priority component may no longer
+exist in the CG due to contraction with another component. In this case
+it is simply discarded.
 
 Without using an efficient priority queue, the linear searching method
 of finding the next link to contract results in a $O\big(n (n-k)\big)$
@@ -331,4 +328,65 @@ the average number of positive links a component has.
 \caption{Results of Edge-Contract for Different Component Numbers}
 \csvautotabular{4_edge_contract_results.csv}
 \end{figure}
+
+The Edge-Contract parcellations notably outperformed the anatomical AAL
+parcellation in the Adjacency-Score. For further comparison, found the
+mean edge weight in the graph to be 0.7258, which is even slightly
+higher than the average adjacent within-parcel edge in AAL. This suggests
+that the AAL parcellation has no connection with the functional
+information contained in this fMRI data set. It shows on the other
+hand that the Edge-Contract algorithm can successfully locate regions of
+functional similarity.
+
+The one apparent deficiency of Edge-Contract is the jaggedness of its
+parcels. Comparison of our parcellations with the AAL shows that our
+116-component parcellation -- the same number of components as AAL --
+has an average parcel surface area roughly
+$\big( \frac{92.14}{29.62} \big)^{\frac{2}{3} }\approx 2.11$ times
+that of AAL. Visually, that difference is shown in the plots below of
+a typical component from each parcellation.
+
+%\includegraphics[scale = 1]{4_edgecontract_aal_3D}
+
+\section{Generalized Edge-Contraction}
+
+In the original Edge-Contraction algorithm, the criteria for selecting
+the next link to contract was to search through the set of smallest
+components and find the link of maximal weight. Because this criteria
+takes no account of the shape of the two components to be contracted,
+the resulting parcels tend to be very jagged.
+
+To address this we expanded the criterion for finding the next link
+to contract. Rather than use only the size of the component and the
+weight of the link, a \textit{Generalized Edge-Contraction} algorithm
+may use any piece of information stored in the Contractible Graph about
+a pair of components, such as the number of edges connecting two
+components. A \textit{priority function} takes information of any two
+components in a CG and outputs a real number, the priority. For each
+iteration, the pair of components with the largest priority is
+contracted and the priorities of neighboring components with respect
+to the newly conjoined component are computed.
+
+For two components $A,B$ let $|A|$ denote size (number of vertices)
+of $A$, $E_{A,B}$ denote the set of edges between $A$ and $B$, and
+$w_{A,B}$ the weight of the link connecting $A$ and $B$.
+The priority function of the original Edge-Contraction algorithm
+is $p_0(A, B) = w_{A,B} - |B|$.
+
+A link $(A, B)$ will have high priority if either component is small,
+if the link has a large weight, and if it has a good boundary-ratio,
+defined as $\frac{|E_{A,B}|}{\min(|A|,|B|)}$, which helps to minimize
+jaggedness. From these notions we created a family of priority functions indexed by tunable parameters $\alpha$ and $\beta$
+\[ p_1(A, B) = \frac{w_{A,B}^\alpha}{|A| + \beta}
+               \frac{|E_{A,B}|}{\min(|A|,|B|)} \]
+that modulate the balance of small size, large weight, and high
+boundary ratio. The table below shows the results of the 116-component
+and 300-component Generalized Edge-Contract parcellation when performed
+for various values of $\alpha$ and $\beta$.
+
+\begin{figure}
+\caption{Results of Generalized Edge-Contract for Various Parameter Settings}
+%\csvautotabular{4_gen_edge_contract_results.csv}
+\end{figure}
+
 

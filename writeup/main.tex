@@ -36,20 +36,35 @@ partitioning problem. We devise new model-free criteria
 for validating parcellations based on statistical
 dependency between parcels using distance correlation.
 Based off our criteria we pose a new graph cut-type
-problem called Max Average Within Edge, wherein the
-objective is to maximize, for each component, the summed
-weight of all edges with both endpoints in the component
-divided by the number of edges within the component.
+problem called Max Average Within Edge (MAWE), wherein the
+objective is to maximize the sum for each component, of
+the average weight of all edges with both endpoints in the
+component.
 
-We propose a family of heuristic algorithms for attaining
-good solutions for MAWE.
+In chapter 4, we propose a family of heuristic algorithms
+based on a new Contractible Graph data structure for
+attaining good solutions for MAWE and give the results
+of these algorithms on a resting state fMRI scan.
+
+In chapter 5 we explore the well-established spectral
+ratio-cut minimization technique and measure its
+performance in MAWE on the same data set.
+
+In chapter 6 we do the same for the more recently proposed
+nonnegative adjacency matrix factorization method,
+an alternative to spectral partitioning.
+
+In chapter 7 we show that the MAWE problem can be
+reduced to a special instance of generalized 0-1
+fractional programming which can be efficiently solved by
+a mixed integer linear program.
 \end{abstract}
 
-%\chapter{Functional MRI Data and Brain Parcellation}
-%\input{intro.tex}
+\chapter{Functional MRI Data and Brain Parcellation}
+\input{intro.tex}
 
-%\chapter{Energy Statistics}
-%\input{energy_statistics.tex}
+\chapter{Energy Statistics}
+\input{energy_statistics.tex}
 
 \chapter{Criteria for Evaluating Parcellations}
 \input{criteria.tex}
@@ -57,11 +72,14 @@ good solutions for MAWE.
 \chapter{Local Search and Graph Growing Heuristics}
 \input{local_search.tex}
 
-%\chapter{Spectral Methods}
-%\input{spectral.tex}
+\chapter{Spectral Methods}
+\input{spectral.tex}
 
-%\chapter{Symmetric Nonnegative Matrix Factorization}
-%\input{factorization.tex}
+\chapter{Symmetric Nonnegative Matrix Factorization}
+\input{factorization.tex}
+
+\chapter{A Mixed Integer Programming Solution for Mean Adjacent Within Edge}
+\input{optimization.tex}
 
 \bibliography{ref}
 \bibliographystyle{apalike}
