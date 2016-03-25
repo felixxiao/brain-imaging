@@ -67,7 +67,7 @@ class ContractibleGraph:
     return len(self.vertices[A])
 
   def get_boundaries(self, A):
-    return {B: cg.edges[A][B][1] / min(cg.get_size(A), cg.get_size(B))
+    return {B: float(cg.edges[A][B][1]) / min(cg.get_size(A), cg.get_size(B))
             for B in self.edges[A]}
 
   def get_vertex_components(self):
@@ -123,9 +123,7 @@ def partition_contractedge(num_components, cg, priority_func,
           print 'Number of components:', k
           print '  len(pq)', len(pq)
           print '  Time:', datetime.now() - start_time
-          cg.save_file()
           start_time = datetime.now()
-  cg.save_file()
 
 # num_components must be strictly decreasing
 def write_partition_csv(cg, num_components, priority,
@@ -137,6 +135,7 @@ def write_partition_csv(cg, num_components, priority,
   writer.writerow(V)
   for k in num_components:
     partition_contractedge(k, cg, priority)
+    cg.save_file()
     partition = cg.get_vertex_components()
     partition = [partition[v] for v in V]
     writer.writerow(partition)
@@ -148,41 +147,22 @@ if __name__ == '__main__':
   weights  = np.genfromtxt('weights.csv')
   
   num_components = [int(k) for k in sys.argv[1:]]
-
+  alpha = 10
+  beta = 2
+  
   cg = ContractibleGraph(edge_mat, weights)
-
-  f = lambda cg, A: {B: cg.get_size(B) * (1 \
-                      - cg.get_link_weight(A, B) \
-                      - cg.get_boundary(A, B)) for B in cg.edges[A]}
+#  cg = ContractibleGraph.read_file('cg500.json')
 
   # minimum priority is selected
   def priority_func(cg, A):
     size = cg.get_size(A)
     weights = cg.get_links(A)
     bounds = cg.get_boundaries(A)
-    priorities = {B: weights[B]**6 * bounds[B] for B in weights}
+    priorities = {B: weights[B]**alpha * bounds[B] for B in weights}
+#    if 0 in priorities.values():
+#      cg.save_file('error.json')
+#      raise Exception('Weights or Bounds of ' + str(A) + ' have 0s')
     B = max(priorities, key = priorities.get)
-    return ((size + 10) / priorities[B], B)
+    return (size ** beta / priorities[B], B)
 
   write_partition_csv(cg, num_components, priority_func)
-
-"""
-edge_mat = np.array([[1, 2],
-                     [1, 3],
-                     [2, 4],
-                     [3, 4]])
-weights = [0.7, 0.8, 0.5, 0.9]
-
-edge_mat = np.array([[1, 2],
-                     [1, 3],
-                     [1, 4],
-                     [2, 3],
-                     [3, 5],
-                     [3, 6],
-                     [4, 5],
-                     [5, 6]])
-weights = [0.9, 0.8, 0.69, 0.5, 0.6, 0.4, 0.7, 0.6]
-
-cg = ContractibleGraph(edge_mat, weights)
-
-"""

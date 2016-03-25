@@ -235,7 +235,7 @@ construct.graph <- function(data, adj.list, edges = NULL,
   #  is not in zero.voxel and one edge is. Add that edge and
   #  move the zero.voxel into the non-zero.voxel list.
   #  Continue until there are no more zero.voxels
-  while(length(zero.voxels)>0) {
+  while (length(zero.voxels) > 0 & nrow(edge.mat) > 0) {
     bool.mat = apply(edge.mat, 2, function(x){x %in% zero.voxels})
 
     #find voxels between nonzero and zero
