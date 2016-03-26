@@ -1,4 +1,4 @@
-Number of Components,Adjacency,Multi-Boundary,Smoothness Ratio,Balance
+Number of Components,Adjacency,Multi-Boundary,Jaggedness,Balance
 500, 0.7991, 0.7578, 54.65, 0.327
 400, 0.7990, 0.7723, 59.20, 0.343
 300, 0.7974, 0.7921, 65.20, 0.297

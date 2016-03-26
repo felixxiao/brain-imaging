@@ -1,0 +1,138 @@
+We want to find a partitioning of graph $G(V,E)$ into $K$ components
+so as to minimize the Adjacent-Score \ref{adjacent-score}
+\[ \frac{1}{K} \sum_{V \in \mathcal{P}_K}
+   \frac{1}{|E_{V,V}|} \sum_{(i,j) \in E_{V,V}} A_{i,j}
+\]
+
+Let $m = |E|$, the number of edges in the graph. Assign each edge an
+index in $\{1, ..., m\}$ and 
+let $a$ be an $m$-dimensional vector whose $j$th entry is the weight of
+the $j$-indexed edge. Since distance correlation is between 0 and 1, so
+are the entries of $a$.
+
+For $k = 1, ..., K$, let $z_k \in \{0, 1\}^m$ be a 0-1 vector with
+$j$th entry satisfying
+\[ z_{jk} = \begin{cases}
+  1 & \text{if both endpoints of edge } j \text{ are in } V_k
+\end{cases} \]
+
+If $z_1, ..., z_K \in \{0, 1\}^m$ describe a valid partitioning, then
+they must satisfy $\sum_{k=1}^K z_{jk} \leq 1$ for all edges $j$.
+However, the converse is not true, since this contraint still allows two
+edges sharing an endpoint to be within different parcels.
+
+To prevent that from happening, we introduce the assignment matrix
+$X \in \{0, 1\}^{n \times m}$ with entries
+\[ x_{i,k} = \begin{cases}
+  1 & \text{if vertex } i \in V_k \\
+  0 & \text{otherwise}
+\end{cases} \]
+and three constraints
+\begin{align*}
+1 + z_{jk} &\geq x_{hk} + x_{ik} \\
+z_{jk} &\leq x_{hk} \\
+z_{jk} &\leq x_{ik} \\
+\end{align*}
+for all $j = 1, ..., m$, $k = 1, ..., K$, where $(h,i)$ are the two
+endpoints of edge $j$. If we constrain $X$ to be binary then the three
+above constraints are equivalent to:
+\[ z_{jk} = \begin{cases}
+  1 & \text{if } x_{hk} = 1 \text{ and } x_{ik} = 1 \\
+  0 & \text{otherwise} \\
+\end{cases}\]
+For the $X$, we only need to ensure every vertex is in a parcel and every
+parcel has at least one vertex (or some other specified minimum):
+\[ \sum_{k=1}^K x_{ik} = 1 \]
+\[ \sum_{i=1}^n x_{ik} \geq 1 \]
+where the equation holds for all $i$ and the inequality for all $k$.
+
+Hence the following optimization problem finds a valid partition that
+maximizes adjacent-score. Let $e_m$ denote a vector of $m$ ones.
+
+\bgroup
+\def\arraystretch{1.5}
+\begin{tabular}{l l l}
+maximize   & $\dfrac{a^T z_1}{e_m^T z_1} + \cdots +
+              \dfrac{a^T z_K}{e_m^T z_K}$
+\\ \\
+subject to 
+           & $\begin{cases}
+                 1 + z_{jk} \geq x_{hk} + x_{ik} \\
+                 z_{jk} \leq x_{hk}             \\
+                 z_{jk} \leq x_{ik}             \\
+             \end{cases}$
+           & $j = 1, ..., m$, $k = 1, ..., K$, $(h,i) = j$ \\
+           & $\sum_{j=1}^m z_{jk} \geq 1$ & $k = 1, ..., K$ \\
+           & $\sum_{k=1}^K x_{ik} = 1$ & $i = 1, ..., n$ \\
+           & $\sum_{i=1}^n x_{ik} \geq 1$ & $k = 1, ..., K$ \\
+           & $X \in \{0, 1\}^{n \times K}$
+\end{tabular}
+\egroup
+
+Following the result in \cite{Li:94} we derive an equivalent Mixed Binary
+Linear Program to the above.
+Substitute $y_k = \dfrac{1}{e_m^T z_k}$ for each $k$, which amounts to
+introducing a new variable $y \in \R^m$ and non-linear constraints
+\[ e_m^T z_k y_k = 1 \]
+The key theorem in \cite{Li:94} uses the fact that $z_k$ is binary to
+linearize this contraint by introducing another variable $w_{jk}$ and
+using linear constraints to enforce the nonlinear $w_{jk} = z_{jk} y_k$.
+There are four linear constraints for each $w_{jk}$:
+
+\begin{enumerate}
+\item
+$y_j - w_{jk} \leq 1 - z_{jk} $
+\item
+$w_{jk} \leq y_j$
+\item
+$w_{jk} \leq z_{jk}$
+\item
+$w_{jk} \geq 0$ 
+\end{enumerate}
+
+If $z_{jk} = 1$, then 1 and 2 will ensure that $w_{jk} = y_k$.
+If $z_{jk} = 0$, then 3 and 4 will ensure that $w_{jk} = 0$.
+It is important to note that this construction wouldn't work if
+$y_k > 1$. In our case, this occurs if and only if $z_{jk} = 0$ for all
+$j$, which has already been excluded by $\sum_{j=1}^m z_{jk} \geq 1$.
+
+Now we are ready to present the mixed integer version
+
+\bgroup
+\def\arraystretch{1.5}
+\begin{tabular}{l l l}
+maximize   & $a^T w_1 + \cdots + a^T w_K$
+\\ \\
+subject to 
+           & $\begin{cases}
+                 1 + z_{jk} \geq x_{hk} + x_{ik} \\
+                 z_{jk} \leq x_{hk}             \\
+                 z_{jk} \leq x_{ik}             \\
+             \end{cases}$
+           & $j = 1, ..., m$, $k = 1, ..., K$, $(h,i) = j$ \\
+           & $\sum_{j=1}^m z_{jk} \geq 1$ & $k = 1, ..., K$ \\
+           & $\sum_{k=1}^K x_{ik} = 1$ & $i = 1, ..., n$ \\
+           & $\sum_{i=1}^n x_{ik} \geq 1$ & $k = 1, ..., K$ \\
+           & $X \in \{0, 1\}^{n \times K}$ \\
+           & $\sum_{j=1}^m w_{jk} = 1$ & $k = 1, ..., K$ \\
+           & $\begin{cases}
+                y_j - w_{jk} \leq 1 - z_{jk} \\
+                w_{jk} \leq y_j \\
+                w_{jk} \leq z_{jk} \\
+                w_{jk} \geq 0 \\
+             \end{cases}$
+           & $j = 1, ..., m$, $k = 1, ..., K$
+\end{tabular}
+\egroup
+
+which can be solved globally by branch-and-bound methods.
+Unfortunately the size of our graph is too large for a generic MIP
+solver, and the largest graphs we partitioned using this method had
+around 400 vertices and 3000 edges, partitioned into 10 components.
+This is true even when the binary $\{0, 1\}$ constraint was relaxed
+to an interval $[0, 1]$ to create an LP.
+
+A faster approximation with fewer variables to this MIP involves
+dropping the assignment matrix $X$.
+
+\section{Other Objectives}
