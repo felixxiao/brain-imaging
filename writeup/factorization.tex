@@ -145,7 +145,15 @@ algorithm for SymNMF is the following:
 \end{algorithmic}  
 \end{algorithm}
 
-The $\alpha$ can be increased each iteration.
+The $\alpha$ can be increased each iteration to force convergence of
+$W$ and $H$. A recommended strategy is to multiply $alpha$ by 1.01 each
+iteration.
 
 \subsection{Block Principal Pivoting for Nonnegative Least Squares}
-\cite{Kim:11}
+For details on this method, please refer to \cite{Kim:11}.
+
+\section{0-1 Symmetric Matrix Factorization}
+
+\subsection{Stochastic Gradient-Like Method}
+
+\subsection{Mixed Integer Programming Method}

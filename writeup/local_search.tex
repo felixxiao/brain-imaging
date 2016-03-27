@@ -173,7 +173,7 @@ the weight of the link is $0$. Formally,
     0 & \text{otherwise}
 \end{cases} \]
 
-\includegraphics[scale = 0.5]{4_contractible_graph}
+\includegraphics[scale = 0.5]{figs/4_contractible_graph}
 
 We say an edge $(i,j)$ is \textit{between} components $A$ and $B$ if
 $i$ is in one of $A$ or $B$ and $j$ is in the other. The \textit{size}
@@ -233,7 +233,7 @@ inner hash table, which maps all components $B$ with a positive link to
 $A$ to 1) the summed weights of the edges and 2) the number of edges
 between $A$ and $B$.
 
-\includegraphics[scale = 0.5]{4_cg_implement}
+\includegraphics[scale = 0.5]{figs/4_cg_implement}
 
 Implementing the contraction of components $B$ and $C$ into a new
 component $D$ on this nested hash table requires the following steps.
@@ -326,7 +326,7 @@ the average number of positive links a component has.
 
 \begin{figure}
 \caption{Results of Edge-Contract for Different Component Numbers}
-\csvautotabular{4_edge_contract_results.csv}
+\csvautotabular{figs/4_edge_contract_results.csv}
 \end{figure}
 
 The Edge-Contract parcellations notably outperformed the anatomical AAL
@@ -346,7 +346,7 @@ $\big( \frac{92.14}{29.62} \big)^{\frac{2}{3} }\approx 2.11$ times
 that of AAL. Visually, that difference is shown in the plots below of
 a typical component from each parcellation.
 
-%\includegraphics[scale = 1]{4_edgecontract_aal_3D}
+%\includegraphics[scale = 1]{figs/4_edgecontract_aal_3D}
 
 \section{Generalized Edge-Contraction}
 
