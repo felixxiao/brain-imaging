@@ -1,5 +1,3 @@
-# TODO: add comments
-
 ContractibleGraph = R6Class('ContractibleGraph',
   public = list(
     # list, for each component, the vertices that constitute it
@@ -144,21 +142,25 @@ partition.contractedge.read_partition = function(filename, N = NULL)
   list(partitions = partitions, num_components = num_components)
 }
 
-partition.contractedge.python = function(num_components, edges = NULL,
-                                         N = NULL)
+partition.contractedge.general = function(num_components, alpha, beta,
+  edges = NULL, cg.json = NULL, N = NULL)
 {
+  setwd('partition_edgecontract')
+  command = paste(c('python main_contract_general_csv.py',
+                    'edge_mat.csv weights.csv'), collapse = ' ')
   if (! is.null(edges))
   {
-    write.table(edges$edge.mat, 'partition_edgecontract/edge_mat.csv',
+    write.table(edges$edge.mat, 'edge_mat.csv',
                 sep = ',', eol = '\n', row.names = F, col.names = F)
-    write.table(edges$energy.vec, 'partition_edgecontract/weights.csv',
+    write.table(edges$energy.vec, 'weights.csv',
                 eol = '\n', row.names = F, col.names = F)
   }
-  setwd('partition_edgecontract')
-  command = 'python source_contraction_singleedge.py'
-  system(paste(command, paste(num_components, collapse = ' ')))
+  else if (! is.null(cg.json))
+    command = paste(c('python main_contract_general_json.py',
+                      cg.json), collapse = ' ') 
+  system(paste(command, alpha, beta,
+               paste(num_components, collapse = ' ')))
   setwd('..')
-  
   return(partition.contractedge.read_partition(
     'partition_edgecontract/partition.csv', N))
 }

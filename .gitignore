@@ -15,3 +15,7 @@ nohup.out
 *.swp
 .ipynb_checkpoints/
 *.Rhistory
+*.lof
+*.lot
+*.pptx
+*.json
