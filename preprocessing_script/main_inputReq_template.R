@@ -17,9 +17,9 @@ args = parser$parse_args()
 
 assert_that(args$pattern == 7 | args$pattern == 27)
 if(args$pattern == 7){
-  args$pattern = cross.enumerate()
+  args$pattern = .cross.enumerate()
 } else {
-  args$pattern = cube.enumerate()
+  args$pattern = .cube.enumerate()
 }
 
 template = readNIfTI(args$template)
