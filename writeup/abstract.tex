@@ -1,0 +1,31 @@
+We formulate the task of brain parcellation (dividing the
+brain into functionally homogenous regions) as a graph
+partitioning problem. We devise new model-free criteria
+for validating parcellations based on statistical
+dependency between parcels using distance correlation.
+Based off our criteria we pose a new graph cut-type
+problem called Max Average Within Edge (MAWE), wherein the
+objective is to maximize the sum for each component, of
+the average weight of all edges with both endpoints in the
+component.
+
+In chapter 4, we propose a family of heuristic algorithms
+based on a new Contractible Graph data structure for
+attaining good solutions for MAWE and give the results
+of these algorithms on a resting state fMRI scan.
+
+In chapter 5 we explore the well-established spectral
+ratio-cut minimization technique and measure its
+performance in MAWE on the same data set.
+
+In chapter 6 we do the same for the more recently proposed
+nonnegative adjacency matrix factorization method,
+an alternative to spectral partitioning.
+
+In chapter 7 we show that the MAWE problem can be
+reduced to a special instance of generalized 0-1
+fractional programming which has an mixed integer programming
+equivalent.
+
+Chapter 8 presents the results of these partitioning methods
+on 20 (?) autism and control fMRI scans.
