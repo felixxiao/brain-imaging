@@ -8,18 +8,21 @@ dat = dat$dat[,map_nz]
 edges_nz = preprocess.validate.edges(edges_nz)
 
 num_components = c(300, 116)
-partitions = partition.contractedge.python(num_components)$partitions
-#partitions = partition.contractedge.read_partition(
-#  'partition_edgecontract/partition.csv', length(map_nz))$partitions
+alpha = c(3, 6, 10, 6, 6)
+beta  = c(1, 1,  1, 2, 4)
 
-#save(partitions, num_components, file = paste0(PATH_DATA, 'results/parcel_ABIDE50002_nz_ce_p1_.RData'))
-
-for (k in 1:length(num_components))
+for (i in 1:length(alpha))
 {
-  cat(num_components[k], ' components\n')
-  cat('Adjac: ', criterion.adjacent_pairwise_ecor(edges_nz, partitions[[k]])$total.mean, '\n')
-#  cat('Multi: ', criterion.multi_boundary_ecor(dat, partitions[[k]]), '\n')
-  cat('Jaggd: ', criterion.jaggedness(edges_nz, partitions[[k]]), '\n')
-  cat('Balan: ', criterion.balance(partitions[[k]]), '\n')
-  cat('\n')
+  partitions = partition.contractedge.general(num_components, 
+                                              alpha[i], beta[i], edges_nz, NULL,
+                                              length(map_nz))$partitions
+  for (k in 1:length(num_components))
+  {
+    cat(num_components[k], ' components\n')
+    cat('Adjac: ', criterion.adjacent_pairwise_ecor(edges_nz, partitions[[k]])$total.mean, '\n')
+    #  cat('Multi: ', criterion.multi_boundary_ecor(dat, partitions[[k]]), '\n')
+    cat('Jaggd: ', criterion.jaggedness(edges_nz, partitions[[k]]), '\n')
+    cat('Balan: ', criterion.balance(partitions[[k]]), '\n')
+    cat('\n')
+  }
 }

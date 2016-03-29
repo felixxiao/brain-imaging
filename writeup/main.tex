@@ -1,70 +1,29 @@
-\documentclass{report}
-
+%\documentclass{report}
+\documentclass[12pt,lot,lof]{puthesis_undergraduate}
 \title{Approaches to Brain Parcellation using Energy Statistics and Graph Partitioning}
+\submitted{June 2016}
 \author{Felix Xiao}
+\advisor{Professor Han Liu}
+\dedication{}
 
-\usepackage[a5paper, margin = 1cm]{geometry}
-\usepackage{amsmath, amsfonts, graphicx, enumerate, amssymb, algpseudocode, algorithm, csvsimple}
+\abstract{\input{abstract.tex}}
 
-\newtheorem{definition}{Definition}[section]
-\newtheorem{prop}[definition]{Proposition}
-\newtheorem{lemma}[definition]{Lemma}
-\newtheorem{corollary}[definition]{Corollary}
-\newtheorem{theorem}[definition]{Theorem}
+\acknowledgements{\input{acknowledgements.tex}}
 
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\Expect}{{\rm I\kern-.3em E}}
-\newcommand{\Var}{\mathrm{Var}}
-\newcommand{\Cov}{\mathrm{Cov}}
-\newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
-\newcommand{\argmin}[1]{\underset{#1}{\mathrm{arg min}}\;}
-\newcommand{\argmax}[1]{\underset{#1}{\mathrm{arg max}}\;}
-\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\usepackage{amsmath, amsfonts, graphicx, enumerate, amssymb, algpseudocode, algorithm, csvsimple, subcaption}
 
-\DeclareMathOperator{\Tr}{Tr}
-\let\emptyset\varnothing
+\input{newcommands.tex}
 
 \begin{document}
 
 \maketitle
 \tableofcontents
 
-\begin{abstract}
-We formulate the task of brain parcellation (dividing the
-brain into functionally homogenous regions) as a graph
-partitioning problem. We devise new model-free criteria
-for validating parcellations based on statistical
-dependency between parcels using distance correlation.
-Based off our criteria we pose a new graph cut-type
-problem called Max Average Within Edge (MAWE), wherein the
-objective is to maximize the sum for each component, of
-the average weight of all edges with both endpoints in the
-component.
+%\chapter{Functional MRI Data and Brain Parcellation}
+%\input{intro.tex}
 
-In chapter 4, we propose a family of heuristic algorithms
-based on a new Contractible Graph data structure for
-attaining good solutions for MAWE and give the results
-of these algorithms on a resting state fMRI scan.
-
-In chapter 5 we explore the well-established spectral
-ratio-cut minimization technique and measure its
-performance in MAWE on the same data set.
-
-In chapter 6 we do the same for the more recently proposed
-nonnegative adjacency matrix factorization method,
-an alternative to spectral partitioning.
-
-In chapter 7 we show that the MAWE problem can be
-reduced to a special instance of generalized 0-1
-fractional programming which can be efficiently solved by
-a mixed integer linear program.
-\end{abstract}
-
-\chapter{Functional MRI Data and Brain Parcellation}
-\input{intro.tex}
-
-\chapter{Energy Statistics}
-\input{energy_statistics.tex}
+%\chapter{Energy Statistics}
+%\input{energy_statistics.tex}
 
 \chapter{Criteria for Evaluating Parcellations}
 \input{criteria.tex}
@@ -72,14 +31,18 @@ a mixed integer linear program.
 \chapter{Local Search and Graph Growing Heuristics}
 \input{local_search.tex}
 
-\chapter{Spectral Methods}
-\input{spectral.tex}
+%\chapter{Spectral Methods}
+%\input{spectral.tex}
 
-\chapter{Symmetric Nonnegative Matrix Factorization}
-\input{factorization.tex}
+%\chapter{Symmetric Nonnegative Matrix Factorization}
+%\input{factorization.tex}
 
-\chapter{A Mixed Integer Programming Solution for Mean Adjacent Within Edge}
-\input{optimization.tex}
+%\chapter{A Mixed Integer Programming Solution for Mean Adjacent Within Edge}
+%\input{optimization.tex}
+
+\chapter{Results}
+
+\chapter{Conclusion}
 
 \bibliography{ref}
 \bibliographystyle{apalike}

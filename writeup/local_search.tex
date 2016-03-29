@@ -14,44 +14,21 @@ For each algorithm, the resulting parcellation is presented, discussed,
 and evaluated according to the criteria introduced in the previous
 chapter.
 
-\section{Unconstrained Add-Edge}
+\section{The Add-Edge Algorithm}
 
 The first and simplest algorithm starts with an empty graph of $n$
 vertices and sequentially adds edges between adjacent voxels in order of
 highest sample distance correlation, until the graph has some
-prespecified number of connected components $k$.
-
-We will refer to this algorithm as ``Unconstrained Add-Edge''. A naive
-implementation of would re-compute the number of connected components in
-the graph (using linear-time bread-first or depth-first search) after
-each addition of an edge, resulting in a costly $O(EN)$ time complexity.
-A more efficient implementation takes advantage of the fact that each
-addition of an edge decreases the number of components in the graph by
-at most 1. Hence the algorithm needs only to compute the number of
-connected components after adding $c - k$ edges, where $c$ is the
-current number of connected components of the graph, beginning at $n$.
-
-Another implementation uses a binary search-type strategy and is
-$O((n + E) \log E)$. The idea is to ``search'' for the last edge to add
-to the graph by maintaining a range of possible last edges. In each
-iteration, the algorithm would add to the graph edges 1 to the midpoint
-of this range, compute the number of connected components, and adjust
-the range based on whether the number of components is higher or lower
-than the target $K$.
+prespecified number of connected components $k$. We will refer to this
+algorithm as ``Unconstrained Add-Edge''.
 
 The Unconstrained Add-Edge algorithm produces severely imbalanced
 parcellations. In the 100-component graph, there was one component
-containing over 99.9\% of all the vertices in the graph. This leads
-to a modification that prevents some edges from being added when a
-size constraint is violated.
+containing over 99.9\% of all the vertices in the graph.
 
-\section{Size-Constrained Add-Edge}
-
-The Size-Constrained Add-Edge algorithm works in a similar manner to the
-unconstrained version, adding edges to the graph in decreasing order of
-distance correlation. The Size-Constrained version differs by applying
-a filter to each edge considered, adding the edge only if at least one
-of the two following conditions are met:
+Our attempt to address this problem was to impose a filter on each edge
+considered, adding the edge only if at least one of the two following
+conditions are met:
 
 \begin{enumerate}[1.]
 \item
@@ -63,16 +40,35 @@ The union of the two components is of size $\leq s_{\max}$.
 \end{enumerate}
 
 The restriction on adding new edges was not successful in creating
-balanced partitions. For sake of completeness, we documented our
-implementation.
+balanced partitions.
+
+\subsection{Implementation of Unconstrained Version}
+
+A naive implementation of Unconstrained Add-Edge would re-compute the
+number of connected components in the graph (using linear-time
+bread-first or depth-first search) after each addition of an edge,
+resulting in a costly $O(EN)$ time complexity. A more efficient
+implementation takes advantage of the fact that each addition of an
+edge decreases the number of components in the graph by at most 1.
+Hence the algorithm needs only to compute the number of connected
+components after adding $c - k$ edges, where $c$ is the current number
+of connected components of the graph, beginning at $n$.
+
+Another implementation uses a binary search-type strategy and is
+$O((n + E) \log E)$. The idea is to ``search'' for the last edge to add
+to the graph by maintaining a range of possible last edges. In each
+iteration, the algorithm would add to the graph edges 1 to the midpoint
+of this range, compute the number of connected components, and adjust
+the range based on whether the number of components is higher or lower
+than the target $K$.
+
+\subsection{Implementation of Size-Constrained Version using Union-Find}
 
 The naive implementation must use BFS/DFS in each iteration to compute
 the sizes of the two components to be connected by an edge, and hence
 must have time complexity $O(EN)$. Fortunately, there is a way to
 sublinearly update information on the components of the graph, using
 the union-find data structure.
-
-\subsection{Union-Find}
 
 The core Union-Find data structure begins with an empty graph of $N$
 vertices and supports two operations. union(i, j) adds an edge between
@@ -149,8 +145,7 @@ where $\log^*$ is the iterated logarithm, defined as the number of
 times the natural log must be applied to $N$ so that it becomes less
 than or equal to 1.
 
-\section{The Contractible Graph Data Structure and
-Edge-Contraction Algorithm}
+\section{The Edge-Contraction Algorithm and Contractible Graphs}
 
 We propose a new data structure called the \textit{Contractible Graph}
 (CG) for brain parcellation. The rationale behind the CG is a heuristic
@@ -173,7 +168,7 @@ the weight of the link is $0$. Formally,
     0 & \text{otherwise}
 \end{cases} \]
 
-\includegraphics[scale = 0.5]{figs/4_contractible_graph}
+\includegraphics[scale = 0.55]{figs/4_contractible_graph}
 
 We say an edge $(i,j)$ is \textit{between} components $A$ and $B$ if
 $i$ is in one of $A$ or $B$ and $j$ is in the other. The \textit{size}
@@ -207,10 +202,12 @@ graph has only $k$ components in all.
 
 Why does Edge-Contraction work better than the previous algorithms?
 The Edge-Contraction algorithm attempts to address two problems of
-the Size-Constrained Add-Edge algorithm: poor Adjacent-Score relative
-to randomized graph and unbalanced parcels. We hypothesized that one
-reason for a relatively low Adjacent-Score might be the following
-scenario: when a vertex is added to a component, it might have multiple
+the Size-Constrained Add-Edge algorithm: unbalanced parcels and poor
+Adjacent-Score relative to randomized graph. It solves the former
+problem by prioritizing edges that are connected to small components.
+
+The low Adjacent-Score is likely due to the following scenario:
+when a vertex is added to a component, it might have multiple
 edges to that component. One edge might have a very high weight; this is
 the one that is officially ``added''. However, the other edges with far
 lower weights are implicitly added as well, lowering the average edge
@@ -233,7 +230,7 @@ inner hash table, which maps all components $B$ with a positive link to
 $A$ to 1) the summed weights of the edges and 2) the number of edges
 between $A$ and $B$.
 
-\includegraphics[scale = 0.5]{figs/4_cg_implement}
+\includegraphics[scale = 0.6]{figs/4_cg_implement}
 
 Implementing the contraction of components $B$ and $C$ into a new
 component $D$ on this nested hash table requires the following steps.
@@ -322,18 +319,19 @@ time algorithm. Using the priority queue the time complexity of
 Edge-Contraction is $O \big((n - k) (m + \log n)\big)$, where $m$ is
 the average number of positive links a component has.
 
-\subsection{Results and Extensions}
+\subsection{Results}
 
-\begin{figure}
+\begin{table}
 \caption{Results of Edge-Contract for Different Component Numbers}
 \csvautotabular{figs/4_edge_contract_results.csv}
-\end{figure}
+\label{4_ec}
+\end{table}
 
 The Edge-Contract parcellations notably outperformed the anatomical AAL
 parcellation in the Adjacency-Score. For further comparison, found the
 mean edge weight in the graph to be 0.7258, which is even slightly
-higher than the average adjacent within-parcel edge in AAL. This suggests
-that the AAL parcellation has no connection with the functional
+higher than the average adjacent within-parcel edge in AAL. This
+suggests that the AAL parcellation has no connection with the functional
 information contained in this fMRI data set. It shows on the other
 hand that the Edge-Contract algorithm can successfully locate regions of
 functional similarity.
@@ -348,7 +346,7 @@ a typical component from each parcellation.
 
 %\includegraphics[scale = 1]{figs/4_edgecontract_aal_3D}
 
-\section{Generalized Edge-Contraction}
+\section{The Generalized Edge-Contraction Algorithm}
 
 In the original Edge-Contraction algorithm, the criteria for selecting
 the next link to contract was to search through the set of smallest
@@ -373,20 +371,41 @@ $w_{A,B}$ the weight of the link connecting $A$ and $B$.
 The priority function of the original Edge-Contraction algorithm
 is $p_0(A, B) = w_{A,B} - |B|$.
 
+\begin{table}
+\caption{Results of Generalized Edge-Contract for Various Parameter Settings}
+\centering
+\begin{subtable}[v]{0.5\textwidth}
+  \input{figs/4_gen_ec_116.tex}
+  \caption{116 Parcels}
+\end{subtable}
+~
+\begin{subtable}[v]{0.5\textwidth}
+  \input{figs/4_gen_ec_300.tex}
+  \caption{300 Parcels}
+\end{subtable}
+\label{gen_ec}
+\end{table}
+
 A link $(A, B)$ will have high priority if either component is small,
 if the link has a large weight, and if it has a good boundary-ratio,
 defined as $\frac{|E_{A,B}|}{\min(|A|,|B|)}$, which helps to minimize
-jaggedness. From these notions we created a family of priority functions indexed by tunable parameters $\alpha$ and $\beta$
-\[ p_1(A, B) = \frac{w_{A,B}^\alpha}{|A| + \beta}
+jaggedness. From these notions we created a family of priority
+functions indexed by tunable parameters $\alpha$ and $\beta$
+\[ p_1(A, B) = \frac{w_{A,B}^\alpha}{|A|^\beta} \cdot
                \frac{|E_{A,B}|}{\min(|A|,|B|)} \]
 that modulate the balance of small size, large weight, and high
-boundary ratio. The table below shows the results of the 116-component
-and 300-component Generalized Edge-Contract parcellation when performed
-for various values of $\alpha$ and $\beta$.
+boundary ratio. Table \ref{gen_ec} shows the results of the
+116-component and 300-component Generalized Edge-Contract parcellation
+when performed for various values of $\alpha$ and $\beta$. The adjacent
+scores have fallen on average from 0.79 in the vanilla edge contraact
+to 0.75 here. This implies a tradeoff between prioritizing edge weight,
+jaggedness, and balance in producing a parcellation.
 
-\begin{figure}
-\caption{Results of Generalized Edge-Contract for Various Parameter Settings}
-%\csvautotabular{4_gen_edge_contract_results.csv}
-\end{figure}
+With a balance score of 0.332, the AAL parcellation was better balanced
+than all of the parcellations obtained via this priority function,
+though not drastically. In terms of jaggedness, these parcellations
+all fell within the vicinity of AAL. In this one brain, the best
+parcellation arises from parameters $\alpha = 6$ and $\beta = 4$.
 
-
+Parcellations of other brains using generalized edge contract can be
+found in chapter 8.

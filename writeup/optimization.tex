@@ -133,6 +133,15 @@ This is true even when the binary $\{0, 1\}$ constraint was relaxed
 to an interval $[0, 1]$ to create an LP.
 
 A faster approximation with fewer variables to this MIP involves
-dropping the assignment matrix $X$.
+dropping the assignment matrix $X$. The problem becomes
 
-\section{Other Objectives}
+\bgroup
+\def\arraystretch{1.5}
+\begin{tabular}{l l l}
+maximize   & $\dfrac{a^T z_1}{e_m^T z_1} + \cdots + \dfrac{a^T z_1}{e_m^T z_1}$
+\\ \\
+subject to & $\sum_{k=1}^K z_k \leq e_m$ \\
+           & 
+\end{tabular}
+\egroup
+
