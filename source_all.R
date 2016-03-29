@@ -3,12 +3,12 @@ script.dir = normalizePath(script.dir)
 
 #add folders to this vector
 folder.vec = c(
- "energy_parcellation",
- "criteria",
- "partition_edgecontract", 
- "partition_opt",
- "plotter",
- "preprocess"
+ "energy_parcellation"
+# "criteria",
+# "partition_edgecontract", 
+# "partition_opt",
+# "plotter",
+# "preprocess"
 )
 
 for(i in folder.vec){

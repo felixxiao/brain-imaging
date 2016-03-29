@@ -3,7 +3,7 @@ suppressMessages(.ipak(c("testthat", "assertthat", 'oro.nifti')))
 
 USER = paste(Sys.getenv(c('USER', 'USERNAME')), collapse = '')
 
-if (USER == "kevin") {
+if (USER == "kevin" | USER == "klsix") {
   PATH_DATA = "/home/smile/klsix/felix_senior_thesis_2015-16/data/"
   PATH_SAVE = "/home/smile/klsix/felix_senior_thesis_2015-16/results/"
 } else if (USER == "Felix") {
