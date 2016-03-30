@@ -1,5 +1,7 @@
+\section{A Global Solution to Mean Adjacent Within Edge}
+
 We want to find a partitioning of graph $G(V,E)$ into $K$ components
-so as to minimize the Adjacent-Score \ref{adjacent-score}
+so as to minimize the Adjacent-Score (\ref{adjacent-score})
 \[ \frac{1}{K} \sum_{V \in \mathcal{P}_K}
    \frac{1}{|E_{V,V}|} \sum_{(i,j) \in E_{V,V}} A_{i,j}
 \]
@@ -13,7 +15,8 @@ are the entries of $a$.
 For $k = 1, ..., K$, let $z_k \in \{0, 1\}^m$ be a 0-1 vector with
 $j$th entry satisfying
 \[ z_{jk} = \begin{cases}
-  1 & \text{if both endpoints of edge } j \text{ are in } V_k
+  1 & \text{if both endpoints of edge } j \text{ are in } V_k \\
+  0 & \text{otherwise}
 \end{cases} \]
 
 If $z_1, ..., z_K \in \{0, 1\}^m$ describe a valid partitioning, then
@@ -47,7 +50,8 @@ parcel has at least one vertex (or some other specified minimum):
 where the equation holds for all $i$ and the inequality for all $k$.
 
 Hence the following optimization problem finds a valid partition that
-maximizes adjacent-score. Let $e_m$ denote a vector of $m$ ones.
+maximizes adjacent-score. This is an instance of generalized fractional
+linear programming. Let $e_m$ denote a vector of $m$ ones.
 
 \bgroup
 \def\arraystretch{1.5}
@@ -69,10 +73,10 @@ subject to
 \end{tabular}
 \egroup
 
-Following the result in \cite{Li:94} we derive an equivalent Mixed Binary
-Linear Program to the above.
+Following the result in \cite{Li:94} we derive an equivalent Mixed
+Binary Linear Program to the above.
 Substitute $y_k = \dfrac{1}{e_m^T z_k}$ for each $k$, which amounts to
-introducing a new variable $y \in \R^m$ and non-linear constraints
+introducing a new variable $y \in \R^K$ and non-linear constraints
 \[ e_m^T z_k y_k = 1 \]
 The key theorem in \cite{Li:94} uses the fact that $z_k$ is binary to
 linearize this contraint by introducing another variable $w_{jk}$ and
@@ -94,15 +98,14 @@ If $z_{jk} = 1$, then 1 and 2 will ensure that $w_{jk} = y_k$.
 If $z_{jk} = 0$, then 3 and 4 will ensure that $w_{jk} = 0$.
 It is important to note that this construction wouldn't work if
 $y_k > 1$. In our case, this occurs if and only if $z_{jk} = 0$ for all
-$j$, which has already been excluded by $\sum_{j=1}^m z_{jk} \geq 1$.
+$j$, which has already been excluded by the $\sum_{j=1}^m z_{jk} \geq 1$
+constraint.
 
 Now we are ready to present the mixed integer version
-
 \bgroup
 \def\arraystretch{1.5}
 \begin{tabular}{l l l}
-maximize   & $a^T w_1 + \cdots + a^T w_K$
-\\ \\
+maximize   & $a^T w_1 + \cdots + a^T w_K$ \\
 subject to 
            & $\begin{cases}
                  1 + z_{jk} \geq x_{hk} + x_{ik} \\
@@ -121,10 +124,9 @@ subject to
                 w_{jk} \leq z_{jk} \\
                 w_{jk} \geq 0 \\
              \end{cases}$
-           & $j = 1, ..., m$, $k = 1, ..., K$
+           & $j = 1, ..., m$, $k = 1, ..., K$ \\
 \end{tabular}
 \egroup
-
 which can be solved globally by branch-and-bound methods.
 Unfortunately the size of our graph is too large for a generic MIP
 solver, and the largest graphs we partitioned using this method had
@@ -132,16 +134,54 @@ around 400 vertices and 3000 edges, partitioned into 10 components.
 This is true even when the binary $\{0, 1\}$ constraint was relaxed
 to an interval $[0, 1]$ to create an LP.
 
+
+\section{An Approximate Solution Using SymBMF}
+
 A faster approximation with fewer variables to this MIP involves
 dropping the assignment matrix $X$. The problem becomes
 
 \bgroup
 \def\arraystretch{1.5}
 \begin{tabular}{l l l}
-maximize   & $\dfrac{a^T z_1}{e_m^T z_1} + \cdots + \dfrac{a^T z_1}{e_m^T z_1}$
-\\ \\
-subject to & $\sum_{k=1}^K z_k \leq e_m$ \\
-           & 
+maximize   & $\dfrac{a^T z_1}{e_m^T z_1} + \cdots +
+              \dfrac{a^T z_K}{e_m^T z_K}$ \\
+subject to & $\sum_{k=1}^K z_k = e_m$ \\
+           & $e_m^T z_k \geq 1$   & for $k = 1, ..., K$ \\
+           & $z_k \in \{0, 1\}^m$ & for $k = 1, ..., K$ \\
 \end{tabular}
 \egroup
+
+using the \cite{Li:94} transformation we get
+\bgroup
+\def\arraystretch{1.5}
+\begin{tabular}{l l l}
+maximize   & $a^T w_1 + \cdots + a^T w_K$ \\
+subject to & $\sum_{k=1}^K z_k = e_m$ \\
+           & $e_m^T z_k \geq 1$  & for $k = 1, ..., K$ \\
+           & $\sum_{j=1}^m w_{jk} = 1$ & $k = 1, ..., K$ \\
+           & $\begin{cases}
+                y_j - w_{jk} \leq 1 - z_{jk} \\
+                w_{jk} \leq y_j \\
+                w_{jk} \leq z_{jk} \\
+                w_{jk} \geq 0 \\
+             \end{cases}$
+           & $j = 1, ..., m$, $k = 1, ..., K$ \\
+\end{tabular}
+\egroup
+
+If $K > 1$ and the graph is connected, then not every edge can be
+within a parcel; there must be at least one that is between two
+different parcels. However, the first constraint
+$\sum_{k=1}^K z_k = e_m$ forces the contrary -- every edge must be
+assigned to exactly one parcel. Why does this constraint have to be an
+equality rather than a $\leq$ as in the first MIP? If it were the latter
+the optimal solution to this problem would be trivial: take the $K$
+edges with the largest weights in the graph and assign each to a
+different parcel. Do not assign any other entries of $z_k$ 1. This
+optimal solution is useless for partitioning. This is a consequence of
+eliminating the $X$ matrix from the first problem.
+
+If the edges of the graph are over-assigned by $z_k$, how do we recover
+the assignment matrix $X$?
+
 

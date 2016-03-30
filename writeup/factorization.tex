@@ -44,7 +44,7 @@ from which the original assignment matrix can be obtained by $k$-means.
 This chapter deals with an alternative relaxation of $\mathcal{R}$ that
 drops the first and third constraints.
 
-\section{Nonnegative Matrix Factorization}
+\section{Symmetric Nonnegative Matrix Factorization}
 
 For an $n \times m$ matrix $A$, a nonnegative matrix factorization
 (NMF) is a pair of matrices $W \in \R^{n \times k}$ and
@@ -100,7 +100,7 @@ The optimal assignments are recovered directly from the largest
 entry in each row. There is no need for $k$-means.
 \end{itemize}
 
-\section{An Alternating Nonnegative Least Squares Algorithm for SymNMF}
+\subsection{The Alternating Nonnegative Least Squares Algorithm}
 
 \cite{Kuang:15} re-formulates \ref{sym_nmf} as a non-symmetric NMF
 with a penalty on the difference between the two matrix factors:
@@ -152,8 +152,185 @@ iteration.
 \subsection{Block Principal Pivoting for Nonnegative Least Squares}
 For details on this method, please refer to \cite{Kim:11}.
 
-\section{0-1 Symmetric Matrix Factorization}
+\section{Connected Partitions}
 
-\subsection{Stochastic Gradient-Like Method}
+An issue with the SymNMF approach is that the partitions may not be
+connected -- there may exist a vertex, none of whose neighbor vertices
+belong to the same parcel that it does.
+
+\begin{definition}[Unweighted Adjacency Matrix]
+For a graph with $n$ vertices and edge set $E$, the unweighted adjacency
+matrix $B \in \{0, 1\}^{n \times n}$ has entries
+\[ B_{ij} = \begin{cases}
+  1 & \text{if } (i,j) \in E \\
+  0 & \text{otherwise}
+\end{cases}\]
+\end{definition}
+
+\begin{prop} \label{connected}
+Let $B$ be the unweighted adjacency matrix of a graph with $n$ vertices
+and $X \in \{0, 1\}^{n \times K}$ be an assignment matrix satisfying
+$X e_K = e_n$ and $X^T e_n \geq e_K$. Then the partitions of the graph
+defined by $X$ are connected if and only if
+\[ (B - I) X \geq 0 \]
+
+\textit{Proof:} Let $b_i$ denote the $i$th row of $B$ and $X_k$ the
+$k$th column of $X$. Since the non-zero entries of $b_i$ indicate
+which vertices $i$ is neighboring and the non-zero entries of $X_k$
+indicate which vertices are in the $k$th partition, the dot product
+$b_i X_k$ equals the number of vertices neighboring $i$ that are in the
+$k$th partition.
+
+If the partitions of the graph are connected, then this number is
+at least 1 if $k$ is the partition containing $i$. If $k$ does not
+contain $i$, then $b_i X_k$ can be 0. This can be succinctly expressed
+as $b_i X_k \geq X_{ik}$ for all $i = 1, ..., n$ and $k = 1, ..., K$,
+which is equivalent to the matrix inequality above.
+\end{prop}
+
+This fact will be used in the next section for the problem of finding
+a binary matrix factorization of $A$.
+
+
+\section{Symmetric 0-1 Matrix Factorization}
+
+The SymNMF method of graph partitioning finds continuous nonnegative
+matrix $H \in R^{n \times k}$ so as to minimize $\norm{A - H H^T}_F^2$
+and obtains the 0-1 assignment matrix $X$ by thresholding $H$.
+In the graph partitioning case, it arguably more desirable to obtain
+binary $X$ directly rather than via the continuous $H$.
+
+This leads us to the \textit{Symmetric Binary Matrix Factorization}
+problem, henceforth called SymBMF. Formally, for a symmetric matrix
+$A \in [0, 1]^{n \times n}$ we want to solve
+\begin{center}
+\begin{tabular}{l l}
+minimize   & $\norm{A - X X^T}_F^2$ \\
+subject to & $X \in \{0, 1\}^{n \times k}$ \\
+           & $X e_k = e_n$
+\end{tabular}
+\end{center}
+The constraint $X^T e_n \geq 1$ can be added to ensure no column of $X$
+contains all zeros. Additionally, the constraint $(B - I) X \geq 0$
+(where $B$ is the unweighted adjacency matrix) can be added for graph
+partitioning purposes to ensure all the partitions are connected
+(\ref{connected}).
+
+It is desirable for algorithms that solve SymBMF to work well when $A$
+is sparse or incomplete. In the sparse case, when most entries of $A$
+are zero, the complexity of the algorithm ideally ought to scale with
+the number of non-zero entries, and not with the number of rows and
+columns. Similarly in the case of incomplete $A$ there are entries of
+$A$ that are unknown or that we simply don't care about approximating.
+This changes the objective function from a matrix norm to a summation:
+\[ \sum_{(i,j) \in A} (A_{ij} - x_i^T x_j)^2 \]
+where $x_i$ denotes the $i$th row of $X$.
+
+We present two methods that both scale well in sparse $A$ and can
+handle incomplete $A$. The first is a very fast local minimizer
+inspired by methods from multidimensional scaling. The second is a
+mixed integer program that solves the problem globally, but is not
+as efficient.
+
+\subsection{An MDS-Inspired Method}
+
+The central idea behind this to begin with an random $n \times k$
+binary matrix $X$ that satisfies $X e_k = e_n$ and iteratively
+edit each row of $X$ so as to minimize $\|A - X X^T\|_F^2$ locally.
+Editing a row of $X$ here means determining which column to place the 1
+in. The change made in row $i$ of $X$ only impacts the $i$th row and
+$i$th column of $A - X X^T$. The column to place the 1 in that minimizes
+the objective locally is:
+\begin{equation} \label{col_select}
+k^* = \argmin{k = 1,...,K} \|A_i - X_k\|^2
+\end{equation}
+where $A_i$ refers to the $i$th column of $A$ and $X_k$ to the $k$th
+column of $X$. This is because the $i$th column of $X X^T$ is $X_k$,
+where $k$ is the parcel that vertex $i$ has been assigned to.
+
+In the case of incomplete matrix $A$, the column selection rule in
+\ref{col_select} should replaced by
+\begin{equation} \label{inc_col_select}
+k^* = \argmin{k = 1,...,K} \sum_{j \in A_i} (A_{ij} - X_{jk})^2
+\end{equation}
+The squared terms in (\ref{col_select}) and (\ref{inc_col_select}) can
+also be changed to absolute value.
+
+\begin{algorithm}
+\caption{SymBMF}
+\begin{algorithmic}[1]
+\State Initialize $X \in \{0, 1\}^{n \times k}$ such that $X e_k = e_n$
+\State $i \gets 1$
+\State $j \gets 1$
+\Repeat
+  \State $k \gets$ index of 1 entry of $x_i$
+  \State $x_{ik} \gets 0$
+  \State Compute $k^*$ by (\ref{col_select}) or (\ref{inc_col_select})
+  \State $x_{ik^*} \gets 1$
+  \If{$k \neq k^*$} \Comment{row $i$ has been edited}
+    \State $j \gets i$
+  \EndIf
+  \State $i \gets (i \mod n) + 1$
+\Until{$i = j$}
+\end{algorithmic}
+\end{algorithm}
+
+The stopping criterion halts the loop before iteration $i$ if no rows
+have been edited since $x_i$ was last edited.
+
+
 
 \subsection{Mixed Integer Programming Method}
+
+The MIP method begins by replacing objective's squared term in the
+Frobenius norm with an L1 penalty. This new objective function is
+equivalent to the original if $A$ is binary.
+\begin{center}
+\begin{tabular}{l l l}
+minimize   & $\sum_{(i,j) \in A} |A_{ij} - x_i^T x_j|$ \\
+subject to & $x_i \in \{0, 1\}^k$ & for $i = 1, ..., n$ \\
+           & $e_k^T x_i = 1$ & for $i = 1, ..., n$
+\end{tabular}
+\end{center}
+This problem would be a mixed integer program if it were not for the
+quadratic $x_i^T x_j$ in the objective. We substitute a new variable
+$y_{ij} = x_i^T x_j$ and find linear constraints that make this
+relation true for binary $x_i$ satisfying $e_k^T x_i = 1$.
+Note that an equivalent definition of
+$y_{ij}$ is
+\[ y_{ij} = \begin{cases}
+  1 & \text{if } x_i = x_j \\
+  0 & \text{otherwise}
+\end{cases}\]
+The following lemma provides an linearization of $x_i^T x_j$:
+
+\begin{lemma}
+Let $x_i$ and $x_j$ both be $k$-dimensional binary vectors that sum to 1.
+Then $y_{ij} = x_i^T x_j$ is equivalent to
+\[ y_{ij} \leq \min (x_i - x_j) + 1 \]
+\[ y_{ij} \geq \max (x_i + x_j) - 1 \]
+
+\textit{Proof:} Follows from the fact that $\min (x_i - x_j) + 1$ and
+$\max (x_i + x_j) - 1$ both equal 1 if $x_i$ and $x_j$ are equal
+and 0 if not.
+\end{lemma}
+
+Substituting $y_{ij}$ and adding the above linear constraints gives us
+the following MIP equivalent of SymBMF.
+
+\begin{center}
+\begin{tabular}{l l l}
+minimize   & $\sum_{(i,j) \in A} |A_{ij} - y_{ij}|$ \\
+subject to & $x_i \in \{0, 1\}^k$ & for $i = 1, ..., n$ \\
+           & $e_k^T x_i = 1$ & for $i = 1, ..., n$ \\
+           & $\begin{cases}
+             y_{ij} \leq x_{ik} - x_{jk} + 1 \\
+             y_{ij} \geq x_{ik} + x_{jk} - 1
+             \end{cases}$
+           & for $(i,j) \in A$, $k = 1, ..., K$
+\end{tabular}
+\end{center}
+
+To enforce partition connectedness we can add the constraint
+$(B - I) X \geq 0$ from (\ref{connected}) where $B$ is the unweighted
+assignment matrix.
