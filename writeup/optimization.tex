@@ -34,7 +34,7 @@ and three constraints
 \begin{align*}
 1 + z_{jk} &\geq x_{hk} + x_{ik} \\
 z_{jk} &\leq x_{hk} \\
-z_{jk} &\leq x_{ik} \\
+z_{jk} &\leq x_{ik}
 \end{align*}
 for all $j = 1, ..., m$, $k = 1, ..., K$, where $(h,i)$ are the two
 endpoints of edge $j$. If we constrain $X$ to be binary then the three
@@ -53,12 +53,12 @@ Hence the following optimization problem finds a valid partition that
 maximizes adjacent-score. This is an instance of generalized fractional
 linear programming. Let $e_m$ denote a vector of $m$ ones.
 
+\begin{center}
 \bgroup
 \def\arraystretch{1.5}
 \begin{tabular}{l l l}
 maximize   & $\dfrac{a^T z_1}{e_m^T z_1} + \cdots +
-              \dfrac{a^T z_K}{e_m^T z_K}$
-\\ \\
+              \dfrac{a^T z_K}{e_m^T z_K}$ \\ \\
 subject to 
            & $\begin{cases}
                  1 + z_{jk} \geq x_{hk} + x_{ik} \\
@@ -72,6 +72,7 @@ subject to
            & $X \in \{0, 1\}^{n \times K}$
 \end{tabular}
 \egroup
+\end{center}
 
 Following the result in \cite{Li:94} we derive an equivalent Mixed
 Binary Linear Program to the above.
@@ -102,6 +103,7 @@ $j$, which has already been excluded by the $\sum_{j=1}^m z_{jk} \geq 1$
 constraint.
 
 Now we are ready to present the mixed integer version
+\begin{center}
 \bgroup
 \def\arraystretch{1.5}
 \begin{tabular}{l l l}
@@ -127,6 +129,7 @@ subject to
            & $j = 1, ..., m$, $k = 1, ..., K$ \\
 \end{tabular}
 \egroup
+\end{center}
 which can be solved globally by branch-and-bound methods.
 Unfortunately the size of our graph is too large for a generic MIP
 solver, and the largest graphs we partitioned using this method had
@@ -140,6 +143,7 @@ to an interval $[0, 1]$ to create an LP.
 A faster approximation with fewer variables to this MIP involves
 dropping the assignment matrix $X$. The problem becomes
 
+\begin{center}
 \bgroup
 \def\arraystretch{1.5}
 \begin{tabular}{l l l}
@@ -150,14 +154,18 @@ subject to & $\sum_{k=1}^K z_k = e_m$ \\
            & $z_k \in \{0, 1\}^m$ & for $k = 1, ..., K$ \\
 \end{tabular}
 \egroup
+\end{center}
 
 using the \cite{Li:94} transformation we get
+
+\begin{center}
 \bgroup
 \def\arraystretch{1.5}
 \begin{tabular}{l l l}
 maximize   & $a^T w_1 + \cdots + a^T w_K$ \\
 subject to & $\sum_{k=1}^K z_k = e_m$ \\
            & $e_m^T z_k \geq 1$  & for $k = 1, ..., K$ \\
+           & $z_k \in \{0, 1\}^m$ & for $k = 1, ..., K$ \\
            & $\sum_{j=1}^m w_{jk} = 1$ & $k = 1, ..., K$ \\
            & $\begin{cases}
                 y_j - w_{jk} \leq 1 - z_{jk} \\
@@ -168,11 +176,12 @@ subject to & $\sum_{k=1}^K z_k = e_m$ \\
            & $j = 1, ..., m$, $k = 1, ..., K$ \\
 \end{tabular}
 \egroup
+\end{center}
 
 If $K > 1$ and the graph is connected, then not every edge can be
 within a parcel; there must be at least one that is between two
 different parcels. However, the first constraint
-$\sum_{k=1}^K z_k = e_m$ forces the contrary -- every edge must be
+$\sum_{k=1}^K z_k = e_m$ forces the contrary --- every edge must be
 assigned to exactly one parcel. Why does this constraint have to be an
 equality rather than a $\leq$ as in the first MIP? If it were the latter
 the optimal solution to this problem would be trivial: take the $K$
@@ -182,6 +191,11 @@ optimal solution is useless for partitioning. This is a consequence of
 eliminating the $X$ matrix from the first problem.
 
 If the edges of the graph are over-assigned by $z_k$, how do we recover
-the assignment matrix $X$?
-
-
+the assignment matrix $X$? We propose to create an approximate
+partition matrix (\ref{partition_matrix}) $P$ from the $z_k$ so that
+\[ P_{ij} = \begin{cases}
+  1 & \text{if } \argmax{k} z_{ik} = \argmax{k} z_{jk} \\
+  0 & \text{otherwise}
+\end{cases}\]
+Following this we could use either of the SymBMF methods introduced
+in the previous chapter to find a decomposition $P \approx X X^T$.
