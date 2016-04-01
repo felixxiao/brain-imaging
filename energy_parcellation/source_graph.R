@@ -140,26 +140,38 @@ preprocess.all = function(dat, edges)
 
 # compute the distance covariance for the edge weights
 compute.edgeWeights = function(data, adj.list, func = dcor,
-                               edge.mat = NULL, verbose = T, save = F)
+                               edge.mat = NULL, verbose = T, save = F,
+                               parallel = F)
 {
-  if (is.null(edge.mat))
-    edge.mat = convert.adjList2edgeMat(adj.list)
+  if (is.null(edge.mat)) edge.mat = convert.adjList2edgeMat(adj.list)
 
   batch.len = ceiling(nrow(edge.mat)/10)
   vec = numeric(nrow(edge.mat))
 
-  # split edge computation into 10 batches
-  for (i in 1:10)
-  {
-    # form the indices we're going to work over
-    idx = ((i-1)*batch.len + 1):(min(i*batch.len, nrow(edge.mat)))
-
-    vec[idx] = sapply(idx, function(x){
-      func(data[,edge.mat[x,1]], data[,edge.mat[x,2]])
-    })
- 
-    if(verbose) cat('*')
+  #the function to use
+  .apply.func <- function(i) {
+    func(data[,edge.mat[i,1]], data[,edge.mat[i,2]])
   }
+
+  if(parallel){
+    registerDoMC(cores = 12)
+
+    vec = foreach(i = 1:nrow(edge.mat)) %dopar% .apply.func(i)
+    vec = unlist(vec)
+
+  } else {
+    # split edge computation into 10 batches
+    for (i in 1:10)
+    {
+      # form the indices we're going to work over
+      idx = ((i-1)*batch.len + 1):(min(i*batch.len, nrow(edge.mat)))
+
+      vec[idx] = sapply(idx, .apply.func)
+
+      if(verbose) cat('*')
+    }
+  }
+
   edges = list(edge.mat = edge.mat, energy.vec = vec)
   
   if (save) save(edges, file = paste0(PATH_SAVE, "edges_", 
