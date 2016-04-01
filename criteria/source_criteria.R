@@ -288,3 +288,17 @@ criterion.adj_rand_similarity = function(part1, part2)
 {
 
 }
+
+components.connected = function(edge.mat, part, detailed = F)
+{
+  N = length(part)
+  B = Matrix::sparseMatrix(i = edge.mat[,1],
+                           j = edge.mat[,2],
+                           dims = c(N, N),
+                           symmetric = T)
+  X = Matrix::sparseMatrix(i = 1:N, j = as.integer(part),
+                           dims = c(N, nlevels(part)))
+  is_conn = apply(as.matrix(B %*% X - X), 1, function(x) all(x >= 0))
+  if (detailed) return(is_conn)
+  all(is_conn)
+}

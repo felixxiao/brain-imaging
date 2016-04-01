@@ -115,13 +115,13 @@ compress.data = function(array.4d, mask, factor = 2, verbose = T)
 .validate.edges = function(edges)
 {
   mat = edges$edge.mat
-  assert_that(all(mat[,1] < mat[,2]))
+  assert_that(all(mat[,1] > mat[,2]))
   assert_that(nrow(mat) == length(edges$energy.vec))
 }
 
 preprocess.validate.edges = function(edges)
 {
-  edges$edge.mat = t(apply(edges$edge.mat, 1, range))
+  edges$edge.mat = t(apply(edges$edge.mat, 1, sort, decreasing = T))
 
   dup = duplicated(edges$edge.mat, MARGIN = 1)
 

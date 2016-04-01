@@ -55,18 +55,21 @@ preprocess.map_partition = function(part, map, N)
 }
 
 # Arguments
-#   edge.mat  : matrix, each row contains the indices of two vertices
-#               joined in an edge
+#   edges     : list(2) containing
+#     edge.mat  : matrix, each row contains the indices of two vertices
+#                 joined in an edge
+#     energy.vec: numeric, contains edge weights
 #   map       : numeric, vertex index --> new index (positive integer)
 #   inverse   : logical(1), if TRUE, map new index back to original
 #   na.rm     : logical(1), if TRUE, any edge containing a vertex that
 #               did not map will be removed. If FALSE, edges will be
 #               left with NA vertices. Default TRUE.
 # Return
-#   edge.mat copy with old vertices mapped to new ones
-preprocess.map_vertices = function(edge.mat, map, inverse = F,
-                                   na.rm = T)
+#   edges copy with old vertices mapped to new ones
+preprocess.map_vertices = function(edges, map, inverse = F, na.rm = T)
 {
+  edge.mat = edges$edge.mat
+  weights  = edges$energy.vec
   assert_that(all(map > 0))
   if (length(map) > max(edge.mat))
     map = c(map, rep(NA, times = max(edge.mat) - length(map)))
@@ -79,16 +82,15 @@ preprocess.map_vertices = function(edge.mat, map, inverse = F,
     map = map.inv
   }
 
-  edge.mat[,1] = mapvalues(edge.mat[,1], 1:length(map), map,
-                           warn_missing = F)
-  edge.mat[,2] = mapvalues(edge.mat[,2], 1:length(map), map,
-                           warn_missing = F)
+  edge.mat = mapvalues(edge.mat, 1:length(map), map, warn_missing = F)
+
   if (na.rm)
   {
     na.edges = is.na(edge.mat[,1]) | is.na(edge.mat[,2])
-    return(edge.mat[! na.edges,])
+    edge.mat = edge.mat[! na.edges,]
+    weights  = weights[! na.edges]
   }
-  edge.mat
+  list(edge.mat = edge.mat, energy.vec = weights)
 }
 
 # Parameter
@@ -104,6 +106,36 @@ preprocess.remove_zero_vertices = function(data)
 
   list(data = data[,nonzero_vertices],
        map  = which(1:n.vertices %in% nonzero_vertices))
+}
+
+preprocess.remove_vertices = function(data, edges, vertices)
+{
+  assert_that(all(vertices %in% 1:ncol(data)))
+  map = which(! 1:ncol(data) %in% vertices)
+  data = data[,map]
+  edges = preprocess.map_vertices(edges, map, inverse = T)
+  return(list(data = data, edges = edges, map = map))
+}
+
+preprocess.all = function(dat, edges)
+{
+  out = preprocess.remove_zero_vertices(dat)
+  map_nz = out$map
+  dat_nz = out$data
+  
+  edges_nz = preprocess.map_vertices(edges, map_nz, T)
+  
+  g = igraph::graph.empty(length(map_nz))
+  g = igraph::add.edges(g, as.vector(t(edges_nz$edge.mat)))
+  comp = igraph::components(g)$membership
+  v_remove = which(comp != which.max(table(comp)))
+  
+  out = preprocess.remove_vertices(dat_nz, edges_nz, v_remove)
+  dat_nz = out$data
+  edges_nz = out$edges
+  map_nz = map_nz[out$map]
+  
+  return(list(dat_nz = dat_nz, edges_nz = edges_nz, map_nz = map_nz))
 }
 
 # compute the distance covariance for the edge weights
