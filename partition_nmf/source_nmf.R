@@ -87,7 +87,7 @@ compute.nnls = function(A, W, alpha)
 # Arguments
 #   A : 
 partition.sym_nmf = function(A, k, alpha, growth = .01,
-                             tol = 10^(-5), iter = 100)
+                             tol = 10^(-2), iter = 100)
 {
   assert_that(Matrix::isSymmetric(A))
   assert_that(alpha > 0) 

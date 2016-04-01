@@ -37,5 +37,7 @@ subject to bin_line_4 {j in 1..m, k in 1..K}:
 
 data;
 
+data data_fractional_approx.ampl;
+
 solve;
 display x;
