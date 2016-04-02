@@ -289,7 +289,7 @@ criterion.adj_rand_similarity = function(part1, part2)
 
 }
 
-components.connected = function(edge.mat, part, detailed = F)
+no_singleton = function(edge.mat, part, detailed = F)
 {
   N = length(part)
   B = Matrix::sparseMatrix(i = edge.mat[,1],
@@ -301,4 +301,15 @@ components.connected = function(edge.mat, part, detailed = F)
   is_conn = apply(as.matrix(B %*% X - X), 1, function(x) all(x >= 0))
   if (detailed) return(is_conn)
   all(is_conn)
+}
+
+is_connected = function(edge.mat, part)
+{
+  sapply(split(1:length(part), part), function(p) {
+    #edge_idx = apply(edge.mat, 1, function(x) all(x %in% p))
+    edge_idx = edge.mat[,1] %in% p & edge.mat[,2] %in% p
+    subgraph = igraph::graph.empty(max(edge.mat), F)
+    subgraph = igraph::add_edges(subgraph, t(edge.mat[edge_idx,]))
+    length(unique(igraph::components(subgraph)$membership[p]))
+  })
 }
