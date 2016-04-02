@@ -102,38 +102,52 @@ entry in each row. There is no need for $k$-means.
 
 \subsection{The Alternating Nonnegative Least Squares Algorithm}
 
-\cite{Kuang:15} re-formulates \ref{sym_nmf} as a non-symmetric NMF
-with a penalty on the difference between the two matrix factors:
+The algorithm for solving (\ref{sym_nmf}) developed by \cite{Kuang:15}
+uses the same framework as existing algorithms for solving the
+asymmetric NMF problem: $\min_{W,H \geq 0} \|A - W H^T\|_F^2$.
+That framework, called \textit{alternating nonnegative least squares}
+is an iterative scheme that fixes one of the matrix factors and
+solves for the other. Then, it fixes the factor just solved and
+solves for the first. In other words, these two steps are repeated
+until convergence:
+\begin{enumerate}
+  \item $ W \gets \argmin{W \geq 0} \|A - W H^T\|_F^2 $
+  \item $ H \gets \argmin{H \geq 0} \|A - W H^T\|_F^2 $
+\end{enumerate}
+One reason this method is effective in the asymmetric case is
+that the two subproblems are convex, so it is easy to attain the
+global minimum in each subproblem. Further, a number of specialized
+algorithms have been developed to solve these nonnegative least
+squares problems quickly. One in particular by \cite{Kim:11} works
+well with large, sparse $A$ matrices and is detailed in the next
+subsection.
+
+An approach for SymNMF in \cite{Kuang:15} uses this framework by
+artificially creating two different factors rather than one
+and adding on an adjustable penalty term for the difference
+between the two factors:
 \begin{equation} \label{nonsym_nmf}
 \min_{W,H \geq 0} \|A - W H^T\|_F^2 + \alpha \|W - H\|_F^2
 \end{equation}
-where $W,H \in \R^{n \times k}$. The $\alpha$ parameter 
+where $W,H \in \R^{n \times k}$. As in the asymmetric case, the
+algorithm computes $W$ and $H$ iteratively by fixing one of the
+two factors. The difference is the introduction of the penalty
+term, $\alpha$, which can be increased after each iteration to
+force the eventual convergence of $W$ and $H$.
 
-The rationale for this to use known methods for solving the
-non-symmetric NMF and adapt them to the symmetric problem.
-One powerful framework for solving NMF is Alternating Nonnegative
-Least Squares (ANLS), which factors $A$ into nonnegative $W$ and $H$
-by fixing the $H$ matrix and solving for $W$:
-$$ W \gets \argmin{W \geq 0} \|A - W H^T\|_F^2 $$
-and fixing this new matrix $W$ and solving for $H$:
-$$ H \gets \argmin{H \geq 0} \|A - W H^T\|_F^2 $$
-and repeating the two steps until convergence.
-Both subproblems in the ANLS framework are convex, and the algorithm
-requires only an initial $W$ to get started.
-
-\cite{Kuang:15} describes an algorithm for solving SymNMF that uses
-the ANLS framework. The objective function in \ref{nonsym_nmf} can be
-re-written as
+(\ref{nonsym_nmf}) can also be re-written in the same form as the
+asymmetric NMF:
 \begin{equation} \label{nls}
 \norm{ \begin{bmatrix} W \\ \sqrt{\alpha} I_k \end{bmatrix} H^T
      - \begin{bmatrix} A \\ \sqrt{\alpha} W^T \end{bmatrix} }_F^2
 \end{equation}
 with $\begin{bmatrix} W \\ \sqrt{\alpha} I_k \end{bmatrix}$ taking on
-the part of the fixed matrix and $H$ the decision matrix. The ANLS
-algorithm for SymNMF is the following:
+the part of the fixed matrix and $H$ the decision matrix.
+The ANLS algorithm for SymNMF is the following:
 
 \begin{algorithm}
 \caption{ANLS algorithm for SymNMF}
+\label{anls_symnmf}
 \begin{algorithmic}[1]
 \State Initialize $H$
 \Repeat
@@ -141,16 +155,146 @@ algorithm for SymNMF is the following:
   \State $H \gets \argmin{H \geq 0}
     \norm{ \begin{bmatrix} W \\ \sqrt{\alpha} I_k \end{bmatrix} H^T
          - \begin{bmatrix} A \\ \sqrt{\alpha} W^T \end{bmatrix} }_F^2$
+  \State increase $\alpha$
 \Until{convergence}
-\end{algorithmic}  
+\end{algorithmic}
 \end{algorithm}
 
-The $\alpha$ can be increased each iteration to force convergence of
-$W$ and $H$. A recommended strategy is to multiply $alpha$ by 1.01 each
-iteration.
+\cite{Kuang:15} recommends multiplying $alpha$ by 1.01 each iteration.
+The next section describes the method in \cite{Kim:11} for solving the
+embedded nonnegative least squares problem.
 
-\subsection{Block Principal Pivoting for Nonnegative Least Squares}
-For details on this method, please refer to \cite{Kim:11}.
+\subsection{Block Pivoting Algorithm for Nonnegative Least Squares}
+Let us consider a simplified form of the NLS step in Algorithm
+\ref{anls_symnmf}. Let $x$ denote a single $k$-dimensional row of $H$,
+and our goal is to solve
+\begin{equation} \label{single_column_nls}
+\min_{x \geq 0} \| C x - b \|_2^2
+\end{equation}
+where $C = \begin{bmatrix} W \\ \sqrt{\alpha} I_k \end{bmatrix}$ and
+$b$ is the column of
+$\begin{bmatrix} A \\ \sqrt{\alpha} W^T \end{bmatrix}$ with the same
+index as the index of row $x$ in $H$. Since the rows of $H$ share no
+constraints with one another, the general NLS problem in Algorithm
+\ref{anls_symnmf} can be viewed simply as $n$ independent cases of
+\ref{single_column_nls}.
+
+The Karush-Kuhn-Tucker necessary conditions for optimality are:
+\begin{enumerate}
+\item
+$y = C^T C x - C^T b$
+\item
+$y \geq 0$
+\item
+$x \geq 0$
+\item
+$x_i y_i = 0$ for $i = 1, ..., k$
+\end{enumerate}
+Since $I_k$ is full column rank, so is $C$, making $C^T C$ positive
+definite and \ref{single_column_nls} strictly convex.
+
+Let $x^*$ be the optimal solution to \ref{single_column_nls}. Suppose
+the indices of the strictly positive entries of $x^*$ were known and
+denote them with $F$. Then all the entries of $x^*$ and $y^*$ can be
+computed. Let $x_F$ denote the vector of entries of $x$ indexed by $F$
+and $C_F$ is the matrix of \textit{columns} of $C$ indexed by $F$. Let
+$G$ be all the elements of $\{1, ..., k\}$ not in $F$. Then,
+\begin{subequations} 
+\begin{equation} \label{x_F}
+x_F = \argmin{x_F \geq 0} \|C_F x_F - b\|_2^2
+\end{equation}
+\begin{equation} \label{x_G}
+x_G = 0
+\end{equation}
+\begin{equation} \label{y_F}
+y_F = 0
+\end{equation}
+\begin{equation} \label{y_G}
+y_G = C_G^T (C_F x_F - b)
+\end{equation}
+\end{subequations}
+(\ref{x_F}) is implied by the fact that the strictly positive entries
+of $x$ must solve the unconstrained problem. (\ref{x_G}) is true by
+definition of $F$ and $G$. (\ref{y_F}) is implied by KKT condition 4.
+(\ref{y_G}) is implied by KKT condition 1. If index sets $F$ and $G$
+give the optimal solution, then $x_F$ and $y_G$ must satisfy KKT
+conditions 2 and 3 (nonnegativity). Therefore the
+\textit{Block Pivoting Algorithm} finds the optimal $x$ and $y$ by
+searching for the correct $F$ and $G$ index sets.
+
+Suppose the $x$ and $y$ computed from the current $F$ and $G$ do not
+satisfy the KKT conditions, or equivalently the set
+\begin{equation} \label{infeasible}
+V = \{j \in F : x_j < 0\} \cup \{j \in G : y_j < 0 \}
+\end{equation}
+is not empty. The algorithm updates $F$ and $G$ by taking a subset
+$\hat{V} \subseteq V$ and setting
+\begin{subequations} \label{update_F_G}
+\begin{equation}
+F \gets (F - \hat{V}) \cup (\hat{V} \cap G)
+\end{equation}
+\begin{equation}
+G \gets (G - \hat{V}) \cup (\hat{V} \cap F)
+\end{equation}
+\end{subequations}
+By default, the algorithm uses $\hat{V} = V$ for speed. However, there
+are cases where this could result in an infinite loop, so the single
+pivot rule $\hat{V} = \max \{j \in V\}$ is invoked instead, despite
+being slower.
+
+In the multicolumn case 
+\begin{equation} \label{multi_column_nls}
+\min_{X \geq 0} \| C X - B \|_2^2
+\end{equation}
+$X$ is $k \times n$ and the algorithm needs to track, for each column of
+$X$, the $F$ and $G$ indices. Since in many cases including ours,
+$n \gg k$, so many columns of $X$ are likely to have the same $F$ and $G$.
+Given this fact, the block pivoting algorithm has a shortcut to solving
+(\ref{x_F}) and (\ref{y_G}) for each column. (\ref{x_F}) is found by solving
+$C_F^T C_F x_F = C_F^T b$ and the Cholesky factorization for this can be done
+just once for all columns with the same $F$ indices. Additionally, the
+$C_F^T C_F$, $C_F^T b$, $C_G^T C_F$, and $C_G^T b$ matrices and vectors
+required to compute $x_F$ and $y_G$ can be extracted as submatrices of $C^T C$
+and $C^T B$, computed once in the beginning of the algorithm. In our SymNMF
+case, these two matrices are much smaller than the original sparse $A$ matrix
+that formed them.
+\begin{equation} \label{CTC}
+C^T C = W^T W + \alpha I_k
+\end{equation}
+\begin{equation} \label{CTB}
+C^T B = W^T A + \alpha W^T
+\end{equation}
+
+\begin{algorithm}
+\caption{Block Pivoting Algorithm for NLS}
+\label{nls_alg}
+\begin{algorithmic}
+\State \textbf{Input:} $A \in \R^{n \times n}$, $W \in \R^{n \times k}$
+\State \textbf{Output:} $X$
+\State Compute $C^T C$ and $C^T B$ by (\ref{CTC}) and (\ref{CTB})
+\State Initialize $F_i = \emptyset$ and $G_i = \{1, ..., k\}$
+       for all $i = 1, ..., n$
+\State Initialize $\alpha (\in \R^n) = 3$ and $\beta (\in \R^n) = k + 1$
+\Repeat
+  \State Update infeasible columns of $X$ and $Y$ by column-grouping.
+  \State $I \gets \{i : (X_{F_j}, Y_{G_j}) \text{ is infeasible}\}$
+  \ForAll{$i \in I$}
+    \State Compute $V_i$ by (\ref{infeasible})
+    \If{$|V_i| < \beta_i$}
+      \State $\beta_i \gets |V_i|$
+      \State $\alpha_i \gets 3$
+      \State $\hat{V}_i \gets V_i$
+    \ElsIf{$\alpha_i \geq 1$}
+      \State $\alpha_i \gets \alpha_i - 1$
+      \State $\hat{V}_i \gets V_i$
+    \ElsIf{$\alpha_i = 0$}
+      \State $\hat{V}_i = \max \{j \in V_i\}$
+    \EndIf
+    \State Update $F_i$ and $G_i$ by (\ref{update_F_G})
+  \EndFor
+\Until{$I = \emptyset$}
+\end{algorithmic}
+\end{algorithm}
 
 \section{Connected Partitions}
 
@@ -170,8 +314,8 @@ matrix $B \in \{0, 1\}^{n \times n}$ has entries
 \begin{prop} \label{connected}
 Let $B$ be the unweighted adjacency matrix of a graph with $n$ vertices
 and $X \in \{0, 1\}^{n \times K}$ be an assignment matrix satisfying
-$X e_K = e_n$ and $X^T e_n \geq e_K$. Then the partitions of the graph
-defined by $X$ are connected if and only if
+$X e_K = e_n$ and $X^T e_n \geq e_K$. If the partitions of the graph
+defined by $X$ are connected then
 \[ (B - I) X \geq 0 \]
 
 \textit{Proof:} Let $b_i$ denote the $i$th row of $B$ and $X_k$ the
