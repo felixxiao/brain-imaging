@@ -40,7 +40,9 @@ read.ampl_output = function(file, start_char = ':', end_char = ';')
   end_line   = which(sapply(lines, substr, start = 1, stop = 1) ==
                      end_char) - 1
   rows = strsplit(lines[start_line:end_line], split = '\\s+')
-  t(sapply(rows, function(r) as.numeric(r[2:length(r)])))
+  out = sapply(rows, function(r) as.numeric(r[2:length(r)]))
+  if (is.matrix(out)) return(t(out))
+  else                return(out)
 }
 
 write.ampl_data = function(file, mat, k, laplacian = FALSE,

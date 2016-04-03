@@ -1,6 +1,3 @@
-library(Matrix)
-library(assertthat)
-
 # Implementation of (Kim 2011) Fast Nonnegative Matrix Factorization
 # block pivoting method, specialized for SymNMF
 # Arguments:
@@ -86,8 +83,8 @@ compute.nnls = function(A, W, alpha)
 # Implementation of (Kuang 2015) SymNMF algorithm for graph partitioning
 # Arguments
 #   A : 
-partition.sym_nmf = function(A, k, alpha, growth = .01,
-                             tol = 10^(-2), iter = 100)
+partition.sym_nmf.adj = function(A, k, alpha, growth = .01,
+                                 tol = 10^(-2), iter = 100)
 {
   assert_that(Matrix::isSymmetric(A))
   assert_that(alpha > 0) 
@@ -113,4 +110,24 @@ partition.sym_nmf = function(A, k, alpha, growth = .01,
   }
 
   list(W = W, H = H, obj = g)
+}
+
+partition.sym_nmf = function(edges, num_components)
+{
+  A = compute.adjacency(edges)
+  k = num_components
+  X = partition.sym_nmf.adj(A, k, 1)$H
+  as.factor(apply(X, 1, which.max))
+}
+
+partition.sym_nmf.python = function(edges, num_components)
+{
+  .validate.edges(edges)
+  setwd('partition_nmf')
+  write.table(cbind(edges$edge.mat, edges$energy.vec),
+              file = 'edges.txt', row.names = F, col.names = F)
+  system(paste('source_symnmf.py edges.txt', num_components))
+  X = read.csv('X_symnmf.csv', header = F)
+  setwd('..')
+  as.factor(apply(X, 1, which.max))
 }

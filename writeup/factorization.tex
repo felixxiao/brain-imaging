@@ -276,7 +276,7 @@ C^T B = W^T A + \alpha W^T
        for all $i = 1, ..., n$
 \State Initialize $\alpha (\in \R^n) = 3$ and $\beta (\in \R^n) = k + 1$
 \Repeat
-  \State Update infeasible columns of $X$ and $Y$ by column-grouping.
+  \State Update $X$ and $Y$ according to $F$ and $G$ by column-grouping.
   \State $I \gets \{i : (X_{F_j}, Y_{G_j}) \text{ is infeasible}\}$
   \ForAll{$i \in I$}
     \State Compute $V_i$ by (\ref{infeasible})
