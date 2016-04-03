@@ -59,6 +59,74 @@ collects multiple 3-dimensional images in the form of a time series.
 
 {\color{red} talk about AAL and do the literature review here.}
 
+{\color{blue}
+One of the main goals of neuroscience studies is to determine
+the resting-state connectivity and functional organization of the brain.
+A
+number of functional networks have been identified associated with
+the motor system, language, and memory, in addition to numerous
+studies highlighting the default mode network CITE.
+More recently there has been an explosion of interest in applying
+network theory methods to the analysis of functional connectivity
+data in order to characterize the connectivity between nodes at the
+brain system level CITE.
+Voxel-level network analyses have been developed
+that can provide insight into the functional connectivity
+of the brain, but these networks are often too complicated to practically
+allow further scientific investigation.
+
+Hence, a parcellation-level network is a natural idea where
+each parcel represents a group of spatially-adjacent voxels that
+have similar functional behaviors. 
+Many authors have used atlas-based definitions the Brodmann-based
+automatic anatomic labeling atlas (AAL) \citep{tzourio2002automated} which defines 114 parcels based on the brain
+anatomy.
+While apparently meaningful results have
+been obtained with such approaches \citep{hartman2011role, he2009uncovering, liu2008disrupted, lynall2010functional, power2011functional, salvador2005neurophysiological, spoormaker2010development, supekar2008network, tian2011hemisphere, wang2009parcellation}, they are not ideal due to two reasons.
+First, while brain anatomy is a reasonable factor in determine functionally-similar
+regions, a data-driven parcellation estimated in a statistical fashion
+could perform better. Second, anatomically-based parcellation have a fixed
+number of parcels. Investigators seeking a higher-resolution network would
+need a higher-resolution parcellation, which is unavailable.
+
+A data-driven parcellation would resolve these problems. 
+The bulk of most parcellation methods revolve around recasting our problem into
+a clustering problem with spatial constraints. \cite{biswal2010toward,smith2009correspondence}
+use Independent Component Analysis (ICA) to determine regions of voxels whereby the 
+mean signal from each region are roughly independent with one another. \cite{chen2008group} 
+extended this idea by using PCA first to determine the number of clusters, while
+\cite{beckmann2005investigations, de2006fmri} extend this idea by fitting
+a mixture model to each component found in ICA. Another large
+body of works include K-means clustering \citep{flandin2002parcellation,mezer2009cluster,peltier2003detecting,thirion2006dealing}.
+Some authors using K-means clustering use the measured fMRI signal as the covariates while
+others use the frequency coefficients determined by the Fourier transform. The authors
+incorporate spatial distances to ensure that the resulting parcellations are connected.
+Hierarchical clustering is another natural candidate, whereby different authors merge
+neighboring voxels according to varying statistics \citep{diez2014novel,bellec2006identification,lu2003region,heller2006cluster}.
+
+The methods developed in our thesis are most similar to
+spectral methods. Spectral methods represent another large body of literature to cluster voxels
+\citep{craddock2012whole,van2008normalized,shen2010graph,newman2006modularity,shen2013groupwise,zhang2014robust}.
+These methods include spectral clustering or spectral partitioning. These methods typically
+form the weight matrix by the distances from K-nearest neighbors, by Pearson correlation,
+or regularized linear regression. As spectral methods tend to split the covariates into
+two clusters, these methods are applied recursively onto each cluster. 
+
+There is a wide literature of less commonly-used methods. \cite{alexander2012discovery} recast
+the problem as a community-detection problem based on the wavelet frequency.
+\cite{baria2011anatomical} bin the frequencies and do local $t$-tests to determine
+whether or not two voxels are significantly related. \cite{cohen2008defining, gordon2014generation, barnes2011parcellation} recast the problem to be an edge-detection
+problem using the developments in computer vision where they input heatmaps formed by
+correlation values. The edge-detection algorithm then outputs visually-distinct components
+based on the images. \cite{ryali2013parcellation,pohl2007hierarchical} build sophisticated
+mixture models for how each voxel value is realized and use an expectation-maximization
+(EM) algorithm to uncover the clustering. Spatial priors can be incorporated into the
+model to encourage connected parcellations while multiple initializations can be used as
+a heuristic to determine the ``likeliness" of two voxels belonging to the same parcel.
+Finally, \cite{blumensath2013spatially} computes the Kendall's coefficient of concordance
+at each voxel and its 26 spatial neighbors and grows clusters based on these values.
+}
+
 Functional parcellation of the human brain can be defined as the problem
 of partitioning the voxels into $k$ disjoint connected components with
 the goal that the voxels within each component are, in a rough sense,
@@ -158,8 +226,8 @@ Consortium for Brain Mapping adopted this, the MNI152, as their
 standard template, and this is the template we will be using. We use
 the unsymmetrical MRI scan from MNI152 corresponding to voxels
 corresponding to cubes with an edge-length of 2 millimeters. This
-MNI152 template includes \{WHAT ARE THE DIMENSIONS? I'll look this up
-lol.\}.
+MNI152 template are $91\times 109 \times 91$ voxels in dimension but
+only 228,453 voxels represent the brain (25\% of the total volume).
 
 We preprocessed the raw data from ABIDE using the Configurable Pipeline
 for the Analysis of Connectomes (C-PAC) alpha version 0.3.9. C-PAC is
