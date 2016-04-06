@@ -126,8 +126,20 @@ partition.sym_nmf.python = function(edges, num_components)
   setwd('partition_nmf')
   write.table(cbind(edges$edge.mat, edges$energy.vec),
               file = 'edges.txt', row.names = F, col.names = F)
-  system(paste('source_symnmf.py edges.txt', num_components))
+  system(paste('python source_symnmf.py edges.txt', num_components))
   X = read.csv('X_symnmf.csv', header = F)
+  setwd('..')
+  as.factor(apply(X, 1, which.max))
+}
+
+partition.sym_bmf.python = function(edges, num_components)
+{
+  .validate.edges(edges)
+  setwd('partition_nmf')
+  write.table(cbind(edges$edge.mat, edges$energy.vec),
+              file = 'edges.txt', row.names = F, col.names = F)
+  system(paste('python main_symbmf.py edges.txt', num_components))
+  X = read.csv('X_symbmf.csv', header = F)
   setwd('..')
   as.factor(apply(X, 1, which.max))
 }

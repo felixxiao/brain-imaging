@@ -7,8 +7,8 @@ import sys
 def read_edges(filename):
   A = np.loadtxt(filename)
   w = A[:,2]
-  i = A[:,0].astype(int)
-  j = A[:,1].astype(int)
+  i = A[:,0].astype(int) - 1
+  j = A[:,1].astype(int) - 1
   w = np.concatenate((w, w))
   new_i = np.concatenate((i, j))
   j = np.concatenate((j, i))
@@ -79,7 +79,7 @@ def nonnegative_least_squares(CTC, CTB):
 
   return X
 
-def partition_symnmf(file_edges, k, tol = 1e-4,
+def partition_SymNMF(file_edges, k, tol = 1e-4,
                      alpha = 1, growth = .01):
   A = read_edges(file_edges)
   n = A.shape[0]
@@ -102,15 +102,45 @@ def partition_symnmf(file_edges, k, tol = 1e-4,
 
   HT.T
 
-"""
-n = 10
-k =  3
-C = np.matrix(np.random.rand(n, k))
-X = (np.matrix(np.random.rand(k, n)) - 0.5)
-B = C * X
+def partition_SymBMF_local(file_edges, k,
+                           sparse = True, incomplete = False):
+  if sparse:
+    A = read_edges(file_edges)
+  else:
+    A = np.genfromtxt(file_edges, delimiter = ',')
+  n = A.shape[1]
 
-Y = nonnegative_least_squares(C.T * C, C.T * B)
-"""
+  # initialize X : n by k
+  X = map(lambda j: [0]*j + [1] + [0]*(k-j-1), np.random.randint(0, k, n))
+  X = np.array(X)
 
-X = partition_symnmf(sys.argv[1], int(sys.argv[2]))
-np.savetxt('X_symnmf.csv', X, delimiter = ',')
+  if sparse:
+    if incomplete:
+      def cost(A, i, X):
+        a = A.getcol(i)
+        idx = a.nonzero()
+        return np.sum(np.abs(a[idx].T - X[idx[0],:]), 0)        
+    else:
+      pass
+  else:
+    def cost(A, i, X):
+      return np.sum(np.abs(A[:,i] - X.T), 1)
+
+  i = 0
+  j = 0
+  while True:
+    if i == 0: print '*',
+    k = np.argmax(X[i,:])
+    X[i,k] = 0
+
+    k_best = np.argmin(cost(A, i, X))
+
+    X[i,k_best] = 1
+
+    if k != k_best:
+      j = i
+    i = (i + 1) % n
+    if i == j:
+      break
+
+  return X

@@ -145,8 +145,8 @@ partition.contractedge.read_partition = function(filename, N = NULL)
 partition.contractedge.general = function(num_components, alpha, beta,
   edges = NULL, cg.json = NULL, N = NULL)
 {
-  setwd('partition_edgecontract')
-  command = paste(c('python main_contract_general_csv.py',
+  command = paste(c('python',
+                    'partition_edgecontract/main_contract_general_csv.py',
                     'edge_mat.csv weights.csv'), collapse = ' ')
   if (! is.null(edges))
   {
@@ -156,14 +156,70 @@ partition.contractedge.general = function(num_components, alpha, beta,
                 eol = '\n', row.names = F, col.names = F)
   }
   else if (! is.null(cg.json))
-    command = paste(c('python main_contract_general_json.py',
+    command = paste(c('python',
+                      'partition_edgecontract/main_contract_general_json.py',
                       cg.json), collapse = ' ') 
   system(paste(command, alpha, beta,
                paste(num_components, collapse = ' ')))
-  setwd('..')
-  return(partition.contractedge.read_partition(
-    'partition_edgecontract/partition.csv', N))
+
+  return(partition.contractedge.read_partition('partition.csv', N))
 }
+
+partition.contractedge.read_cg_json = function(cg.json)
+{
+  cg = fromJSON(cg.json)
+  
+  ori.names = names(cg$edges)
+  names(cg$edges) = 1:length(ori.names)
+  
+  for (i in 1:length(cg$edges))
+    names(cg$edges[[i]]) = mapvalues(names(cg$edges[[i]]), ori.names,
+                                     1:length(ori.names),
+                                     warn_missing = F)
+  edge.mat = matrix(NA, nrow = 0, ncol = 2)
+  weights  = c()
+  for (i in 1:length(cg$edges))
+  {
+    mat = cbind(i, as.integer(names(cg$edges[[i]])))
+    weights = c(weights, sapply(cg$edges[[i]], function(x) x[1] / x[2]))
+    edge.mat = rbind(edge.mat, mat)
+  }
+  nrow(edge.mat) == length(weights)
+  all(names(weights) == edge.mat[,2])
+  edge.mat = unname(edge.mat)
+  edges = list(edge.mat = edge.mat, energy.vec = weights)
+  edges = preprocess.validate.edges(edges)
+  list(edges = edges, map = as.integer(ori.names))
+}
+
+partition.contractedge.write_cg_json = function(edges, partition, filename)
+{
+  .validate.edges(edges)
+  partition = preprocess.split_disconnected_components(edges$edge.mat,
+                                                       partition)
+  n = length(partition)
+  k = nlevels(partition)
+  assert_that(all(levels(partition) == 1:k))
+  vertices = split(1:n, partition)
+  sink('vertices.json')
+  cat(jsonlite::toJSON(vertices))
+  sink()
+  
+  part.mat = mapvalues(edges$edge.mat, 1:n, partition)
+  write.table(cbind(part.mat, edges$energy.vec), 'edges.csv', sep = ',',
+              row.names = F, col.names = F)
+  
+  sink('write_cg_json.py')
+  cat(
+    "execfile('partition_edgecontract/source_contraction.py')",
+    "cg = ContractibleGraph.read_files('edges.csv', 'vertices.json')",
+    paste0("cg.save_file('", filename, "')"),
+  sep = '\n')
+  sink()
+
+  system('python write_cg_json.py')
+  file.remove('vertices.json', 'edges.csv', 'write_cg_json.py')
+ }
 
 # data is either edges or a Contractible Graph
 partition.contractedge = function(num.components, data,

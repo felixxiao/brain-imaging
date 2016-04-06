@@ -1,9 +1,9 @@
 # Arguments
 #   cg.json  alpha  beta  500 400 300 ...
 
-execfile('source_contraction.py')
+execfile('partition_edgecontract/source_contraction.py')
 
-cg = ContractibleGraph.read_file(sys.argv[1])
+cg = ContractibleGraph.read_file_json(sys.argv[1])
 
 alpha = float(sys.argv[2])
 beta  = float(sys.argv[3])

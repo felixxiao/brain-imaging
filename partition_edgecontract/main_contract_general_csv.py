@@ -1,7 +1,7 @@
 # Arguments:
 #   edge_mat.csv  weights.csv  alpha  beta  500 400 300 ...
 
-execfile('source_contraction.py')
+execfile('partition_edgecontract/source_contraction.py')
 
 edge_mat = np.genfromtxt(sys.argv[1], dtype = int, delimiter = ',')
 weights  = np.genfromtxt(sys.argv[2])

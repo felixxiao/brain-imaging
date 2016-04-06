@@ -36,22 +36,14 @@ preprocess.assign_unmapped_vertices = function(map, edges, N, partition)
   as.factor(components(g)$membership)
 }
 
-# Arguments
-#   part  : factor, partitioning assignments of graph A vertices
-#   map   : integer, maps vertices from graph A to graph B
-#   N     : numeric(1), number of vertices in graph B
-# Return
-#   factor(N), with partitioning assignments in A mapped to B vertices
-#     and NA values for B vertices with no corresponding A vertices
-preprocess.map_partition = function(part, map, N)
+preprocess.split_disconnected_components = function(edge.mat, partition)
 {
-  assert_that(length(part) == length(map))
-  assert_that(length(part) <= N)
-  
-  part.map = factor(rep(NA, times = N), levels = 1:(nlevels(part) + 1))
-  part.map[map] = part
-  part[is.na(part)] = nlevels(part) + 1
-  part.map
+  assert_that(all(unique(as.vector(edge.mat)) %in% 1:length(partition)))
+  g = igraph::graph.empty(length(partition))
+  part.mat = mapvalues(edge.mat, 1:length(partition), partition)
+  idx = part.mat[,1] == part.mat[,2]
+  g = igraph::add_edges(g, t(edge.mat[idx,]))
+  as.factor(igraph::components(g)$membership)
 }
 
 # Arguments

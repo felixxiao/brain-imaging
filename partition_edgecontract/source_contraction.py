@@ -8,7 +8,7 @@ import json
 class ContractibleGraph:
   # assumption : every pair of vertices have at most one edge
   # assumption : no vertex has an edge to itself
-  # edge_mat   : numpy.array of shape (|E|, 2), no redundancies
+  # edge_mat   : numpy.array of shape (|E|, 2), redundancies added
   def __init__(self, edge_mat = None, weights = None):
     if edge_mat is None:
       self.vertices = {}
@@ -21,11 +21,18 @@ class ContractibleGraph:
 
     for i in xrange(edge_mat.shape[0]):
       v, w = edge_mat[i,:]
-      # assert v != w
-      self.edges[v][w] = self.edges[w][v] = [weights[i], 1]
+      if v == w: continue
+      if w not in self.edges[v].keys():
+        assert v not in self.edges[w]
+        self.edges[v][w] = self.edges[w][v] = [weights[i], 1]
+      else:
+        assert v in self.edges[w]
+        self.edges[w][v][0] += weights[i]
+        self.edges[w][v][1] += 1
+      assert self.edges[w][v] is self.edges[v][w]
 
   @classmethod
-  def read_file(cls, filename):
+  def read_file_json(cls, filename):
     f = open(filename, 'r')
     objects = json.load(f)
     f.close()
@@ -34,27 +41,64 @@ class ContractibleGraph:
     cg.N        = objects['N']
     cg.edges    = {int(A): {int(B): link for B, link in links.items()}
                    for A, links in objects['edges'].items()}
+    for A in cg.edges:
+#      print A
+      assert A in cg.vertices
+      assert A not in cg.edges[A]
+      for B in cg.edges[A]:
+        assert B in cg.vertices
+        assert cg.edges[B][A] == cg.edges[A][B]
+        if cg.edges[A][B] is not cg.edges[B][A]:
+          cg.edges[A][B] = cg.edges[B][A]
+    return cg
+
+  def assert_valid(self):
+    for A in self.edges:
+      if A not in self.vertices:
+        raise Exception(str(A) + ' not in vertices')
+      for B in self.edges[A]:
+        if B not in self.vertices:
+          raise Exception(str(B) + ' not in vertices')
+        if self.edges[B][A] is not self.edges[A][B]:
+          raise Exception('edges between ' + str(A) + ' and ' + str(B) + ' unlinked')
+        if A not in self.edges[B]:
+          raise Exception(str(A) + ' not in edges[' + str(B) + ']')
+
+  @classmethod
+  def read_files(cls, edges_csv, vertices_json):
+    edges = np.genfromtxt(edges_csv, delimiter = ',')
+    edge_mat = edges[:,0:2].astype(int)
+    weights  = edges[:,2]
+    cg = cls(edge_mat, weights)
+    f = open(vertices_json)
+    cg.vertices = json.load(f)
+    f.close()
     return cg
 
   def contract_components(self, A, B):
-    # assert A and B in self.vertices.keys()
-    # assert A in self.edges[B].keys()
-    # assert B in self.edges[A].keys()
+#    assert A and B in self.vertices
+#    assert A in self.edges[B]
+#    assert B in self.edges[A]
+#    assert A != B
+#    self.assert_valid()
 
     self.vertices[A].extend(self.vertices[B])
-    self.vertices.pop(B)
 
     for B_adj in self.edges[B].keys():
-      if B_adj in self.edges[A].keys():
-        # assert A in self.edges[B_adj].keys()
-        # assert self.edges[B_adj][A] is self.edges[A][B_adj]
+#      assert self.edges[B_adj][B] is self.edges[B][B_adj]
+#      assert B_adj != B
+      if B_adj in self.edges[A]:
+#        assert A in self.edges[B_adj]
+#        assert self.edges[B_adj][A] is self.edges[A][B_adj]
         self.edges[A][B_adj][0] += self.edges[B][B_adj][0]
         self.edges[A][B_adj][1] += self.edges[B][B_adj][1]
-      elif B_adj != A:
-        # assert A not in self.edges[B_adj].keys()
+      elif B_adj != A: # B_adj not in self.edges[A]
         self.edges[A][B_adj] = self.edges[B_adj][A] = list(self.edges[B][B_adj])
       self.edges[B_adj].pop(B)
+      self.edges[B].pop(B_adj)
+#      self.assert_valid()
 
+    self.vertices.pop(B)
     self.edges.pop(B)
 
   def get_links(self, A):
