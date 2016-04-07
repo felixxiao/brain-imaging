@@ -303,13 +303,15 @@ no_singleton = function(edge.mat, part, detailed = F)
   all(is_conn)
 }
 
-is_connected = function(edge.mat, part)
+is_connected = function(edge.mat, part, detailed = F)
 {
-  sapply(split(1:length(part), part), function(p) {
+  comp = sapply(split(1:length(part), part), function(p) {
     #edge_idx = apply(edge.mat, 1, function(x) all(x %in% p))
     edge_idx = edge.mat[,1] %in% p & edge.mat[,2] %in% p
     subgraph = igraph::graph.empty(max(edge.mat), F)
     subgraph = igraph::add_edges(subgraph, t(edge.mat[edge_idx,]))
     length(unique(igraph::components(subgraph)$membership[p]))
   })
+  if (detailed) return(comp)
+  mean(comp)
 }
