@@ -7,9 +7,9 @@ parcellation problem. We construct a weighted undirected graph where
 each vertex is a voxel. The graph reflects the spatial position of the
 voxels; it connects each vertex to the vertices representing the voxel's
 six cubically adjacent neighbors. The weights on these edges are sample
-energy distance correlation statistics between the adjacent voxels in
-the time series and they measure statistical dependence between the
-voxels. Let $G(V, E)$ denote this graph, its vertices, and its edges.
+distance correlation statistics between the adjacent voxels in
+the time series and they measure statistical dependence, with 0 denoting full independence and 1 full dependence. Let $G(V, E)$ denote
+this graph, its vertices, and its edges.
 
 In this context, a valid $k$-fold partition $\mathcal{P}_k$ of the
 graph $G$ is a collection of vertex subsets $(V_1, ..., V_k)$
@@ -172,3 +172,6 @@ For instance, a $n \times n \times n$ cube of vertices would have
 a jaggedness of $6^{\frac{3}{2}}$ which does not depend on $n$.
 
 \section{Comparing Multiple Parcellations}
+
+A common criterion for measuring the similarity of two partitionings
+is Rand Index, defined as
