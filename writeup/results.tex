@@ -1,0 +1,106 @@
+\section{Summary of Methods}
+
+\begin{table}
+\caption{Summary of Partitioning Methods}
+\label{8_methods}
+\includegraphics[scale = 0.5]{figs/8_methods.png}
+%\begin{tabular}{cccccccc}
+%\input{figs/8_methods.tex}
+%\end{tabular}
+\end{table}
+
+Table (\ref{8_methods}) summarizes the objectives, advantages, and
+drawbacks of each partitioning method we've presented in the previous
+chapters. Clearly, the requirement of parcels to be connected components
+is the biggest roadblock to developing a good method.
+
+There is a post-processing method that can take a parcellation with
+disconnected components and modify it to be connected. The method is to
+treat each separate component of a parcel as new parcels, create a
+Contractible Graph with these new parcels as components, and apply the
+(Generalized) Edge Contract algorithm. This was carried out as a
+post-processing step in the spectral and SymBMF parcellations, detailed
+in the next section.
+
+The second limiting factor is computational time. The Alternating
+Nonnegative Least Squares algorithm can be made to work on graphs as
+large as the brain, but this would require some specialized data
+structures for the computation of $X$ and $Y$ to avoid re-computing
+unchanged columns. Unfortunately we did not have enough time to
+implement this.
+
+The problem of computational time is most evident in the integer (and
+linear) programming methods. The fact that our brain data was too large
+for even the lightest linear program shows that this generic optimization
+approach is typically not feasible. However, these proposed methods may
+be of use to problems with smaller data sets.
+
+One possible approach to dealing with computational time that we have not
+had the time to explore is to apply the MIP methods to small subgraphs
+of the brain. For instance, one could take the AAL parcellation and
+obtain a finer parcellation by using a MIP method on each of the AAL
+parcels.
+
+All of the methods above can be applied to the similar problem of
+\textit{clustering}. In fact, similarity-based clustering is just a
+special case of graph partitioning where the graph is fully connected
+(i.e., every vertex has an edge to every other vertex), so connectedness
+of partitions is no longer a relevant factor. Then, if we define the
+Adjacent-Score in terms of similarity equal to negative Euclidean
+distance squared:
+\[ \frac{1}{K}\sum_{k=1}^K \frac{1}{{|V_k| \choose 2}}
+   \sum_{x,y \in V_k} - \|x - y\|^2 \]
+the objective of maximizing Adjacent-Score becomes equivalent to 
+minimizing a weighted within-cluster sum of squares objective
+\[ \sum_{k=1}^K \frac{1}{{|V_k| \choose 2}}
+   \sum_{x \in V_k} \|x - \mu_k\|^2 \]
+where $\mu_k$ is the mean of all $x$ in $V_k$.
+
+\section{Parcellations of ABIDE fMRI Scans}
+
+\begin{table}
+\caption{Criteria Scores of Various Parcellation Methods, %
+Averaged Across Normal Brains}
+\label{normal}
+\begin{tabular}{l | r r r r r r}
+\input{figs/8_control.tex}
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Criteria Scores of Various Parcellation Methods, %
+Averaged Across Autism Spectrum Brains}
+\label{autism}
+\begin{tabular}{l | r r r r r r}
+\input{figs/8_autism.tex}
+\end{tabular}
+\end{table}
+
+Tables (\ref{normal}) and (\ref{autism}) respectively show the results
+of various parcellation methods carried out on resting state fMRI scans
+of 6 control and 6 autism patients. For each method and criterion,
+the values are averaged over the six subjects in each cohort.
+
+In both groups, the Generalized Edge-Contract with parameters
+$\alpha = 6$ and $\beta = 4$ performed best.
+
+\section{Similarity and Cross-Validation}
+
+\begin{figure}
+\caption{Adjusted Rand Index Between Different 116-Parcel Parcellations%
+ of the same fMRI Scan, Averaged over All Subjects}
+\includegraphics[scale = 1]{figs/8_ari_same.png}
+\end{figure}
+
+\begin{figure}
+\caption{Adjusted Rand Index Between 116-Parcel GenEC(6,4)
+Parcellations on Different fMRI Scans}
+\includegraphics[scale = 1]{figs/8_ari_diff.png}
+\end{figure}
+
+The mean ARI between autistic and control brains is not significantly
+different from the mean ARI between brains of the same cohort, at the
+116-parcel level.
+
+\section{Conclusion}
+

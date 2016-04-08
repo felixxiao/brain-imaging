@@ -79,10 +79,10 @@ Hence, a parcellation-level network is a natural idea where
 each parcel represents a group of spatially-adjacent voxels that
 have similar functional behaviors. 
 Many authors have used atlas-based definitions the Brodmann-based
-automatic anatomic labeling atlas (AAL) \citep{tzourio2002automated} which defines 114 parcels based on the brain
+automatic anatomic labeling atlas (AAL) \cite{tzourio2002automated} which defines 114 parcels based on the brain
 anatomy.
 While apparently meaningful results have
-been obtained with such approaches \citep{hartman2011role, he2009uncovering, liu2008disrupted, lynall2010functional, power2011functional, salvador2005neurophysiological, spoormaker2010development, supekar2008network, tian2011hemisphere, wang2009parcellation}, they are not ideal due to two reasons.
+been obtained with such approaches \cite{hartman2011role, he2009uncovering, liu2008disrupted, lynall2010functional, power2011functional, salvador2005neurophysiological, spoormaker2010development, supekar2008network, tian2011hemisphere, wang2009parcellation}, they are not ideal due to two reasons.
 First, while brain anatomy is a reasonable factor in determine functionally-similar
 regions, a data-driven parcellation estimated in a statistical fashion
 could perform better. Second, anatomically-based parcellation have a fixed
@@ -97,16 +97,16 @@ mean signal from each region are roughly independent with one another. \cite{che
 extended this idea by using PCA first to determine the number of clusters, while
 \cite{beckmann2005investigations, de2006fmri} extend this idea by fitting
 a mixture model to each component found in ICA. Another large
-body of works include K-means clustering \citep{flandin2002parcellation,mezer2009cluster,peltier2003detecting,thirion2006dealing}.
+body of works include K-means clustering \cite{flandin2002parcellation,mezer2009cluster,peltier2003detecting,thirion2006dealing}.
 Some authors using K-means clustering use the measured fMRI signal as the covariates while
 others use the frequency coefficients determined by the Fourier transform. The authors
 incorporate spatial distances to ensure that the resulting parcellations are connected.
 Hierarchical clustering is another natural candidate, whereby different authors merge
-neighboring voxels according to varying statistics \citep{diez2014novel,bellec2006identification,lu2003region,heller2006cluster}.
+neighboring voxels according to varying statistics \cite{diez2014novel,bellec2006identification,lu2003region,heller2006cluster}.
 
 The methods developed in our thesis are most similar to
 spectral methods. Spectral methods represent another large body of literature to cluster voxels
-\citep{craddock2012whole,van2008normalized,shen2010graph,newman2006modularity,shen2013groupwise,zhang2014robust}.
+\cite{craddock2012whole,van2008normalized,shen2010graph,newman2006modularity,shen2013groupwise,zhang2014robust}.
 These methods include spectral clustering or spectral partitioning. These methods typically
 form the weight matrix by the distances from K-nearest neighbors, by Pearson correlation,
 or regularized linear regression. As spectral methods tend to split the covariates into

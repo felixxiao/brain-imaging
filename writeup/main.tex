@@ -1,4 +1,5 @@
 \documentclass[12pt,lot,lof]{puthesis_undergraduate}
+%\documentclass{report}
 \title{Approaches to Brain Parcellation using Energy Statistics and Graph Partitioning}
 \submitted{June 2016}
 \author{Felix Xiao}
@@ -9,7 +10,8 @@
 
 \acknowledgements{\input{acknowledgements.tex}}
 
-\usepackage{amsmath, amsfonts, graphicx, enumerate, amssymb, algpseudocode, algorithm, csvsimple, subcaption}
+\usepackage{amsmath, amsfonts, graphicx, enumerate, amssymb, algpseudocode, algorithm, csvsimple, subcaption, adjustbox, lipsum, adjustbox, array}
+%\usepackage[table]{xcolor}
 
 \input{newcommands.tex}
 
@@ -37,8 +39,7 @@
 \input{optimization.tex}
 
 \chapter{Results}
-
-\chapter{Conclusion}
+\input{results.tex}
 
 \bibliography{ref}
 \bibliographystyle{apalike}
