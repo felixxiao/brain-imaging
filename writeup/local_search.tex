@@ -391,8 +391,10 @@ if the link has a large weight, and if it has a good boundary-ratio,
 defined as $\frac{|E_{A,B}|}{\min(|A|,|B|)}$, which helps to minimize
 jaggedness. From these notions we created a family of priority
 functions indexed by tunable parameters $\alpha$ and $\beta$
-\[ p_1(A, B) = \frac{w_{A,B}^\alpha}{|A|^\beta} \cdot
-               \frac{|E_{A,B}|}{\min(|A|,|B|)} \]
+\begin{equation} \label{priority_func}
+p_1(A, B) = \frac{w_{A,B}^\alpha}{|A|^\beta} \cdot
+            \frac{|E_{A,B}|}{\min(|A|,|B|)}
+\end{equation}
 that modulate the balance of small size, large weight, and high
 boundary ratio. Table \ref{gen_ec} shows the results of the
 116-component and 300-component Generalized Edge-Contract parcellation
