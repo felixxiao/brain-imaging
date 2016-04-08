@@ -1,4 +1,5 @@
-brain = commandArgs()
+source('energy_parcellation/header_energy.R')
+#brain = commandArgs()
 load(paste0(brain, '-partitions.RData'))
 
 # get dat and edges for brain
