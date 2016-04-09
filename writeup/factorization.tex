@@ -19,7 +19,7 @@ $R R^T u_n = u_n$ where $u_n$ is a $n$-dimensional vector of all ones.
 If the sizes of the components in the optimal ratio cut partition
 are perfectly balanced, which is equivalent to saying if the diagonal
 of the optimal ratioed assignment matrix $R R^T$ has entries all
-equal to $\frac{k}{n}$, then
+equal to $k/n$, then
 \begin{align*}
 \Tr(R^T D R) &= \sum_{i=1}^n [R R^T]_{ii} D_{ii} \\
              &= \sum_{i=1}^n \frac{k}{n} D_{ii} \\
@@ -34,7 +34,7 @@ vertex has the same degree $D_{ii} = d$, in which case
 \end{align*}
 is also a constant that does not depend on $R$. In either case,
 \[ \argmin{R \in \mathcal{R}} \Tr(R^T L R)
- = \argmax{R \in \mathcal{R}} \Tr(R^T A R) \]
+ = \argmax{R \in \mathcal{R}} \Tr(R^T A R). \]
 This equality may also hold even if neither condition is true,
 especially if they are approximately true.
 
@@ -63,14 +63,14 @@ between SymNMF and graph partitioning.
 \begin{theorem}
 Let $A$ be a $n \times n$ symmetric matrix. Then
 \[ \argmax{H^T H = I, H \geq 0} \Tr(H^T A H)
- = \argmin{H^T H = I, H \geq 0} \| A - H H^T \|_F^2 \]
+ = \argmin{H^T H = I, H \geq 0} \| A - H H^T \|_F^2. \]
 
 Proof. \begin{align*}
    \argmax{H^T H = I, H \geq 0} \Tr(H^T A H)
 &= \argmin{H^T H = I, H \geq 0} -2 \Tr(H^T A H) \\
 &= \argmin{H^T H = I, H \geq 0} \Tr(A A^T) - 2 \Tr(H^T A H)
                                 + \|H^T H\|_F^2 \\
-&= \argmin{H^T H = I, H \geq 0} \|A - H H^T\|_F^2
+&= \argmin{H^T H = I, H \geq 0} \|A - H H^T\|_F^2.
 \end{align*}
 \end{theorem}
 
@@ -84,13 +84,12 @@ is to drop the $H^T H = I$ constraint and solve the SymNMF problem:
 \begin{equation} \label{sym_nmf}
 \begin{aligned}
 \min_{H \in \R^{n \times k}} &\;& \|A - H H^T\|_F^2 \\
-\text{s.t.}                  &\;& H \geq 0          \\
+\text{s.t.}                  &\;& H \geq 0.         \\
 \end{aligned}
 \end{equation}
 
-This relaxation has two key differences from the spectral relaxation
-\label{spectral_k-partition}.
-\begin{itemize}
+This relaxation has two key differences from the spectral relaxation:
+\begin{enumerate}
 \item
 There is no closed-form solution, and the optimal value is found
 via an optimization algorithm, described in the next section.
@@ -98,7 +97,7 @@ via an optimization algorithm, described in the next section.
 \item
 The optimal assignments are recovered directly from the largest
 entry in each row. There is no need for $k$-means.
-\end{itemize}
+\end{enumerate}
 
 \subsection{The Alternating Nonnegative Least Squares Algorithm}
 
@@ -160,7 +159,7 @@ The ANLS algorithm for SymNMF is the following:
 \end{algorithmic}
 \end{algorithm}
 
-\cite{Kuang:15} recommends multiplying $alpha$ by 1.01 each iteration.
+\cite{Kuang:15} recommends multiplying $\alpha$ by 1.01 each iteration.
 The next section describes the method in \cite{Kim:11} for solving the
 embedded nonnegative least squares problem.
 
@@ -177,23 +176,25 @@ $\begin{bmatrix} A \\ \sqrt{\alpha} W^T \end{bmatrix}$ with the same
 index as the index of row $x$ in $H$. Since the rows of $H$ share no
 constraints with one another, the general NLS problem in Algorithm
 \ref{anls_symnmf} can be viewed simply as $n$ independent cases of
-\ref{single_column_nls}.
+Equation \ref{single_column_nls}.
+{\color{red}In general, be sure the write the word ``Equation" in front
+of all equation citations.}
 
 The Karush-Kuhn-Tucker necessary conditions for optimality are:
 \begin{enumerate}
 \item
-$y = C^T C x - C^T b$
+$y = C^T C x - C^T b$,
 \item
-$y \geq 0$
+$y \geq 0$,
 \item
-$x \geq 0$
+$x \geq 0$,
 \item
-$x_i y_i = 0$ for $i = 1, ..., k$
+$x_i y_i = 0$ for $i = 1, ..., k$.
 \end{enumerate}
 Since $I_k$ is full column rank, so is $C$, making $C^T C$ positive
-definite and \ref{single_column_nls} strictly convex.
+definite and Equation \ref{single_column_nls} strictly convex.
 
-Let $x^*$ be the optimal solution to \ref{single_column_nls}. Suppose
+Let $x^*$ be the optimal solution to Equation \ref{single_column_nls}. Suppose
 the indices of the strictly positive entries of $x^*$ were known and
 denote them with $F$. Then all the entries of $x^*$ and $y^*$ can be
 computed. Let $x_F$ denote the vector of entries of $x$ indexed by $F$
@@ -201,22 +202,22 @@ and $C_F$ is the matrix of \textit{columns} of $C$ indexed by $F$. Let
 $G$ be all the elements of $\{1, ..., k\}$ not in $F$. Then,
 \begin{subequations} 
 \begin{equation} \label{x_F}
-x_F = \argmin{x_F \geq 0} \|C_F x_F - b\|_2^2
+x_F = \argmin{x_F \geq 0} \|C_F x_F - b\|_2^2,
 \end{equation}
 \begin{equation} \label{x_G}
-x_G = 0
+x_G = 0,
 \end{equation}
 \begin{equation} \label{y_F}
-y_F = 0
+y_F = 0,
 \end{equation}
 \begin{equation} \label{y_G}
-y_G = C_G^T (C_F x_F - b)
+y_G = C_G^T (C_F x_F - b).
 \end{equation}
 \end{subequations}
-(\ref{x_F}) is implied by the fact that the strictly positive entries
-of $x$ must solve the unconstrained problem. (\ref{x_G}) is true by
+Equation \ref{x_F} is implied by the fact that the strictly positive entries
+of $x$ must solve the unconstrained problem. Equation \ref{x_G} is true by
 definition of $F$ and $G$. (\ref{y_F}) is implied by KKT condition 4.
-(\ref{y_G}) is implied by KKT condition 1. If index sets $F$ and $G$
+Equation \ref{y_G} is implied by KKT condition 1. If index sets $F$ and $G$
 give the optimal solution, then $x_F$ and $y_G$ must satisfy KKT
 conditions 2 and 3 (nonnegativity). Therefore the
 \textit{Block Pivoting Algorithm} finds the optimal $x$ and $y$ by
@@ -231,10 +232,10 @@ is not empty. The algorithm updates $F$ and $G$ by taking a subset
 $\hat{V} \subseteq V$ and setting
 \begin{subequations} \label{update_F_G}
 \begin{equation}
-F \gets (F - \hat{V}) \cup (\hat{V} \cap G)
+F \gets (F - \hat{V}) \cup (\hat{V} \cap G),
 \end{equation}
 \begin{equation}
-G \gets (G - \hat{V}) \cup (\hat{V} \cap F)
+G \gets (G - \hat{V}) \cup (\hat{V} \cap F).
 \end{equation}
 \end{subequations}
 By default, the algorithm uses $\hat{V} = V$ for speed. However, there
@@ -242,15 +243,15 @@ are cases where this could result in an infinite loop, so the single
 pivot rule $\hat{V} = \max \{j \in V\}$ is invoked instead, despite
 being slower.
 
-In the multicolumn case 
+In the multicolumn case, we solve
 \begin{equation} \label{multi_column_nls}
 \min_{X \geq 0} \| C X - B \|_2^2
 \end{equation}
-$X$ is $k \times n$ and the algorithm needs to track, for each column of
+where $X$ is $k \times n$ matrix, and the algorithm needs to track, for each column of
 $X$, the $F$ and $G$ indices. Since in many cases including ours,
 $n \gg k$, so many columns of $X$ are likely to have the same $F$ and $G$.
 Given this fact, the block pivoting algorithm has a shortcut to solving
-(\ref{x_F}) and (\ref{y_G}) for each column. (\ref{x_F}) is found by solving
+Equation \ref{x_F} and Equation \ref{y_G} for each column. Equation \ref{x_F} is found by solving
 $C_F^T C_F x_F = C_F^T b$ and the Cholesky factorization for this can be done
 just once for all columns with the same $F$ indices. Additionally, the
 $C_F^T C_F$, $C_F^T b$, $C_G^T C_F$, and $C_G^T b$ matrices and vectors
@@ -264,6 +265,8 @@ C^T C = W^T W + \alpha I_k
 \begin{equation} \label{CTB}
 C^T B = W^T A + \alpha W^T
 \end{equation}
+
+{\color{red}You mentioned this isn't done yet.}
 
 \begin{algorithm}
 \caption{Block Pivoting Algorithm for NLS}
@@ -316,9 +319,12 @@ Let $B$ be the unweighted adjacency matrix of a graph with $n$ vertices
 and $X \in \{0, 1\}^{n \times K}$ be an assignment matrix satisfying
 $X e_K = e_n$ and $X^T e_n \geq e_K$. If the partitions of the graph
 defined by $X$ are connected then
-\[ (B - I) X \geq 0 \]
+\[ (B - I) X \geq 0. \]
 
-\textit{Proof:} Let $b_i$ denote the $i$th row of $B$ and $X_k$ the
+\end{prop}
+
+\begin{proof}
+Let $b_i$ denote the $i$th row of $B$ and $X_k$ the
 $k$th column of $X$. Since the non-zero entries of $b_i$ indicate
 which vertices $i$ is neighboring and the non-zero entries of $X_k$
 indicate which vertices are in the $k$th partition, the dot product
@@ -330,7 +336,7 @@ at least 1 if $k$ is the partition containing $i$. If $k$ does not
 contain $i$, then $b_i X_k$ can be 0. This can be succinctly expressed
 as $b_i X_k \geq X_{ik}$ for all $i = 1, ..., n$ and $k = 1, ..., K$,
 which is equivalent to the matrix inequality above.
-\end{prop}
+\end{proof}
 
 This fact will be used in the next section for the problem of finding
 a binary matrix factorization of $A$.
@@ -351,14 +357,14 @@ $A \in [0, 1]^{n \times n}$ we want to solve
 \begin{tabular}{l l}
 minimize   & $\norm{A - X X^T}_F^2$ \\
 subject to & $X \in \{0, 1\}^{n \times k}$ \\
-           & $X e_k = e_n$
+           & $X e_k = e_n$.
 \end{tabular}
 \end{center}
 The constraint $X^T e_n \geq 1$ can be added to ensure no column of $X$
 contains all zeros. Additionally, the constraint $(B - I) X \geq 0$
 (where $B$ is the unweighted adjacency matrix) can be added for graph
 partitioning purposes to ensure all the partitions are connected
-(\ref{connected}).
+(Equation \ref{connected}).
 
 It is desirable for algorithms that solve SymBMF to work well when $A$
 is sparse or incomplete. In the sparse case, when most entries of $A$
@@ -395,7 +401,7 @@ where $k$ is the parcel that vertex $i$ has been assigned to.
 In the case of incomplete matrix $A$, the column selection rule in
 \ref{col_select} should replaced by
 \begin{equation} \label{inc_col_select}
-k^* = \argmin{k = 1,...,K} \sum_{j \in A_i} (A_{ij} - X_{jk})^2
+k^* = \argmin{k = 1,...,K} \sum_{j \in A_i} (A_{ij} - X_{jk})^2.
 \end{equation}
 The squared terms in (\ref{col_select}) and (\ref{inc_col_select}) can
 also be changed to absolute value.
@@ -427,12 +433,12 @@ have been edited since $x_i$ was last edited.
 
 The MIP method begins by replacing objective's squared term in the
 Frobenius norm with an L1 penalty. This new objective function is
-equivalent to the original if $A$ is binary.
+equivalent to the original if $A$ is binary. Specifically,
 \begin{center}
 \begin{tabular}{l l l}
 minimize   & $\sum_{(i,j) \in A} |A_{ij} - x_i^T x_j|$ \\
 subject to & $x_i \in \{0, 1\}^k$ & for $i = 1, ..., n$ \\
-           & $e_k^T x_i = 1$ & for $i = 1, ..., n$
+           & $e_k^T x_i = 1$ & for $i = 1, ..., n$.
 \end{tabular}
 \end{center}
 This problem would be a mixed integer program if it were not for the
@@ -453,10 +459,13 @@ Then $y_{ij} = x_i^T x_j$ is equivalent to
 \[ y_{ij} \leq \min (x_i - x_j) + 1 \]
 \[ y_{ij} \geq \max (x_i + x_j) - 1 \]
 
-\textit{Proof:} Follows from the fact that $\min (x_i - x_j) + 1$ and
+\end{lemma}
+
+\begin{proof}
+Follows from the fact that $\min (x_i - x_j) + 1$ and
 $\max (x_i + x_j) - 1$ both equal 1 if $x_i$ and $x_j$ are equal
 and 0 if not.
-\end{lemma}
+\end{proof}
 
 Substituting $y_{ij}$ and adding the above linear constraints gives us
 the following MIP equivalent of SymBMF.

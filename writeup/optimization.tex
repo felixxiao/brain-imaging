@@ -1,9 +1,13 @@
+{\color{red}Need some introductory text. What happened in the previous chapter,
+what will happen in this chapter?}
+
 \section{A Global Solution to Mean Adjacent Within Edge}
 
+
 We want to find a partitioning of graph $G(V,E)$ into $K$ components
-so as to minimize the Adjacent-Score (\ref{adjacent-score})
+so as to minimize the Adjacent-Score (Equation \ref{adjacent-score})
 \[ \frac{1}{K} \sum_{V \in \mathcal{P}_K}
-   \frac{1}{|E_{V,V}|} \sum_{(i,j) \in E_{V,V}} A_{i,j}
+   \frac{1}{|E_{V,V}|} \sum_{(i,j) \in E_{V,V}} A_{i,j}.
 \]
 
 Let $m = |E|$, the number of edges in the graph. Assign each edge an
@@ -16,7 +20,7 @@ For $k = 1, ..., K$, let $z_k \in \{0, 1\}^m$ be a 0-1 vector with
 $j$th entry satisfying
 \[ z_{jk} = \begin{cases}
   1 & \text{if both endpoints of edge } j \text{ are in } V_k \\
-  0 & \text{otherwise}
+  0 & \text{otherwise}.
 \end{cases} \]
 
 If $z_1, ..., z_K \in \{0, 1\}^m$ describe a valid partitioning, then
@@ -38,15 +42,15 @@ z_{jk} &\leq x_{ik}
 \end{align*}
 for all $j = 1, ..., m$, $k = 1, ..., K$, where $(h,i)$ are the two
 endpoints of edge $j$. If we constrain $X$ to be binary then the three
-above constraints are equivalent to:
+above constraints are equivalent to
 \[ z_{jk} = \begin{cases}
   1 & \text{if } x_{hk} = 1 \text{ and } x_{ik} = 1 \\
-  0 & \text{otherwise} \\
+  0 & \text{otherwise}. \\
 \end{cases}\]
 For the $X$, we only need to ensure every vertex is in a parcel and every
 parcel has at least one vertex (or some other specified minimum):
-\[ \sum_{k=1}^K x_{ik} = 1 \]
-\[ \sum_{i=1}^n x_{ik} \geq 1 \]
+\[ \sum_{k=1}^K x_{ik} = 1, \]
+\[ \sum_{i=1}^n x_{ik} \geq 1, \]
 where the equation holds for all $i$ and the inequality for all $k$.
 
 Hence the following optimization problem finds a valid partition that
@@ -69,7 +73,7 @@ subject to
            & $\sum_{j=1}^m z_{jk} \geq 1$ & $k = 1, ..., K$ \\
            & $\sum_{k=1}^K x_{ik} = 1$ & $i = 1, ..., n$ \\
            & $\sum_{i=1}^n x_{ik} \geq 1$ & $k = 1, ..., K$ \\
-           & $X \in \{0, 1\}^{n \times K}$
+           & $X \in \{0, 1\}^{n \times K}$.
 \end{tabular}
 \egroup
 \end{center}
@@ -86,13 +90,13 @@ There are four linear constraints for each $w_{jk}$:
 
 \begin{enumerate}
 \item
-$y_j - w_{jk} \leq 1 - z_{jk} $
+$y_j - w_{jk} \leq 1 - z_{jk}, $
 \item
-$w_{jk} \leq y_j$
+$w_{jk} \leq y_j$,
 \item
-$w_{jk} \leq z_{jk}$
+$w_{jk} \leq z_{jk}$,
 \item
-$w_{jk} \geq 0$ 
+$w_{jk} \geq 0$.
 \end{enumerate}
 
 If $z_{jk} = 1$, then 1 and 2 will ensure that $w_{jk} = y_k$.
@@ -126,7 +130,7 @@ subject to
                 w_{jk} \leq z_{jk} \\
                 w_{jk} \geq 0 \\
              \end{cases}$
-           & $j = 1, ..., m$, $k = 1, ..., K$ \\
+           & $j = 1, ..., m$, $k = 1, ..., K$. \\
 \end{tabular}
 \egroup
 \end{center}
@@ -151,12 +155,12 @@ maximize   & $\dfrac{a^T z_1}{e_m^T z_1} + \cdots +
               \dfrac{a^T z_K}{e_m^T z_K}$ \\
 subject to & $\sum_{k=1}^K z_k = e_m$ \\
            & $e_m^T z_k \geq 1$   & for $k = 1, ..., K$ \\
-           & $z_k \in \{0, 1\}^m$ & for $k = 1, ..., K$ \\
+           & $z_k \in \{0, 1\}^m$ & for $k = 1, ..., K$. \\
 \end{tabular}
 \egroup
 \end{center}
 
-using the \cite{Li:94} transformation we get
+Using the \cite{Li:94} transformation mentioned above, we get
 
 \begin{center}
 \bgroup
@@ -173,7 +177,7 @@ subject to & $\sum_{k=1}^K z_k = e_m$ \\
                 w_{jk} \leq z_{jk} \\
                 w_{jk} \geq 0 \\
              \end{cases}$
-           & $j = 1, ..., m$, $k = 1, ..., K$ \\
+           & $j = 1, ..., m$, $k = 1, ..., K$. \\
 \end{tabular}
 \egroup
 \end{center}
@@ -195,7 +199,10 @@ the assignment matrix $X$? We propose to create an approximate
 partition matrix (\ref{partition_matrix}) $P$ from the $z_k$ so that
 \[ P_{ij} = \begin{cases}
   1 & \text{if } \argmax{k} z_{ik} = \argmax{k} z_{jk} \\
-  0 & \text{otherwise}
+  0 & \text{otherwise}.
 \end{cases}\]
 Following this we could use either of the SymBMF methods introduced
 in the previous chapter to find a decomposition $P \approx X X^T$.
+
+{\color{red}For this method (and others), also mention the implementation.
+What language and what packages?}

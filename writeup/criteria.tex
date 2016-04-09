@@ -47,7 +47,8 @@ statistics such as Pearson's.
 Let $\mathcal{R}(x,y)$ denote the distance correlation between two
 voxels $x$ and $y$.
 Let $V$ and $W$ be any parcels. We will use $E_V$ to denote the set of edges with one end in $V$ and one end not in $V$, and $E_{V,W}$ the set
-of edges with one end in $V$ and one in $W$.
+of edges with one end in $V$ and one in $W$. {\color{red}Mention if we want to
+maximize or minimize these criteria. Do it for each of them}
 
 \begin{definition}[Within-Score] \label{within-score}
 \[ \frac{1}{k} \sum_{V \in \mathcal{P}_k}
@@ -167,11 +168,15 @@ The Balance-Score ranges from 1 (all equally sized parcels) to
 \]
 \end{definition}
 
-The $\frac{3}{2}$ power makes the ratio invariant on parcel size.
+The $\frac{3}{2}$ power makes the ratio invariant on parcel size. 
+{\color{red}Not a fan of this sentence about ratio invariant. Maybe just
+say it's used to account for the fact that numerator is a surface area-like
+measurement while the denominator is a volume-like measurement.}
 For instance, a $n \times n \times n$ cube of vertices would have
 a jaggedness of $6^{\frac{3}{2}}$ which does not depend on $n$.
 
 \section{Comparing Multiple Parcellations}
 
+{\color{red}Put the stuff about rand index here}
 A common criterion for measuring the similarity of two partitionings
 is Rand Index, defined as

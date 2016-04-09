@@ -1,0 +1,39 @@
+\documentclass[12pt,lot,lof]{report}
+%\documentclass{report}
+\title{Approaches to Brain Parcellation using Energy Statistics and Graph Partitioning}
+
+\usepackage{amsmath, amsfonts, color, graphicx, enumerate, amssymb, algpseudocode, algorithm, csvsimple, subcaption, adjustbox, lipsum, adjustbox, array}
+%\usepackage[table]{xcolor}
+
+\input{newcommands.tex}
+
+\begin{document}
+
+\chapter{Functional MRI Data and Brain Parcellation}
+%\input{intro.tex}
+
+\chapter{Energy Statistics}
+\input{energy_statistics.tex}
+
+\chapter{Criteria for Evaluating Parcellations}
+\input{criteria.tex}
+
+\chapter{Local Search and Graph Growing Heuristics}
+\input{local_search.tex}
+
+\chapter{Spectral Methods}
+\input{spectral.tex}
+
+\chapter{Symmetric Nonnegative Matrix Factorization}
+\input{factorization.tex}
+
+\chapter{Mixed Integer and Linear Programming}
+\input{optimization.tex}
+
+\chapter{Results}
+\input{results.tex}
+
+\bibliography{ref}
+\bibliographystyle{apalike}
+
+\end{document}
