@@ -4,6 +4,19 @@
 \newtheorem{corollary}[definition]{Corollary}
 \newtheorem{theorem}[definition]{Theorem}
 
+\ifx\BlackBox\undefined
+\newcommand{\BlackBox}{\rule{1.5ex}{1.5ex}}  % end of proof
+\fi
+
+\ifx\QED\undefined
+\def\QED{~\rule[-1pt]{5pt}{5pt}\par\medskip}
+\fi
+
+\ifx\proof\undefined
+\newenvironment{proof}{\par\noindent{\bf Proof\ }}{\hfill\BlackBox\\[2mm]}
+%\newenvironment{proof}{\emph{Proof. }}{ \hfill \QED}
+\fi
+
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\Expect}{{\rm I\kern-.3em E}}
 \newcommand{\Var}{\mathrm{Var}}

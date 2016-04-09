@@ -5,7 +5,9 @@
 % 3. more analysis of SC AE results
 %#######################################################################
 
-We introduce several algorithms for generating brain parcellations. The
+We introduce several algorithms for generating brain parcellations. {\color{red}
+This is back to the previous chapter. Restate that we're using the edge weights
+as the distance correlation.} The
 algorithms in this chapter are all local search heuristics; they begin
 with $n$ unconnected vertices and iteratively join adjacent ones into
 components until some stopping criterion is met.
@@ -55,8 +57,14 @@ components after adding $c - k$ edges, where $c$ is the current number
 of connected components of the graph, beginning at $n$.
 
 Another implementation uses a binary search-type strategy and is
-$O((n + E) \log E)$. The idea is to ``search'' for the last edge to add
-to the graph by maintaining a range of possible last edges. In each
+$O((n + E) \log E)$. This exploits the monotonicity of our 
+procedure which considers the ordering of the edge weights.
+The idea is to ``search'' for the last edge to add
+to the graph by maintaining a range of possible last edges.
+{\color{red}This isn't very clear to be honest. I would just 
+talk about how the components must strictly grow as more edges are 
+added, and you are just trying different number of edges to add
+in their sorted order.} In each
 iteration, the algorithm would add to the graph edges 1 to the midpoint
 of this range, compute the number of connected components, and adjust
 the range based on whether the number of components is higher or lower
@@ -64,6 +72,7 @@ than the target $K$.
 
 \subsection{Implementation of Size-Constrained Version using Union-Find}
 
+{\color{red}I think you said you'll remove this section}
 The naive implementation must use BFS/DFS in each iteration to compute
 the sizes of the two components to be connected by an edge, and hence
 must have time complexity $O(EN)$. Fortunately, there is a way to
@@ -150,7 +159,7 @@ than or equal to 1.
 We propose a new data structure called the \textit{Contractible Graph}
 (CG) for brain parcellation. The rationale behind the CG is a heuristic
 procedure for partitioning a graph into somewhat balanced components
-so as to maximize the Adjacent-Score (\ref{adjacent-score}).
+so as to maximize the Adjacent-Score (Equation \ref{adjacent-score}).
 
 The CG is a mapping of the vertices of the original graph to the
 vertices of a new graph. The vertices of the CG are called
@@ -342,7 +351,8 @@ parcels. Comparison of our parcellations with the AAL shows that our
 has an average parcel surface area roughly
 $\big( \frac{92.14}{29.62} \big)^{\frac{2}{3} }\approx 2.11$ times
 that of AAL. Visually, that difference is shown in the plots below of
-a typical component from each parcellation.
+a typical component from each parcellation. {\color{red}Include 
+a citation to the plots (where are they :o?) }
 
 %\includegraphics[scale = 1]{figs/4_edgecontract_aal_3D}
 
@@ -385,6 +395,8 @@ is $p_0(A, B) = w_{A,B} - |B|$.
 \end{subtable}
 \label{gen_ec}
 \end{table}
+
+{\color{red}Be sure the include a in-text citation to these tables}
 
 A link $(A, B)$ will have high priority if either component is small,
 if the link has a large weight, and if it has a good boundary-ratio,

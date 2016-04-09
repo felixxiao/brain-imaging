@@ -1,3 +1,5 @@
+{\color{red}Some lead into here.}
+
 \section{Summary of Methods}
 
 \begin{table}
@@ -53,14 +55,17 @@ special case of graph partitioning where the graph is fully connected
 (i.e., every vertex has an edge to every other vertex), so connectedness
 of partitions is no longer a relevant factor. Then, if we define the
 Adjacent-Score in terms of similarity equal to negative Euclidean
-distance squared:
+distance squared
 \[ \frac{1}{K}\sum_{k=1}^K \frac{1}{{|V_k| \choose 2}}
-   \sum_{x,y \in V_k} - \|x - y\|^2 \]
+   \sum_{x,y \in V_k} - \|x - y\|^2, \]
 the objective of maximizing Adjacent-Score becomes equivalent to 
 minimizing a weighted within-cluster sum of squares objective
 \[ \sum_{k=1}^K \frac{1}{{|V_k| \choose 2}}
    \sum_{x \in V_k} \|x - \mu_k\|^2 \]
 where $\mu_k$ is the mean of all $x$ in $V_k$.
+
+{\color{red}It'll be nice to cite the equations in Chapter 3 for
+the criterion values}
 
 \section{Parcellations of ABIDE fMRI Scans}
 
@@ -131,12 +136,13 @@ Parcellations of the same fMRI Scan, Averaged over All Subjects}
 \caption{Adjusted Rand Index Between 116-Parcel GenEC(6,4)
 Parcellations on Different fMRI Scans}
 \label{ari_diff}
-\includegraphics[scale = 1]{figs/8_ari_diff.png}
+\includegraphics[scale = 0.95]{figs/8_ari_diff.png}
 \end{figure}
 
 We measured the similarity of 116-parcel parcellations from different
 methods on the same brain, across brains in the control and autistic
-cohorts. We used the Adjusted Rand Index \ref{ari} as our measure of
+cohorts. We used the Adjusted Rand Index \ref{ari} {\color{red}Citation doesn't
+work} as our measure of
 similarity, where 1 means identical parcel assignments and 0 means no
 different from random parcel assignments. The result is shown in Figure
 (\ref{ari_same}). The last row and column refer to ARI values with
@@ -198,3 +204,7 @@ Adjacent-Score.
 
 \section{Conclusion}
 
+
+{\color{red}Some things to think about: Future Work, general thoughts about
+parcellation, which methods did you expect to do well and which actually did
+well.}

@@ -5,8 +5,8 @@ was to choose vertices to be in the same component if the edge
 connecting them has high distance correlation. Vertices were added to
 components one-by-one with constraints on component size, but not on
 component shape. As a result, one salient issue with these
-parcellations was lack of smoothness in the boundaries between parcels
-There was scant resemblence between the anatomical maps
+parcellations was the lack of smoothness in the boundaries between parcels
+There was scant resemblance between the anatomical maps
 of the brain depicting smooth, rotund lobes and our jagged, web-like
 parcellations.
 
@@ -27,7 +27,7 @@ graph at once.
 
 Throughout this chapter, a valid partitioning
 $P_k = (V_1, ..., V_k)$ of the graph $G = (V, E)$ is defined in the
-same way as in chapter 3; i.e., it must satisfy
+same way as in Chapter 3; i.e., it must satisfy
 
 \begin{enumerate}[1.]
 \item
@@ -41,30 +41,34 @@ $V_i \cap V_j = \emptyset$ for all $V_i, V_j \in \mathcal{P}_k$
 
 \item
 $V_i$ is connected (i.e. for every two vertices in $V_i$, there is a
-path between them) for all $V_i \in \mathcal{P}_k$
+path between them) for all $V_i \in \mathcal{P}_k$.
 \end{enumerate}
 
 For all edges $(i,j) \in E$, let $w_{ij}$ denote the weight of the edge
 connecting vertices $i$ and $j$.
 $S^{n \times n}$ is the set of real symmetric $n \times n$ matrices.
 We further define, for a given graph $G = (V, E)$, the associated
+adjacency matrices and degree matrices, defined below.
 
 \begin{definition}
-[Adjacency matrix] $A \in \mathcal{S}^{n \times n}$ has entries
+[Adjacency matrix] Let $G$ be a graph with weights $\omega$.
+The corresponding adjacency matrix $A \in \mathcal{S}^{n \times n}$ has entries
 \[
 A_{ij} = \begin{cases}
   w_{ij} & \text{if } (i,j) \in E \\
-  0      & \text{otherwise} \\
+  0      & \text{otherwise.} \\
 \end{cases}
 \]
 \end{definition}
 
 \begin{definition}
-[Degree matrix] $D \in \mathcal{S}^{n \times n}$
+[Degree matrix] Let $G$ be a graph with weights $\omega$, and $A$ be
+the corresponding adjacency matrix. The corresponding degree
+matrix $D \in \mathcal{S}^{n \times n}$ is formed by 
 \[
 D_{ij} = \begin{cases}
   \sum_{k = 1}^n A_{ik} & \text{if } i = j \\
-  0                     & \text{otherwise} \\
+  0                     & \text{otherwise.} \\
 \end{cases}
 \]
 \end{definition}
@@ -83,7 +87,7 @@ C(P_2)
 since
 \[ (x_i - x_j)^2 = \begin{cases}
 	4 & \mbox{if } i,j \mbox{ are in different components} \\
-	0 & \mbox{otherwise}
+	0 & \mbox{otherwise.}
 \end{cases}\]
 
 $C(P_2)$ can also be written in a matrix quadratic form, as
@@ -100,7 +104,7 @@ C(P_2)
  - \frac{1}{4} \sum_{i,j = 1}^n x_i A_{ij} x_j \\
 &= \frac{1}{4} \sum_{i = 1}^n x_i^2 D_{ii} - \frac{1}{4} x^T A x \\
 &= \frac{1}{4} x^T (D - A) x \\
-&= \frac{1}{4} x^T L x
+&= \frac{1}{4} x^T L x,
 \end{align*}
 where $L$ is called the Laplacian matrix of the graph and defined as
 $L = D - A$. MinCut can thus be formulated as minimizing $x^T L x$
@@ -119,13 +123,13 @@ The approach relaxes the $\{-1, 1\}$ constraint on $x$ (and rescales
 $x$) so that it need only satisfy $\|x\| = 1$ ($\|\cdot\|$ here refering
 to L2 norm). It is easy to see that
 $\big\{ x : x \in \{-\frac{1}{\sqrt{n}}, \frac{1}{\sqrt{n}}\}^n \big\}
- \subset \big\{ x \in \R^n : \|x\| = 1 \big\}$
+ \subset \big\{ x \in \R^n : \|x\| = 1 \big\}$.
 The problem now becomes
 
 \begin{equation} \label{spectral_bipartition}
 \begin{aligned}
 \min_x      &\;& x^T L x \\
-\text{s.t.} &\;& \| x \| = 1 \\
+\text{s.t.} &\;& \| x \| = 1. \\
 \end{aligned}
 \end{equation}
 
@@ -139,7 +143,7 @@ eigenvalues are nonnegative.
 Let $L$ be a Laplacian matrix. Then $L \succeq 0$
 ($L$ is positive semidefinite)
 
-Proof. Let $x \in \R^n$. $x^T L x = x^T D x - $
+Proof. Let $x \in \R^n$. $x^T L x = x^T D x - $ {\color{red}Can omit proof}
 \end{theorem}
 
 Note that from the
@@ -156,10 +160,10 @@ eigenvector as $x_1$. We have the following:
 Let $P_2$ be any valid partition into 2 components. Then
 $C(P_2) \geq \lambda_1$
 
-Proof.
+Proof. {\color{red}Can omit proof}
 \end{theorem}
 
-In the literature, $x_1$ is often refered to as the Fiedler vector,
+In the literature, $x_1$ is often referred to as the Fiedler vector,
 after the first mathematician who studied it in detail.
 From the Fiedler vector we can obtain a variety of "good" bipartitions.
 We can impose a size constraint $|V_1| = s$ and obtain a bipartition
@@ -173,7 +177,8 @@ approximate the MinCut solution.
 
 The result of spectral bipartitioning on a resting state fMRI scan
 is shown below. As anticipated, the boundaries of between the
-components are smooth.
+components are smooth. {\color{red}Cite the figure numbers intext
+since Latex might put the figures far away from the text.}
 
 \begin{center}
 \includegraphics[scale = 0.5]{figs/5_spectral_2_axial.png}
@@ -203,7 +208,7 @@ partitioning into $k$ components.
 [Assignment matrix] $X \in \{0, 1\}^{n \times k}$ has entries
 \[ X_{ih} = \begin{cases}
 		1 & \mbox{if vertex } i \in V_h \\
-		0 & \mbox{otherwise}
+		0 & \mbox{otherwise.}
 \end{cases} \]
 \end{definition}
 
@@ -217,7 +222,7 @@ The columns of $X$ are orthogonal.
 \[ P_{ij} = \begin{cases}
 		1 & \mbox{if vertices } i \mbox{ and } j
 		    \mbox{ are in the same component} \\
-		0 & \mbox{otherwise}
+		0 & \mbox{otherwise.}
 \end{cases} \]
 \end{definition}
 
@@ -249,7 +254,7 @@ In addition, if $D$ is the degree matrix, then
 is the sum of the weights of all edges in the graph.
 Similarly, $\Tr(P A)$ equals the sum of weights of all within-edges.
 It follows that 
-\[ C(P_k) = \Tr(X^T L X) \]
+\[ C(P_k) = \Tr(X^T L X). \]
 The problem of minimizing this quadratic function subject to the
 constraint that $X$ must be a valid assignment matrix is called
 (minimum) $k$-cut and is NP-complete for arbitrary $k$
@@ -290,8 +295,8 @@ $[R R^T]_{ij} = \frac{1}{|V_h|}$ if $i,j \in V_h$ and 0 otherwise.
 The ratioed assignment matrix relates to the ratio-cut cost in the same
 way the assignment matrix relates to cut weight; namely, if $R$
 characterizes a partition $P_k$ then
-\[ C_R(P_k) = \Tr(R^T L R) \]
-$R$ has the additional useful property that $R^T R = I$.
+\[ C_R(P_k) = \Tr(R^T L R). \]
+Here, $R$ has the additional useful property that $R^T R = I$.
 
 In fact, for any matrix $R$ satisfying
 \begin{enumerate}
@@ -309,7 +314,7 @@ The third constraint ensures that all non-zero entries of $R$ equal
 $\frac{1}{\sqrt{|V_h|}}$.
 
 Minimizing $C_R(P_k)$ over the set of valid $R$ matrices is an NP-hard
-combinatorial optimization problem (?). The spectral relaxation first
+combinatorial optimization problem (?) {\color{red}Citation needed}. The spectral relaxation first
 proposed in \cite{Chan:94} drops the second and third constraints on
 $R$ and the resulting problem (shown below) has a closed-form optimal
 solution.
