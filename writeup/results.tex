@@ -166,35 +166,51 @@ different brain graphs for there to be a common parcellation fitting
 all brains.
 
 \begin{figure}
-\caption{Adjacent-Score Minus Mean Edge Weight Cross-Validation of
-116-Parcel GenEC (6,4) Parcellation on 12 Autism and Control Brains}
+\caption{Difference of Adjacent-Score, Cross-Validation of 116-Parcel
+GenEC (6,4) Parcellation on 12 Autism and Control Brains}
 \label{cv_ec}
 \includegraphics[scale = 1]{figs/8_cv_ec.png}
 \end{figure}
 
-To test this hypothesis, we conducted a cross-validation procedure where
-for each pair of brains, we parcellated one using GenEC (6,4) and
-computed the Adjacent-Score of the resulting parcellation on the
-\textit{other} brain. From this Adjacent-Score we subtracted the mean
-edge weight on the test brain and display the resulting 12 by 12 matrix
-in Figure (\ref{cv_ec}).
+To verify this, we conducted a cross-validation procedure where
+for each pair of brains, we let one be the parcellation brain and one
+be the validation brain. On the parcellation brain we performed two
+parcellations: GenEC (6,4) and Shuffled GenEC (6,4) for the control.
+On the validation brain we computed the Adjacent-Scores of both
+parcellations. We stored the difference GenEC minus Shuffled in a
+12 by 12 matrix, displayed in Figure (\ref{cv_ec}). The diagonal values
+are in-sample Adjacent-Scores where the parcellation brain and the
+validation brain are the same.
 
-Brains labeled 50030 and greater are control brains. It is interesting
-that cross-validation scores within the control cohort are higher than
-those between the two cohorts and those within the autistic cohort.
-Further investigation is needed to determine if this result is
-significant.
+Assuming normality, a one sample t-test of the mean non-diagonal
+cross-validation value shows that it is significantly greater than 0
+($p \leq 2.2 \times 10^{-16}$). This indicates some degree of similarity
+between different brains in the statistical dependencies of adjacent
+voxels. Furthermore, Welch's two sample t-test of unequal variances
+tells us the mean off-diagonal CV value in the autism cohort and the
+control cohort are unequal ($p = 0.0138$). The control group has a
+higher realized mean. These observations can serve as a basis for
+further study.
 
-Finally, we investigate whether both the low Adjusted Rand Index and
-cross-validation scores between parcellations of different brains could
-be due to overfitting. The GenEC methods produced parcellations that
-scored well in-sample but very poorly out-of-sample, so it is possible
-that the parcellations they produce are too flexible. To see if this
-could be the case, we perform the same cross-validation procedure
-except now using the spectral method (with GenEC (6,4) post-processing
-to ensure parcel connectedness). Partitions obtained via the spectral
-method are smoother, and thus are less likely to overfit the
-Adjacent-Score.
+Finally, we investigate whether the GenEC (6,4) parcellations could be
+overfitting. The GenEC methods produced parcellations that scored well
+in-sample (diagonal mean 0.048) but not as well out-of-sample
+(off-diagonal mean 0.010), so it is possible that the parcellations
+they produce are too flexible. To see if this could be the case, we
+perform the same cross-validation procedure except now using the
+spectral method. The reason for this is that partitions obtained via the
+spectral method have lower Jaggedness values and smoother surfaces,
+and hence are less likely to overfit the graph.
+
+\begin{figure}
+\caption{Difference of Adjacent-Score, Cross-Validation of
+116-Parcel Spectral Parcellation on 12 Autism and Control Brains}
+\label{cv_sp}
+\includegraphics[scale = 1]{figs/8_cv_sp.png}
+\end{figure}
+
+Figure (\ref{cv_sp}) shows the results of the cross-validation procedure
+using the spectral partitioning method.
 
 \section{Conclusion}
 

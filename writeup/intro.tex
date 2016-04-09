@@ -1,6 +1,3 @@
-% 1. fact check claim that other brain parcellation studies use
-%    Pearson's correlation (not absolute value) as edge weights
-%#######################################################################
 
 Paragraph 1: Write here what would happen in the ideal world
 
@@ -10,136 +7,120 @@ Paragraph 3: Write here what we do instead to overcome this problem
 
 \section{fMRI Background}
 
-{\color{blue}
+Functional magnetic resonance imaging (fMRI) is a technique that
+measures brain activity. It does this by measuring blood flow and
+oxygenation in different parts of the brain. When an area of the brain
+is in use, it consumes more oxygen and hence requires more blood.
+The fMRI machine detects magnetic signals from the hydrogen atoms of
+water molecules in blood. The signal emitted depends on the contents
+of the blood, in particular how much oxygen it contains. This detection
+method is referred to as blood-oxygen-level dependent, or BOLD.
 
-Functional magnetic resonance imaging or functional MRI (fMRI) is a
-functional neuroimaging procedure using MRI technology that measures
-brain activity by detecting changes associated with blood flow.
-When an area of the brain is in use, blood flow to that region also
-increases. The primary form of fMRI uses the blood-oxygen-level
-dependent (BOLD) contrast. The fMRI concept builds on the earlier MRI
-scanning technology and the discovery of properties of oxygen-rich
-blood. 
-The basis of MRI revolves around changing the magnetic moment of proton
-in hydrogen atoms abundantly found in the human body. MRI brain scans
-use a strong, permanent, static magnetic field to align nuclei in the
-brain region being studied. Another magnetic field, the gradient field,
-is then applied to spatially locate different nuclei.
+The fMRI machine detects, for all regions of the brain, the change in
+magnetic signal within a given time frame (typically 2 seconds) and
+records this as a 3-dimensional image. This image is comprised of units
+called voxels, each representing a cube of brain tissue. These 3-D units
+are analogous to 2-D pixels that make up computer screens. Each voxel
+represent around a million brain cells.
 
-Finally, a radiofrequency (RF) pulse is played to kick the nuclei to
-higher magnetization levels, with the effect now depending on where
-they are located. When the RF field is removed, the nuclei go back to
-their original states, and the energy they emit is measured with a coil
-to recreate the positions of the nuclei. MRI thus provides a static
-structural view of brain matter. The central thrust behind fMRI was to
-extend MRI to capture functional changes in the brain caused by
-neuronal activity. Differences in magnetic properties between arterial
-(oxygen-rich) and venous (oxygen-poor) blood provided this link.
-
-The fMRI machine records the relative change detected within a time
-frame (typically 2 seconds) in magnetization as a 3-dimensional image.
-The 3-dimensionsal image it provides is built up in units called
-voxels. Each one represents a tidy cube of brain tissue -- a 3-D image
-building block analogous to the 2-D pixel of computers screens,
-televisions or digital cameras. When visualized on a monitor, typically
-each intensity level is encoded as a varying shade of gray. \{Probably
-good to include an image of the ``typical" fMRI scan\}
-
-Each voxel can represent a million or so brain cells. As measurements
-are made over time (for example, over 10 minutes), the neuroscietist
-collects multiple 3-dimensional images in the form of a time series. 
-
-\{This information was primarily taken from wiki,
-\url{https://www.youtube.com/watch?v=djAxjtN\_7VE},
-\url{http://science.howstuffworks.com/mri.htm} and
-\url{http://www.howequipmentworks.com/mri\_basics/}.\}
-}
+This measurement made repeatedly over all 2 second intervals in the
+course of around 10 minutes. The resulting data collected is a time
+series of 3-D images.
 
 \section{Parcellation Background}
 
-{\color{red} talk about AAL and do the literature review here.}
+Functional connectivity -- belief that certain parts of the brain
+  work together, even in resting-state [default, baseline] (no stimulus, but still processes going on)
+
+One of the core principles of neuroscience is functional connectivity
+-- the idea that 
+
 
 {\color{blue}
 One of the main goals of neuroscience studies is to determine
 the resting-state connectivity and functional organization of the brain.
-A
-number of functional networks have been identified associated with
+A number of functional networks have been identified associated with
 the motor system, language, and memory, in addition to numerous
-studies highlighting the default mode network CITE.
+studies highlighting the resting-state network CITE.
 More recently there has been an explosion of interest in applying
-network theory methods to the analysis of functional connectivity
-data in order to characterize the connectivity between nodes at the
-brain system level CITE.
+network theory (graph logic) methods to the analysis of functional
+connectivity data in order to characterize the connectivity between
+nodes at the entire brain system level CITE.
 Voxel-level network analyses have been developed
 that can provide insight into the functional connectivity
-of the brain, but these networks are often too complicated to practically
-allow further scientific investigation.
+of the brain, but these networks are often too complicated to
+practically allow further scientific investigation.
 
 Hence, a parcellation-level network is a natural idea where
 each parcel represents a group of spatially-adjacent voxels that
 have similar functional behaviors. 
 Many authors have used atlas-based definitions the Brodmann-based
-automatic anatomic labeling atlas (AAL) \cite{tzourio2002automated} which defines 114 parcels based on the brain
-anatomy.
+automatic anatomic labeling atlas (AAL) \cite{tzourio2002automated}
+which defines 116 parcels based on the brain anatomy.
 While apparently meaningful results have
 been obtained with such approaches \cite{hartman2011role, he2009uncovering, liu2008disrupted, lynall2010functional, power2011functional, salvador2005neurophysiological, spoormaker2010development, supekar2008network, tian2011hemisphere, wang2009parcellation}, they are not ideal due to two reasons.
-First, while brain anatomy is a reasonable factor in determine functionally-similar
-regions, a data-driven parcellation estimated in a statistical fashion
-could perform better. Second, anatomically-based parcellation have a fixed
-number of parcels. Investigators seeking a higher-resolution network would
-need a higher-resolution parcellation, which is unavailable.
+First, while brain anatomy is a reasonable factor in determine
+functionally-similar regions, a data-driven parcellation estimated in a
+statistical fashion could perform better. Second, anatomically-based
+parcellation have a fixed number of parcels. Investigators seeking a
+higher-resolution network would need a higher-resolution parcellation,
+which is unavailable.
 
 A data-driven parcellation would resolve these problems. 
-The bulk of most parcellation methods revolve around recasting our problem into
-a clustering problem with spatial constraints. \cite{biswal2010toward,smith2009correspondence}
-use Independent Component Analysis (ICA) to determine regions of voxels whereby the 
-mean signal from each region are roughly independent with one another. \cite{chen2008group} 
-extended this idea by using PCA first to determine the number of clusters, while
-\cite{beckmann2005investigations, de2006fmri} extend this idea by fitting
-a mixture model to each component found in ICA. Another large
+The bulk of most parcellation methods revolve around recasting our
+problem into a clustering problem with spatial constraints.
+\cite{biswal2010toward,smith2009correspondence} use Independent
+Component Analysis (ICA) to determine regions of voxels whereby the
+mean signal from each region are roughly independent with one another.
+\cite{chen2008group} extended this idea by using PCA first to determine
+the number of clusters, while
+\cite{beckmann2005investigations, de2006fmri} extend this idea by
+fitting a mixture model to each component found in ICA. Another large
 body of works include K-means clustering \cite{flandin2002parcellation,mezer2009cluster,peltier2003detecting,thirion2006dealing}.
-Some authors using K-means clustering use the measured fMRI signal as the covariates while
-others use the frequency coefficients determined by the Fourier transform. The authors
-incorporate spatial distances to ensure that the resulting parcellations are connected.
-Hierarchical clustering is another natural candidate, whereby different authors merge
+Some authors using K-means clustering use the measured fMRI signal as
+the covariates while others use the frequency coefficients determined
+by the Fourier transform. The authors incorporate spatial distances to
+ensure that the resulting parcellations are connected. Hierarchical
+clustering is another natural candidate, whereby different authors merge
 neighboring voxels according to varying statistics \cite{diez2014novel,bellec2006identification,lu2003region,heller2006cluster}.
 
-The methods developed in our thesis are most similar to
-spectral methods. Spectral methods represent another large body of literature to cluster voxels
+The methods developed in our thesis are most similar to spectral
+methods. Spectral methods represent another large body of literature to
+cluster voxels
 \cite{craddock2012whole,van2008normalized,shen2010graph,newman2006modularity,shen2013groupwise,zhang2014robust}.
-These methods include spectral clustering or spectral partitioning. These methods typically
-form the weight matrix by the distances from K-nearest neighbors, by Pearson correlation,
-or regularized linear regression. As spectral methods tend to split the covariates into
-two clusters, these methods are applied recursively onto each cluster. 
+These methods include spectral clustering or spectral partitioning.
+These methods typically form the weight matrix by the distances from
+K-nearest neighbors, by Pearson correlation, or regularized linear
+regression. As spectral methods tend to split the covariates into two
+clusters, these methods are applied recursively onto each cluster.
 
-There is a wide literature of less commonly-used methods. \cite{alexander2012discovery} recast
-the problem as a community-detection problem based on the wavelet frequency.
-\cite{baria2011anatomical} bin the frequencies and do local $t$-tests to determine
-whether or not two voxels are significantly related. \cite{cohen2008defining, gordon2014generation, barnes2011parcellation} recast the problem to be an edge-detection
-problem using the developments in computer vision where they input heatmaps formed by
-correlation values. The edge-detection algorithm then outputs visually-distinct components
-based on the images. \cite{ryali2013parcellation,pohl2007hierarchical} build sophisticated
-mixture models for how each voxel value is realized and use an expectation-maximization
-(EM) algorithm to uncover the clustering. Spatial priors can be incorporated into the
-model to encourage connected parcellations while multiple initializations can be used as
-a heuristic to determine the ``likeliness" of two voxels belonging to the same parcel.
-Finally, \cite{blumensath2013spatially} computes the Kendall's coefficient of concordance
-at each voxel and its 26 spatial neighbors and grows clusters based on these values.
+There is a wide literature of less commonly-used methods.
+\cite{alexander2012discovery} recast the problem as a
+community-detection problem based on the wavelet frequency.
+\cite{baria2011anatomical} bin the frequencies and do local $t$-tests
+to determine whether or not two voxels are significantly related.
+\cite{cohen2008defining, gordon2014generation, barnes2011parcellation}
+recast the problem to be an edge-detection problem using the
+developments in computer vision where they input heatmaps formed by
+correlation values. The edge-detection algorithm then outputs visually
+distinct components based on the images.
+\cite{ryali2013parcellation,pohl2007hierarchical} build sophisticated
+mixture models for how each voxel value is realized and use an
+expectation-maximization (EM) algorithm to uncover the clustering.
+Spatial priors can be incorporated into the model to encourage
+connected parcellations while multiple initializations can be used as a
+heuristic to determine the ``likeliness" of two voxels belonging to the
+same parcel. Finally, \cite{blumensath2013spatially} computes the
+Kendall's coefficient of concordance at each voxel and its 26 spatial
+neighbors and grows clusters based on these values.
 }
-
-Functional parcellation of the human brain can be defined as the problem
-of partitioning the voxels into $k$ disjoint connected components with
-the goal that the voxels within each component are, in a rough sense,
-\"similar\" to each other and voxels in different components are less
-\"similar\". Such similarity has been defined in a multitude of ways in
-the literature [see lit review section ...]. For this project thus far I
-have taken similarity between voxels to mean statistical dependence.
 
 \section{Overall Strategy}
 {\color{red}
 Let's move this stuff about correlation to the beginning of the next
-chapter about energy statistics. For now, it's good enough to say in one paragraph that we'll use some nonlinear dependency in our procedure or
-something (high level summary)}
+chapter about energy statistics. For now, it's good enough to say in
+one paragraph that we'll use some nonlinear dependency in our
+procedure or something (high level summary)}
 
 To measure dependence, statisticians have traditionally used the Pearson
 correlation coefficient, in addition to the rank-based Kendall tau and
@@ -170,7 +151,6 @@ correlation from negative. As a result in many of the edges between
 different parcels, the corresponding voxels would be strongly dependent
 with negative correlation.
 
-
 \section{About the Data}
 {\color{blue}
 
@@ -185,10 +165,9 @@ Data Exchange (ABIDE) -- a consortium aggregating and openly sharing
 information from 539 individuals with ASDs and 573 age-matched typical
 controls (TCs; 7–64 years).
 
-For simplicity in this thesis, we focus on
-\{NUMBER OF SUBJECTS YOU'RE ACTUALLY USING\}
-scanned at the University of Pittsburgh School of Medicine.
-These autistic subjects included individuals from 7 to 35 years of age,
+For simplicity in this thesis, we focus on 6 autistic and 6 control
+subjects scanned at the University of Pittsburgh School of Medicine.
+The autistic subjects included individuals from 7 to 35 years of age,
 with a well-characterized Autistic Disorder. The Autism Diagnostic
 Interview-Revised \cite{lord1994autism} and the Autism Diagnostic
 Observation Schedule-General \cite{lord2000autism}, as well as expert
