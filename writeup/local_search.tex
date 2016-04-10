@@ -1,36 +1,43 @@
-% 1. in union-find subsection make function names in text a different
-%    font
-% 2. include parameters of size-constrained add-edge on randomized graph
-%    in table
-% 3. more analysis of SC AE results
-%#######################################################################
+In previous chapters we introduced the problem of brain parcellation
+using fMRI data and show how it can be framed as a graph partitioning
+problem on the weighted, undirected voxel graph. Our goal is to find a
+valid partitioning of the voxel graph that maximizes the Adjacent-Score
+(\ref{adjacent-score}) subject to reasonable criterion values for
+Jaggedness (\ref{jaggedness} and Balance (\ref{balance}). A valid
+partitioning of the voxel graph $G(V, E)$ is defined as a collection of
+disjoint, non-empty, vertex-connected subsets of $V$, interchangeably
+called parcels, components, or partitions.
 
-We introduce several algorithms for generating brain parcellations. {\color{red}
-This is back to the previous chapter. Restate that we're using the edge weights
-as the distance correlation.} The
-algorithms in this chapter are all local search heuristics; they begin
-with $n$ unconnected vertices and iteratively join adjacent ones into
-components until some stopping criterion is met.
+The focus of this chapter is on heuristic methods for finding such
+partitionings based on the idea of graph growing. Each algorithm begins
+with $|V|$ unconnected vertices and iteratively joins adjacent ones into
+components until some stopping criterion is met. Such algorithms have
+the property that each iteration produces a valid partitioning.
 
-For each algorithm, the resulting parcellation is presented, discussed,
-and evaluated according to the criteria introduced in the previous
-chapter.
+The main result of this chapter is the Edge-Contract algorithm based on
+the Contractible Graph data structure, covered in Sections 4.2 and 4.3.
+Section 4.1 discusses the Add-Edge algorithm, the precursor to
+Edge-Contract that generated poor parcellations and motivated the
+development of the latter.
 
 \section{The Add-Edge Algorithm}
 
-The first and simplest algorithm starts with an empty graph of $n$
-vertices and sequentially adds edges between adjacent voxels in order of
-highest sample distance correlation, until the graph has some
-prespecified number of connected components $k$. We will refer to this
-algorithm as ``Unconstrained Add-Edge''.
+The Add-Edge algorithm has two flavors: Unconstrained and
+Size-Constrained. The Unconstrained version starts with an empty graph
+with all the vertices $V$ but no edges. It sequentially adds edges
+between adjacent voxels in order of highest sample distance
+correlation, until the graph has some prespecified number of connected
+components $k$.
 
-The Unconstrained Add-Edge algorithm produces severely imbalanced
-parcellations. In the 100-component graph, there was one component
-containing over 99.9\% of all the vertices in the graph.
+The biggest issue with the Unconstrained Add-Edge algorithm is that
+larger components have a higher probability of the next edge being
+added to them, causing the resulting parcellation to be severely
+imbalanced parcellations. In the 100-component graph, there was one
+component containing over 99.9\% of all the vertices.
 
-Our attempt to address this problem was to impose a filter on each edge
-considered, adding the edge only if at least one of the two following
-conditions are met:
+Our first attempt to address this problem was to impose a filter on
+each edge considered, adding the edge only if at least one of the two
+following conditions are met:
 
 \begin{enumerate}[1.]
 \item
@@ -41,118 +48,9 @@ than some prespecified parameter $s_{\min}$.
 The union of the two components is of size $\leq s_{\max}$.
 \end{enumerate}
 
-The restriction on adding new edges was not successful in creating
-balanced partitions.
-
-\subsection{Implementation of Unconstrained Version}
-
-A naive implementation of Unconstrained Add-Edge would re-compute the
-number of connected components in the graph (using linear-time
-bread-first or depth-first search) after each addition of an edge,
-resulting in a costly $O(EN)$ time complexity. A more efficient
-implementation takes advantage of the fact that each addition of an
-edge decreases the number of components in the graph by at most 1.
-Hence the algorithm needs only to compute the number of connected
-components after adding $c - k$ edges, where $c$ is the current number
-of connected components of the graph, beginning at $n$.
-
-Another implementation uses a binary search-type strategy and is
-$O((n + E) \log E)$. This exploits the monotonicity of our 
-procedure which considers the ordering of the edge weights.
-The idea is to ``search'' for the last edge to add
-to the graph by maintaining a range of possible last edges.
-{\color{red}This isn't very clear to be honest. I would just 
-talk about how the components must strictly grow as more edges are 
-added, and you are just trying different number of edges to add
-in their sorted order.} In each
-iteration, the algorithm would add to the graph edges 1 to the midpoint
-of this range, compute the number of connected components, and adjust
-the range based on whether the number of components is higher or lower
-than the target $K$.
-
-\subsection{Implementation of Size-Constrained Version using Union-Find}
-
-{\color{red}I think you said you'll remove this section}
-The naive implementation must use BFS/DFS in each iteration to compute
-the sizes of the two components to be connected by an edge, and hence
-must have time complexity $O(EN)$. Fortunately, there is a way to
-sublinearly update information on the components of the graph, using
-the union-find data structure.
-
-The core Union-Find data structure begins with an empty graph of $N$
-vertices and supports two operations. union(i, j) adds an edge between
-vertices $i$ and $j$. root(i) returns an identifier for the component
-to which vertex $i$ belongs. All vertices in the same component have the
-same root. We modified Union-Find to support an additional operation.
-component\_size(i) returns the number of vertices belonging to the
-component containing $i$.
-
-Union-Find represents each component as a rooted tree, with vertices in
-the graph mapping to nodes in the tree. Information about the tree is
-stored in two arrays of length $N$, parent and size, which are subject
-to the following invariants.
-
-\begin{enumerate}[1.]
-\item
-For each node i, parent[i] = node i's parent on the tree, unless i is a
-root node. If i is a root node, then parent[i] = i.
-
-\item
-Nodes i and j are in the same component if and only if they are in the
-same tree, if and only if they share the same root node.
-
-\item
-If i is a root node, then size[i] = the size of the component, or the
-number of nodes in the tree. If i is not a root node, then size[i] can
-be anything.
-\end{enumerate}
-
-A baseline implementation of the three functions is
-
-\begin{algorithm}
-\caption{Union-Find}
-\begin{algorithmic}
-
-\Function{root}{i}
-    \While{parent[i] $\neq$ i}
-        \State i $\gets$ parent[i]
-    \EndWhile
-    \State \Return i
-\EndFunction
-\State 
-
-\Function{union}{i, j}
-    \State parent[root(j)] $\gets$ root(i)
-\EndFunction
-\State 
-
-\Function{component\_size}{i}
-    \State \Return size[root(i)]
-\EndFunction
-
-\end{algorithmic}
-\end{algorithm}
-
-In addition to the baseline code above, there are two important
-optimizations:
-
-\begin{enumerate}[1.]
-\item
-Weighted union maintains information of the sizes of each component so
-that the root of the smaller component always becomes a child of the
-larger component's root.
-
-\item
-Path compression flattens the tree with each call to root. Specifically,
-when root is called on node $i$, each node traversed from $i$ to the
-root has its parent set to be the root.
-\end{enumerate}
-
-With these two optimizations, the time complexity of root, union, and
-component\_size has been shown to be at least as good as $O(\log^* N)$
-where $\log^*$ is the iterated logarithm, defined as the number of
-times the natural log must be applied to $N$ so that it becomes less
-than or equal to 1.
+These two restrictions were not entirely successful in solving the size
+imbalance issue. Our successful solution is the Edge-Contract algorithm,
+described in the next section.
 
 \section{The Edge-Contraction Algorithm and Contractible Graphs}
 
@@ -336,25 +234,25 @@ the average number of positive links a component has.
 \label{4_ec}
 \end{table}
 
-The Edge-Contract parcellations notably outperformed the anatomical AAL
-parcellation in the Adjacency-Score. For further comparison, found the
-mean edge weight in the graph to be 0.7258, which is even slightly
-higher than the average adjacent within-parcel edge in AAL. This
-suggests that the AAL parcellation has no connection with the functional
-information contained in this fMRI data set. It shows on the other
-hand that the Edge-Contract algorithm can successfully locate regions of
-functional similarity.
+Table (\ref{4_ec}) shows the validation scores of several criteria on
+Edge-Contract parcellations to different component numbers.
+The Edge-Contract parcellations notably outperformed the 116-parcel
+Automatic Anatomical Labeling (AAL) parcellation in the
+Adjacency-Score. For further comparison, we found the mean edge weight
+in the graph to be 0.7258, which is even slightly higher than the
+average adjacent within-parcel edge in AAL. This suggests that the AAL
+parcellation has no connection with the functional information
+contained in this fMRI data set. It shows on the other hand that the
+Edge-Contract algorithm can successfully locate regions of functional
+similarity.
 
 The one apparent deficiency of Edge-Contract is the jaggedness of its
-parcels. Comparison of our parcellations with the AAL shows that our
-116-component parcellation -- the same number of components as AAL --
-has an average parcel surface area roughly
-$\big( \frac{92.14}{29.62} \big)^{\frac{2}{3} }\approx 2.11$ times
-that of AAL. Visually, that difference is shown in the plots below of
-a typical component from each parcellation. {\color{red}Include 
-a citation to the plots (where are they :o?) }
-
-%\includegraphics[scale = 1]{figs/4_edgecontract_aal_3D}
+parcels. Comparison of our parcellations with the AAL in Table
+(\ref{4_ec}) shows that our 116-component parcellation -- the same
+number of components as AAL -- has an average parcel surface area
+roughly $\big( \frac{92.14}{29.62} \big)^{\frac{2}{3} }\approx 2.11$
+times that of AAL. This issue is resolved by the Generalized
+Edge-Contract algorithm in the next section.
 
 \section{The Generalized Edge-Contraction Algorithm}
 
@@ -396,8 +294,6 @@ is $p_0(A, B) = w_{A,B} - |B|$.
 \label{gen_ec}
 \end{table}
 
-{\color{red}Be sure the include a in-text citation to these tables}
-
 A link $(A, B)$ will have high priority if either component is small,
 if the link has a large weight, and if it has a good boundary-ratio,
 defined as $\frac{|E_{A,B}|}{\min(|A|,|B|)}$, which helps to minimize
@@ -408,7 +304,7 @@ p_1(A, B) = \frac{w_{A,B}^\alpha}{|A|^\beta} \cdot
             \frac{|E_{A,B}|}{\min(|A|,|B|)}
 \end{equation}
 that modulate the balance of small size, large weight, and high
-boundary ratio. Table \ref{gen_ec} shows the results of the
+boundary ratio. Table (\ref{gen_ec}) shows the results of the
 116-component and 300-component Generalized Edge-Contract parcellation
 when performed for various values of $\alpha$ and $\beta$. The adjacent
 scores have fallen on average from 0.79 in the vanilla edge contraact

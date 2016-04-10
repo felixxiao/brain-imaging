@@ -177,8 +177,6 @@ index as the index of row $x$ in $H$. Since the rows of $H$ share no
 constraints with one another, the general NLS problem in Algorithm
 \ref{anls_symnmf} can be viewed simply as $n$ independent cases of
 Equation \ref{single_column_nls}.
-{\color{red}In general, be sure the write the word ``Equation" in front
-of all equation citations.}
 
 The Karush-Kuhn-Tucker necessary conditions for optimality are:
 \begin{enumerate}
@@ -194,12 +192,12 @@ $x_i y_i = 0$ for $i = 1, ..., k$.
 Since $I_k$ is full column rank, so is $C$, making $C^T C$ positive
 definite and Equation \ref{single_column_nls} strictly convex.
 
-Let $x^*$ be the optimal solution to Equation \ref{single_column_nls}. Suppose
-the indices of the strictly positive entries of $x^*$ were known and
-denote them with $F$. Then all the entries of $x^*$ and $y^*$ can be
-computed. Let $x_F$ denote the vector of entries of $x$ indexed by $F$
-and $C_F$ is the matrix of \textit{columns} of $C$ indexed by $F$. Let
-$G$ be all the elements of $\{1, ..., k\}$ not in $F$. Then,
+Let $x^*$ be the optimal solution to Equation \ref{single_column_nls}.
+Suppose the indices of the strictly positive entries of $x^*$ were
+known and denote them with $F$. Then all the entries of $x^*$ and $y^*$
+can be computed. Let $x_F$ denote the vector of entries of $x$ indexed
+by $F$ and $C_F$ is the matrix of \textit{columns} of $C$ indexed by
+$F$. Let $G$ be all the elements of $\{1, ..., k\}$ not in $F$. Then,
 \begin{subequations} 
 \begin{equation} \label{x_F}
 x_F = \argmin{x_F \geq 0} \|C_F x_F - b\|_2^2,
@@ -214,12 +212,12 @@ y_F = 0,
 y_G = C_G^T (C_F x_F - b).
 \end{equation}
 \end{subequations}
-Equation \ref{x_F} is implied by the fact that the strictly positive entries
-of $x$ must solve the unconstrained problem. Equation \ref{x_G} is true by
-definition of $F$ and $G$. (\ref{y_F}) is implied by KKT condition 4.
-Equation \ref{y_G} is implied by KKT condition 1. If index sets $F$ and $G$
-give the optimal solution, then $x_F$ and $y_G$ must satisfy KKT
-conditions 2 and 3 (nonnegativity). Therefore the
+Equation \ref{x_F} is implied by the fact that the strictly positive
+entries of $x$ must solve the unconstrained problem. Equation \ref{x_G}
+is true by definition of $F$ and $G$. (\ref{y_F}) is implied by KKT
+condition 4. Equation \ref{y_G} is implied by KKT condition 1. If index
+sets $F$ and $G$ give the optimal solution, then $x_F$ and $y_G$ must
+satisfy KKT conditions 2 and 3 (nonnegativity). Therefore the
 \textit{Block Pivoting Algorithm} finds the optimal $x$ and $y$ by
 searching for the correct $F$ and $G$ index sets.
 
@@ -247,26 +245,27 @@ In the multicolumn case, we solve
 \begin{equation} \label{multi_column_nls}
 \min_{X \geq 0} \| C X - B \|_2^2
 \end{equation}
-where $X$ is $k \times n$ matrix, and the algorithm needs to track, for each column of
-$X$, the $F$ and $G$ indices. Since in many cases including ours,
-$n \gg k$, so many columns of $X$ are likely to have the same $F$ and $G$.
-Given this fact, the block pivoting algorithm has a shortcut to solving
-Equation \ref{x_F} and Equation \ref{y_G} for each column. Equation \ref{x_F} is found by solving
-$C_F^T C_F x_F = C_F^T b$ and the Cholesky factorization for this can be done
-just once for all columns with the same $F$ indices. Additionally, the
-$C_F^T C_F$, $C_F^T b$, $C_G^T C_F$, and $C_G^T b$ matrices and vectors
-required to compute $x_F$ and $y_G$ can be extracted as submatrices of $C^T C$
-and $C^T B$, computed once in the beginning of the algorithm. In our SymNMF
-case, these two matrices are much smaller than the original sparse $A$ matrix
-that formed them.
+where $X$ is $k \times n$ matrix, and the algorithm needs to track, for
+each column of $X$, the $F$ and $G$ indices. Since in many cases
+including ours, $n \gg k$, so many columns of $X$ are likely to have
+the same $F$ and $G$. Given this fact, the block pivoting algorithm has
+a shortcut to solving Equation \ref{x_F} and Equation \ref{y_G} for
+each column. Equation \ref{x_F} is found by solving
+$C_F^T C_F x_F = C_F^T b$ and the Cholesky factorization for this can
+be done just once for all columns with the same $F$ indices.
+Additionally, the $C_F^T C_F$, $C_F^T b$, $C_G^T C_F$, and $C_G^T b$
+matrices and vectors required to compute $x_F$ and $y_G$ can be
+extracted as submatrices of $C^T C$ and $C^T B$, computed once in the
+beginning of the algorithm. In our SymNMF case, these two matrices are
+much smaller than the original sparse $A$ matrix that formed them.
+The equations for computing $C^T C$ and $C^T B$ from $\alpha$, $A$,
+and $W$ are:
 \begin{equation} \label{CTC}
 C^T C = W^T W + \alpha I_k
 \end{equation}
 \begin{equation} \label{CTB}
 C^T B = W^T A + \alpha W^T
 \end{equation}
-
-{\color{red}You mentioned this isn't done yet.}
 
 \begin{algorithm}
 \caption{Block Pivoting Algorithm for NLS}
@@ -407,7 +406,7 @@ The squared terms in (\ref{col_select}) and (\ref{inc_col_select}) can
 also be changed to absolute value.
 
 \begin{algorithm}
-\caption{SymBMF}
+\caption{Component Switching for SymBMF}
 \begin{algorithmic}[1]
 \State Initialize $X \in \{0, 1\}^{n \times k}$ such that $X e_k = e_n$
 \State $i \gets 1$
@@ -454,8 +453,8 @@ $y_{ij}$ is
 The following lemma provides an linearization of $x_i^T x_j$:
 
 \begin{lemma}
-Let $x_i$ and $x_j$ both be $k$-dimensional binary vectors that sum to 1.
-Then $y_{ij} = x_i^T x_j$ is equivalent to
+Let $x_i$ and $x_j$ both be $k$-dimensional binary vectors that sum to
+1. Then $y_{ij} = x_i^T x_j$ is equivalent to
 \[ y_{ij} \leq \min (x_i - x_j) + 1 \]
 \[ y_{ij} \geq \max (x_i + x_j) - 1 \]
 

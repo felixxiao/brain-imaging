@@ -1,8 +1,20 @@
-{\color{red}Need some introductory text. What happened in the previous chapter,
-what will happen in this chapter?}
+The previous chapter discussed the applications of symmetric
+nonnegative matrix factorization on graph partitioning. It concluded
+with a formulation of the special case of symmetric binary matrix
+factorization as mixed integer program (MIP), showing that a globally
+optimal solution to the MIP is a globally optimal solution to the
+factorization problem.
+
+MIP and its linear programming relaxation can in fact to used to solve
+our graph partitioning problem directly. In this chapter, we relax the
+requirements of a valid partitioning (defined in Chapter 3) to include
+parcels that are \textit{not} connected and are comprised of more than
+one component. With this relaxation, we derive two MIP formulations to
+the problem of Maximize Average Within-Edge (MAWE), described in Chapter
+3, that serves as our primary objective for mapping brain functional
+connectivity.
 
 \section{A Global Solution to Mean Adjacent Within Edge}
-
 
 We want to find a partitioning of graph $G(V,E)$ into $K$ components
 so as to minimize the Adjacent-Score (Equation \ref{adjacent-score})
@@ -204,5 +216,6 @@ partition matrix (\ref{partition_matrix}) $P$ from the $z_k$ so that
 Following this we could use either of the SymBMF methods introduced
 in the previous chapter to find a decomposition $P \approx X X^T$.
 
-{\color{red}For this method (and others), also mention the implementation.
-What language and what packages?}
+Our implementations of these MIP used the branch-and-bound procedure of
+CPLEX via an AMPL interface. We were able to partition graphs of up to
+500 vertices in a reasonable amount of time.

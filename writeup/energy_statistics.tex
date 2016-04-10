@@ -1,153 +1,197 @@
 %#######################################################################
 
-In this section, we discuss distance correlation, their benefits
-and their mathematical properties. Distance correlations first appeared
-in  \cite{szekely2007measuring} but has seen made multiple appearances
-in other papers stating various extensions and applications. The two
-followup papers that contain a thorough survey of these extensions are
-in \cite{szekely2013energy} and \cite{sejdinovic2013equivalence}.
+In this Chapter, we present the theory of distance correlation and
+justify its advantages over traditional statistics such as Pearson's
+for brain parcellation. Distance correlation belongs to a family of
+nonparametric statistics called energy statistics, which was first
+developed by G\'{a}bor Sz\'{e}kely as a measure of dissimilarity between
+probability distributions that formed the basis for nonparametric
+goodness-of-fit tests. Subsequent results extended energy statistics
+to problems of multivariate statistical dependence in
+\cite{szekely2007measuring} and \cite{bakirov2006multivariate}.
+Following this many applications of distance correlation and distance
+covariance have been developed. A review of these can be found in
+\cite{szekely2013energy}. Our exposition on energy statistics draws
+primarily from this review.
 
-As we will see, the distance correlation is a non-linear measurement of
-the dependency between two distributions, and it equals zero if and only
-if the two distributions are independent of one another. This
-measurement will be used to determine which spatially-adjacent voxels
-are related and serves as the statistical foundation of our parcellation
-procedures. While many works have gone ahead to use distance correlation
-to test the null hypothesis that two distributions are independent, we
-simply use the distance correlation as a statistical guide to aid our
-graph-based algorithms generate a reasonable parcellation.
+Distance correlation is a non-linear measurement of statistical
+dependency between two random variables of arbitrary dimension, and it
+equals zero if and only if the two random variables are independent.
+In our parcellation approach, we will compute the sample distance
+correlation between each voxel and its 6 cubically adjacent neighbors
+and set them as the weights of the corresponding edges. Then, edges
+whose endpoints are in the same parcel can be used as a measure of the
+statistical dependency between adjacent voxels in a parcel, and edges
+whose endpoints lie in different parcels can be used to measure the
+statistical dependency at parcel boundaries. Both our criteria for
+measuring the goodness of a parcellation and the objective functions
+that our algorithms seek to maximize depend on distance correlation
+weights of the brain graph.
 
-\section{Benefits of Distance Correlation}
+\section{Non-linear Dependencies in fMRI Data}
 
-To measure dependence, statisticians have traditionally used the Pearson
+\begin{figure}
+\caption{Pearson's and Distance Correlation for Linear and %
+Non-linear Relationships}
+\label{nonlinear_depend}
+\includegraphics[scale = 0.8]{figs/1_nonlinear_depend.png}
+\end{figure}
+
+To measure dependence, statisticians have traditionally used Pearson's
 correlation coefficient, in addition to the rank-based Kendall tau and
 Spearman rho. These statistics work well when the underlying
-relationship between the two random variables is linear, in the case of
-Pearson, or can be linear after a monotonic transformation, in the case
-of Kendall and Spearman. Due to their restrictions, these correlation
-coefficients will fail to capture many kinds of dependency
-relationships. The figure below illustrates several instances of pairs
-of random variables whose depencency structure is not detected by the
-three correlation coefficients.
+relationship between the two random variables is already linear, in the
+case of Pearson, or can be linear after a monotonic transformation, in
+the case of Kendall and Spearman. Due to their restrictions, these
+correlation coefficients will fail to capture many kinds of dependency
+relationships. Figure \ref{nonlinear_depend} illustrates cases of
+linear and non-linear relationships between random variables and their
+sample Pearson and distance correlation values.
 
-\includegraphics[scale = 0.8]{figs/1_nonlinear_depend.png}
-
-Non-linear dependency relationships also exist in the ABIDE 50002 fMRI
-data. The scatterplots below show time samples of spatially adjacent
-voxels. These instances were found by searching for the maximum
-difference in rank of energy distance correlation and the coefficient
-of determination, or Pearson squared.
-
+\begin{figure}
+\caption{Four Instances of Strongly Non-Linear Relationships Between %
+Adjacent Voxels in fMRI Data}
+\label{fmri_nonlinear}
 \includegraphics[scale = 0.7]{figs/1_nonlinear_ABIDE_50002.png}
+\end{figure}
 
-\section{Distance Covariance}
+Non-linear dependency relationships also exist in the fMRI data. The
+scatterplots in Figure \ref{fmri_nonlinear} show time samples of
+spatially adjacent voxels with particularly strong non-linear
+relationships.\footnote{These instances were found by searching for the
+maximum difference in rank of energy distance correlation and the
+coefficient of determination, or Pearson squared.} Hence using distance
+correlation as the edge weights in the voxel graph has an obvious
+advantage to using Pearson's correlation.
 
-We first discuss the definition of distance covariance, from which the
-definition of distance correlation will naturally follow. We first start
-with the population quantity where $\mathcal{V}^2(X,Y)$ represents the
-population distance covariance between two distributions, one over the
-random variable $X$ in a $p$-dimensional space and the other over $Y$ in
-a $q$-dimensional space. In our application, $p=q$. Let $\varphi_X$
-denote the characteristic function associated with the density of $X$.
-For some positive weight function
+\section{Distance Covariance, Variance, and Correlation}
+
+We first discuss the definition and properties of distance covariance,
+from which the definition of distance correlation will naturally
+follow. We first start with the population quantity where
+$\mathcal{V}(X,Y)$ represents the population distance covariance
+between two distributions, one over the random variable $X$ in a
+$p$-dimensional space and the other over $Y$ in a $q$-dimensional
+space.
+
+Let $\varphi_X(s) = \Expect[e^{i s^T X}]$ denote the characteristic
+function of a random vector $X$. For some positive weight function
 $w : \R^p \times \R^q \mapsto [0, \infty)$ define the norm
 $\|\cdot\|_w : \{\gamma : \R^p \times \R^q \mapsto \mathbb{C}\}
                \mapsto [0, \infty)$ as
-$$ \| \gamma \|_w^2 = \int_{\R^{p+q}} | \gamma(s,t) |^2 w(s,t) ds dt. $$
+\[ \|\gamma\|_w^2 = \int_{\R^{p+q}} |\gamma(s,t)|^2 w(s,t)
+                    \diff s \diff t. \]
 
 In the case where the subscript $w$ is omitted, it is implied that
-$w = 1$, the constant function taking value one. Hence $\| \cdot \|^2$
-is the typical definition of the $\ell_2$ (Euclidean) norm squared.
+$w(s,t) = 1$, the constant function taking value one. Hence
+$\|\cdot\|^2$ is the typical definition of the $\ell_2$ (Euclidean)
+norm squared.
 
 \begin{definition}[Distance covariance] 
-Let $X$ and $Y$ be two $d$-dimensional random
-vectors with $\Expect\|X\| + \Expect\|Y\| < \infty$. Their distance
-covariance is
+Let $X$ and $Y$ be two $p$ and $q$-dimensional (respectively) random
+vectors with finite first moments and characteristic functions
+$\varphi_X$ and $\varphi_Y$. Let the weight function
+$w(s,t) = \dfrac{c_p c_q}{\|s\|^{1+p} \|t\|^{1+q}}$ where
+$c_d = \dfrac{\Gamma(\frac{d+1}{2})}{\pi^{(d+1) / 2}}$
+The \textit{squared} distance covariance between $X$ and $Y$ is defined
 \begin{align*}
 \mathcal{V}^2 (X,Y)
 &= \| \varphi_{X,Y}(s,t) - \varphi_X(s)\varphi_Y(t) \|_w^2 \\
-&= \int_{\R^{p+q}} \dfrac{|\varphi_{X,Y}(s,t) -
-                           \varphi_X(s)\varphi_Y(t)|^2}
-                         {\|s\|^{1+p} \|t\|^{1+q}} ds dt
+&= c_p c_q \int_{\R^{p+q}}
+   \dfrac{|\varphi_{X,Y}(s,t) - \varphi_X(s)\varphi_Y(t)|^2}
+         {\|s\|^{1+p} \|t\|^{1+q}} \diff s \diff t.
 \end{align*}
-where $w(s,t) = \dfrac{1}{\|s\|^{1+p} \|t\|^{1+q}}$.
+Distance covariance is defined
+$\mathcal{V}(X,Y) = \sqrt{\mathcal{V}^2(X,Y)}$.
 \end{definition}
 
-It is clear that $\mathcal{V}^2(X,Y) = 0$ if and only if  $X \indep Y$.
-To explicitly see why this is called a distance \emph{covariance}, we
-notice that the definition of $\mathcal{V}^2(X,Y)$ can be rewritten in
-terms of covariances. Let $X, X', X''$ be three independent copies of
-the same random variable but drawn from the same distribution.
+Distance covariance has the immediate property that
+$\mathcal{V}(X,Y) = 0$ if and only if
+$\varphi_{X,Y}(s,t) - \varphi_X(s) \varphi_Y(t) = 0$ for all
+$s \in \R^p$ and $t \in \R^q$.
 
-\begin{prop}[\cite{szekely2003statistics} (Theorem 1)] \label{prop:cov}
+Random vectors $X$ and $Y$ are defined to be statistically independent
+if and only if their joint density function $p_{X,Y}$ factors into the
+product of the marginal densities of $X$ and $Y$. The one-to-one
+correspondence between probability densities and characteristic
+functions gives us the following:
+
+\begin{theorem}[Kac's Theorem]
+Let $X$ be $p$-dimensional and $Y$ $q$-dimensional random variables.
+Then $X$ and $Y$ are independent if and only if for all $s \in \R^p$
+and all $t \in \R^q$,
+\[ \Expect[e^{i (s^T X + t^T Y)}]
+ = \Expect[e^{i s^T X}] \Expect[e^{i t^T Y}] \]
+\end{theorem}
+\begin{proof}
+($\implies$): If $X$ and $Y$ are independent, then
+$\Expect[f(X) g(Y)] = \Expect[f(X)] \Expect[g(X)]$ for any functions
+$f$ and $g$.
+
+($\impliedby$): Let $\tilde{X}$ and $\tilde{Y}$ be independent
+variables with the same marginal distribution as $X$ and $Y$. Then
 \begin{align*}
-\mathcal{V}^2 (X,Y)
-&= \Expect[\|X - X'\| \|Y - Y'\|]
- + \Expect[\|X - X'\|] \Expect[\|Y - Y'\|]
- - 2 \Expect[ \|X - X'\| \|Y - Y''\| ] \\
-&= \Cov( \|X - X'\|, \|Y - Y'\| ) - 2 \Cov (\|X - X'\|, \|Y - Y''\| ) 
+\Expect[e^{i (s^T X + t^T Y)}]
+&= \Expect[e^{i s^T X}] \Expect[e^{i t^T Y}] \\
+&= \Expect[e^{i s^T \tilde{X}}] \Expect[e^{i t^T \tilde{Y}}] \\
+&= \Expect[e^{i (s^T \tilde{X} + t^T \tilde{Y})}]
 \end{align*}
-\end{prop}
+The first equality comes from the premise, the second by the equal
+distributions of $X$ and $\tilde{X}$, and the third by the independence
+of $\tilde{X}$ and $\tilde{Y}$. Since the characteristic function
+uniquely describes a distribution, $(X, Y)$ has the same joint
+density function as $(\tilde{X}, \tilde{Y})$. Hence the joint density
+of $X$ and $Y$ factorizes into the marginal densities.
+\end{proof}
 
-With a slight overload of notation, we define the distance variance to be
-the distance covariance between the same variable. 
+The important corrollary to this theorem is that $\mathcal{V}(X,Y) = 0$
+if and only if $X$ and $Y$ are independent. Next, we define the
+distance variance $\mathcal{V}(X)$
+
 \begin{definition}
 [Distance variance]
-$$ \mathcal{V}^2 (X) = \mathcal{V}^2 (X,X) $$
+$$ \mathcal{V} (X) = \mathcal{V} (X,X) $$
 \end{definition}
 
-Using the standard relationship between covariance and correlation, we 
-define the distance correlation as such. It is clear from the definition
-that this quantity is bounded between $\pm 1$, much like the Pearson
-correlation.
+Analogously to the regular definitions of variance, covariance, and
+correlation, the distance correlation $\mathcal{R}(X,Y)$ is
 
 \begin{definition}
 [Distance correlation]
-$$ \mathcal{R}^2 (X,Y) = \dfrac{\mathcal{V}^2(X,Y)}
-                               {\mathcal{V}(X) \mathcal{V}(Y)} $$
+\[ \mathcal{R} (X,Y) = \begin{cases}
+  \frac{\mathcal{V}(X,Y)}{\sqrt{\mathcal{V}(X) \mathcal{V}(Y)}}
+  & \text{if } \mathcal{V}(X) \mathcal{V}(Y) > 0 \\
+  0 & \text{otherwise}
+\end{cases} \]
 \end{definition}
 
-The above definitions all hold for the population quantities, but now
-we are interested in estimating them. While the population distance
-covariance (and the population distance correlation) are equal to 0 if
-and only if the two distributions are independent, we hope to estimate a
-sample distance correlation which is close but not necessarily 0 when
-the two distributions are independent.
+Distance covariance, variance, and correlation are estimated from an
+independent identically distributed random sample
+$\{(X_i, Y_i)\}_{i=1}^n$ by replacing the population characteristic
+function with the empirical characteristic function:
+\[ \widehat{\varphi}_X (t) = \frac{1}{n} \sum_{i=1}^n \exp(i t^T X_i) \]
+Let $\mathcal{V}_n(X,Y)$ denote the sample distance covariance obtained
+by this substitution. From \cite{szekely2007measuring} we get the
+following closed-form formula for $\mathcal{V}_n(X,Y)$:
 
-For independent, identically-distributed sample $\{(X_i, Y_i)\}_{i=1}^n$,
-let $\widehat{\varphi}_X (t) = \frac{1}{n} \sum_{i=1}^n \exp(i t^T X_i)$ 
-be the empirical characteristic function for $X$ and likewise for $Y$. An
-estimate of $\mathcal{V}^2(X,Y)$ replaces the unknown characteristic
-functions with the empirical characteristic functions. Thanks to
-Proposition \ref{prop:cov}, we will simply replace the expectations by
-the same averages.
+\begin{theorem}[\cite{szekely2007measuring} (Theorem 1)]
+Let $\{(X_i, Y_i)\}_{i=1}^n$ be a random sample drawn iid. Define
+the Euclidean distance matrices $a_{ij} = \|X_i - X_j\|$ and
+$b_{ij} = \|Y_i - Y_j\|$ for $i,j$ from 1 to $n$. Define the centered
+distance matrix entries
+\[ A_{ij} = a_{ij} - \overline{a}_i - \overline{a}_j + \overline{a} \]
+where $\overline{a}_i$ is the mean of the $i$th row (or column) of
+matrix $a$ and $\overline{a}$ is the mean of all entries of $a$. Define
+the centered matrix $B$ from $b$ analogously for all $i,j = 1, ..., n$.
+Then,
+\[ \mathcal{V}_n(X,Y) = \sqrt{\frac{1}{n^2}
+                              \sum_{i,j=1}^n A_{ij} B_{ij}} \]
+\end{theorem}
 
-\begin{definition}[Sample Distance Covariance]
-$$ \widehat{\mathcal{V}}^2 (X,Y) \equiv
-\| \widehat{\varphi}_{X,Y}(s,t) -
-            \widehat{\varphi}(s) \widehat{\varphi}_Y(t) \|_w^2
-  = S_1 + S_2 - 2 S_3 $$
-where 
-\begin{align*}
-S_1 &= \frac{1}{n^2} \sum_{k=1}^n \sum_{l=1}^n \|X_k - X_l\| \|Y_k - Y_l\| \\
-S_2 &= \left( \frac{1}{n^2} \sum_{k=1}^n \sum_{l=1}^n \|X_k - X_l\| \right) \frac{1}{n^2} \sum_{k=1}^n \sum_{l=1}^n \|Y_k - Y_l\| \\
-S_3 &= \frac{1}{n^3} \sum_{k=1}^n \sum_{l=1}^n \sum_{m=1}^n \|X_k - X_l\| \|Y_k - Y_m\|
-\end{align*}
-Alternatively, we can let $A, B \in \R^{n \times n}$ such that
-$A_{kl} = \|X_k - X_l\|$ and $B_{kl} = \|Y_k - Y_l\|$ ($A$ and $B$ are
-symmetric elementwise nonnegative). Let
-$\overline{X} = \frac{1}{n^2} \sum_{k,l = 1}^n X_{kl}$. Then
-$$ \widehat{\mathcal{V}}^2 (X,Y)
- = \overline{A \circ B} + \overline{A} \cdot \overline{B} - \frac{2}{n}
-   (\overline{A B}) $$
-where $\circ$ means element-wise multiplication.
-\end{definition}
+The sample distance variance and correlation are defined in terms of
+sample distance covariance in exactly the same manner as the population
+versions.
 
-
-Estimates of distance variance and distance correlation are defined
-analogously.
-
-\section{Statistical Review}
 We now review some key properties that relate the sample distance
 covariance to the population distance covariance that helps give
 insight. We simply state the theorems and refer to the papers for

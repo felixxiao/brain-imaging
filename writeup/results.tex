@@ -1,4 +1,13 @@
-{\color{red}Some lead into here.}
+The previous chapter presented a number of methods for approaching
+the brain parcellation problem. We compare the advantages and drawbacks
+of all these methods in chapter. Due to computational limitations, not
+all of these methods could feasibly have been carried out on our huge
+voxel graph. We therefore present the results of a subset of them on
+12 fMRI data sets from the ABIDE collection. We evaluate the
+parcellation results using criteria introduced in Chapter 3 and compare
+the similarity of multiple parcellations. Finally, we run in-sample
+and out-of-sample analyses on the parcellations to determine which
+method is optimal on the distance correlation voxel graph.
 
 \section{Summary of Methods}
 
@@ -6,9 +15,6 @@
 \caption{Summary of Partitioning Methods}
 \label{8_methods}
 \includegraphics[scale = 0.5]{figs/8_methods.png}
-%\begin{tabular}{cccccccc}
-%\input{figs/8_methods.tex}
-%\end{tabular}
 \end{table}
 
 Table (\ref{8_methods}) summarizes the objectives, advantages, and
@@ -63,9 +69,6 @@ minimizing a weighted within-cluster sum of squares objective
 \[ \sum_{k=1}^K \frac{1}{{|V_k| \choose 2}}
    \sum_{x \in V_k} \|x - \mu_k\|^2 \]
 where $\mu_k$ is the mean of all $x$ in $V_k$.
-
-{\color{red}It'll be nice to cite the equations in Chapter 3 for
-the criterion values}
 
 \section{Parcellations of ABIDE fMRI Scans}
 
@@ -141,8 +144,7 @@ Parcellations on Different fMRI Scans}
 
 We measured the similarity of 116-parcel parcellations from different
 methods on the same brain, across brains in the control and autistic
-cohorts. We used the Adjusted Rand Index \ref{ari} {\color{red}Citation doesn't
-work} as our measure of
+cohorts. We used the Adjusted Rand Index \ref{ari} as our measure of
 similarity, where 1 means identical parcel assignments and 0 means no
 different from random parcel assignments. The result is shown in Figure
 (\ref{ari_same}). The last row and column refer to ARI values with
@@ -232,6 +234,5 @@ the distance correlation graph.
 
 \section{Conclusion}
 
-{\color{red}Some things to think about: Future Work, general thoughts
-about parcellation, which methods did you expect to do well and which
-actually did well.}
+Future Work, general thoughts about parcellation, which methods did you
+expect to do well and which actually did well.

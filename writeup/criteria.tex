@@ -1,19 +1,19 @@
-% 1. in between-score and boundary-score, split summation indexation
-%    into 2 lines
-%#######################################################################
-
-In chapter one we discussed our graphical approach to the brain
+In Chapter 1 we discussed our graphical approach to the brain
 parcellation problem. We construct a weighted undirected graph where
-each vertex is a voxel. The graph reflects the spatial position of the
-voxels; it connects each vertex to the vertices representing the voxel's
-six cubically adjacent neighbors. The weights on these edges are sample
-distance correlation statistics between the adjacent voxels in
-the time series and they measure statistical dependence, with 0 denoting full independence and 1 full dependence. Let $G(V, E)$ denote
-this graph, its vertices, and its edges.
+each vertex corresponds with a voxel. The graph reflects the spatial
+position of the voxels; it connects each vertex to the vertices
+representing the voxel's six cubically adjacent neighbors.
 
-In this context, a valid $k$-fold partition $\mathcal{P}_k$ of the
-graph $G$ is a collection of vertex subsets $(V_1, ..., V_k)$
-satisfying the following:
+The weights on these edges are sample distance correlation statistics
+$\mathcal{R}_n(X,Y)$ between the adjacent voxels $X$ and $Y$ in the
+time series of fMRI data. The properties of $\mathcal{R}$ are presented
+more thoroughly in the preceding Chapter. The most relevant one is that
+$0 \leq \mathcal{R}_n(X,Y) \leq 1$, with higher distance correlation
+indicating a greater degree of statistical dependency.
+
+Let $G(V, E)$ denote the voxel graph, its vertices, and its edges.
+A valid $k$-fold partition $\mathcal{P}_k$ of the graph $G$ is a
+collection of vertex subsets $(V_1, ..., V_k)$ satisfying the following:
 
 \begin{enumerate}[1.]
 \item
@@ -31,24 +31,22 @@ path between them) for all $V_i \in \mathcal{P}_k$
 \end{enumerate}
 
 In this chapter we will suggest various criteria for measuring the
-goodness-of-fit of partitions and discuss their statistical and
-computational advantages and drawbacks.
+goodness of parcellations and discuss their statistical and
+computational advantages and drawbacks. Our notation will be as follows:
+Let $\mathcal{R}_n(x,y)$ denote the sample distance correlation between
+two voxels $x$ and $y$. For any two parcels $V, W \in \mathcal{P}_k$ we
+will use $E_V$ to denote the set of edges with one endpoint in $V$ and
+one endpoint not in $V$, and $E_{V,W}$ the set of edges with one
+endpoint in $V$ and one in $W$.
 
-
-\section{Within-Parcel Similarity}
+\section{Within-Parcel Dependency}
 
 Voxels in the same parcel are ideally highly dependent on one another in
-the time series of fMRI data. As discussed in the previous chapter,
-distance correlation is a good measure of dependence. The distance
-correlation between two random vectors equals zero if and only if the
-two random vectors are independent, which is not true of correlation
-statistics such as Pearson's.
-
-Let $\mathcal{R}(x,y)$ denote the distance correlation between two
-voxels $x$ and $y$.
-Let $V$ and $W$ be any parcels. We will use $E_V$ to denote the set of edges with one end in $V$ and one end not in $V$, and $E_{V,W}$ the set
-of edges with one end in $V$ and one in $W$. {\color{red}Mention if we want to
-maximize or minimize these criteria. Do it for each of them}
+the time series of fMRI data. To measure the degree of statistical
+dependence within a parcel, we begin with the idea of computing the
+sample distance correlation between \textit{all} pairs of voxels in the
+same parcel. We'll call this criterion the \textit{Within-Score}.
+A good parcellation will have a large Within-Score.
 
 \begin{definition}[Within-Score] \label{within-score}
 \[ \frac{1}{k} \sum_{V \in \mathcal{P}_k}
@@ -57,11 +55,11 @@ maximize or minimize these criteria. Do it for each of them}
 \end{definition}
 
 The Within-Score is non-spatial; it considers all pairs of voxels
-equally regardless of whether they are adjacent. As a result, it is a
+equally regardless of whether they are adjacent. Consequently, it is a
 good measure of how much the voxels within each parcel are dependent on
-each other as a set. The downside of this criterion is that it is very
-expensive to compute. With over 300,000 voxels in an fMRI data set we
-would potentially have to compute tens of billions of distance
+each other as a set. The disadvantage of this criterion is that it is
+very expensive to compute. With over 200,000 voxels in an fMRI data set
+we would potentially have to compute tens of billions of distance
 correlation statistics, each of which takes time proportional to the
 number of samples squared.
 
@@ -77,22 +75,29 @@ adjacent pairs of voxels.
 
 Rather than treat parcels as sets with no spatial information, the
 Adjacent-Score does the opposite by only considering the pairwise
-dependency of adjacent voxels. For sparse graphs such as ours, the number
-of distance correlation computations is proportional to the number of
-vertices.
+dependency of adjacent voxels. For sparse graphs such as ours, the
+number of distance correlation computations is proportional to the
+number of vertices. In our cubically adjacent voxel graph, it is bounded
+above by $6 |V|$. Both the Adjacent-Score and Within-Score are
+between 0 and 1.
 
-An intermediate possibility we did not explore is to consider all pairs
-of voxels up to some maximum spatial distance from each other and
-perform a weighted averaging of sample pairwise distance correlations,
-with weights that depend on spatial distance.
+We define the Maximize Average Within-Edge (MAWE) for $k$ partitions
+problem as the problem of finding a valid $k$-fold partition
+$\mathcal{P}_k$ of $V$ so as to maximize the Adjacent-Score
+(\ref{adjacent-score}). MAWE will serve as the general guideline for our
+parcellation algorithms in later chapters. Hence we adopt the
+Adjacent-Score as our primary metric for evaluating the goodness of
+parcellations for capturing functional connectivity.
 
-\section{Between-Parcel Dissimilarity}
+\section{Between-Parcel Dependency}
 
-To evaluate parcellation quality, it is also useful to measure how
+Another way of viewing parcellation quality is to look at how
 dependent voxels belonging to different parcels are on each other. To
 this end we define two criterion similar to the Within-Parcel criterion;
 a non-spatial metric called the Between-Score and its spatial metric
-the Boundary-Score.
+the Boundary-Score. Contrary to the within parcel criteria presented
+above, the goal now becomes to \textit{minimize} the criteria measuring
+between-parcel dependency.
 
 \begin{definition}[Between-Score] \label{between-score}
 \[ \frac{1}{\binom{k}{2}} \sum_{V, W \in \mathcal{P}_k, V \neq W}
@@ -102,7 +107,7 @@ the Boundary-Score.
 
 \begin{definition}[Boundary-Score] \label{boundary-score}
 \[ \frac{1}{\binom{k}{2}} \sum_{V, W \in \mathcal{P}_k, V \neq W}
-   \frac{1}{|V||W|} \sum_{(x,y) \in E_{V,W}} \mathcal{R}(x,y)
+   \frac{1}{|E_{V,W}|} \sum_{(x,y) \in E_{V,W}} \mathcal{R}(x,y)
 \]
 \end{definition}
 
@@ -121,6 +126,8 @@ correlation at the parcel level rather than voxel level. The result is
 a measure of non-spatial between-parcel similarity that is also
 computationally feasible. For this reason we will use Multivariate
 Between-Score as our primary measure of parcel dissimilarity.
+Between-Score, Boundary-Score, and Multivariate Between-Score all
+lie between 0 and 1.
 
 \begin{definition}[Multivariate Between-Score]
 \label{multi-between-score}
@@ -129,54 +136,89 @@ Between-Score as our primary measure of parcel dissimilarity.
 \]
 \end{definition}
 
-
-\section{Graph Cuts}
-
 Closely related to the Boundary-Score is the notion of a graph cut from
-computer science. A \textit{cut set} is the set of edges with endpoints
+computer science. A \textit{cut} is the set of edges with endpoints
 in different parcels. The \textit{cut weight} is the sum of weights of
 all edges in the cut set and can be expressed as
 \[ \frac{1}{2} \sum_{V \in \mathcal{P}_k}
    \sum_{x,y \in E_V} \mathcal{R}(x,y) \]
 The \textit{ratio cut} defined below is a weighted version of the cut
-weight:
+weight
 \[ \frac{1}{2} \sum_{V \in \mathcal{P}_k} \frac{1}{|V|}
    \sum_{x,y \in E_V} \mathcal{R}(x,y)
 \]
-The subfield of graph partitioning is concerned with minimizing
-cut weight, ratio cut, and several other related quantities. Over the
-last several decades a number of highly effective approximation
-algorithms have been developed to find partitions of graphs that
-minimize these quantities. Later chapters will explore how these methods
-work for brain parcellation.
+Although we do not use these two criteria directly in evaluating
+parcellations, we include them here because of their importance in
+the graph partitioning literature. In particular, the ratio cut has
+a close connection with spectral partitioning methods explored in
+Chapter 5.
 
 \section{Balance and Jaggedness}
 
-In addition to the above distance correlation based criteria, there are
-two additional metrics concerned with parcel shape.
+The previous criteria are concerned solely with measuring functional
+connectivity within and between parcels, without regard for the spatial
+shape of the parcels.
+Both anatomical and functional parcellations in the literature exhibit
+some degree of parcel shape regularity. The number of voxels in each
+parcel does not vary too much, and the surface of parcels tend to be
+smooth. We quantify these two attributes with the following criteria:
 
 \begin{definition}[Balance] \label{balance}
-\[ \frac{1}{k} \frac{1}{\max_{V \in \mathcal{P}_k} |V|}
+\[ \frac{1}{k} \frac{1}{\underset{V \in \mathcal{P}_k}{\max} |V|}
    \sum_{V \in \mathcal{P}_k} |V| \]
 \end{definition}
 
-The Balance-Score ranges from 1 (all equally sized parcels) to
-0 (two parcels with one of size zero).
+The Balance-Score has a maximum value of 1 which occurs if and only if
+all parcels are equally sized. It is bounded asymptotically below by 0
+and approaches this number as $k$ increases and there is one huge
+parcel and $k - 1$ miniscule ones. In the Automatic Anatomical
+Parcellation, the Balance-Score is around $0.3$. Our parcellations will
+aim for around this number.
 
 \begin{definition}[Jaggedness] \label{jaggedness}
 \[ \frac{1}{k} \sum_{V \in \mathcal{P}_k} \frac{|E_V|^\frac{3}{2}}{|V|}
 \]
 \end{definition}
 
-The $\frac{3}{2}$ power makes the ratio invariant on parcel size. 
-{\color{red}Not a fan of this sentence about ratio invariant. Maybe just
-say it's used to account for the fact that numerator is a surface area-like
-measurement while the denominator is a volume-like measurement.}
+The Jaggedness criterion is a normalized graphical version of the mean
+surface area to volume ratio of all parcels. The surface area here is
+the number (not weight) of edges with only one endpoint in a parcel and
+the volume is the number of vertices in the parcel.
+
+The Jaggedness criterion is \textit{normalized} in the sense that the
+$\frac{3}{2}$ power in the numerator makes the ``dimensionality'' of the
+surface area (which is 2-D in the 3-D space) equal to dimensionality of
+the volume (which is 3-D). This has the benefit of making the
+surface-area to volume ratio not depend on the size of the parcel.
 For instance, a $n \times n \times n$ cube of vertices would have
 a jaggedness of $6^{\frac{3}{2}}$ which does not depend on $n$.
 
 \section{Comparing Multiple Parcellations}
 
-{\color{red}Put the stuff about rand index here}
-A common criterion for measuring the similarity of two partitionings
-is Rand Index, defined as
+Since we'll be running our parcellation methods on multiple brains we
+require a criterion that compares the similarity of two different
+parcellations. We will be using the Adjusted Rand Index, which is a
+common measure used in the clustering literature.
+
+\begin{definition}[Adjusted Rand Index] \label{ari}
+Let $\mathcal{P}_k = \{V_1, ..., V_k\}$ and
+    $\mathcal{Q}_l = \{W_1, ..., W_l\}$ be two partitionings of $V$.
+Let the overlap of $V_i$ and $W_j$ be denoted 
+\[ n_{ij} = | V_i \cap W_j | \]
+and let $a_i = \sum_{j=1}^l n_{ij}$ be the row sums and
+        $b_j = \sum_{i=1}^k n_{ij}$ be the column sums of $[n_{ij}]$.
+The Adjusted Rand Index (ARI) is defined as
+\[ \frac{\sum_{i,j} \binom{n_{ij}}{2} -
+         \frac{S}{\binom{n}{2}} 
+        }
+        {\frac{S}{2} - \frac{S}{\binom{n}{2}}} \]
+where $S = \sum_i \binom{a_i}{2} + \sum_j \binom{b_j}{2}$
+\end{definition}
+
+The advantage of ARI is that the number of parcels in the two
+parcellations compared do not have to be equal. The ARI has a value of
+1 if and only if the two parcellations assign the same voxels to each
+parcel. ARI values close to 0 indicate that parcellations are
+independent of each other for any number of parcels, which would occur
+if one of the two parcellations were randomly generated. It is possible
+to get negative ARI values.
