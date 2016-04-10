@@ -190,7 +190,7 @@ validation brain are the same.
 
 Assuming normality, a one sample t-test of the mean non-diagonal
 cross-validation value shows that it is significantly greater than 0
-($p \leq 2.2 \times 10^{-16}$). This indicates some degree of similarity
+($p < 2.2 \times 10^{-16}$). This indicates some degree of similarity
 between different brains in the statistical dependencies of adjacent
 voxels. Furthermore, Welch's two sample t-test of unequal variances
 tells us the mean off-diagonal CV value in the autism cohort and the
@@ -216,11 +216,22 @@ and hence are less likely to overfit the graph.
 \end{figure}
 
 Figure (\ref{cv_sp}) shows the results of the cross-validation procedure
-using the spectral partitioning method.
+using the spectral partitioning method. As with GenEC (6,4),
+off-diagonal entries have a mean significantly above 0
+($p < 2.2 \times 10^{-16}$). The spectral method produced
+cross-validation scores with lower standard deviation than the GenEC
+(6,4) CV scores (0.0058 compared with 0.0121), confirming our hypothesis
+that it is a more regularized method. Most notably, the spectral
+parcellations always had higher Adjacent-Scores than their randomized
+parcellations counterparts, in-sample and out-of-sample.
+
+However, it is probable ($p = 0.0958$) that the GenEC (6,4)
+parcellations do better out-of-sample than the spectral parcellations.
+This suggests that the spectral method is a little too regularized for
+the distance correlation graph.
 
 \section{Conclusion}
 
-
-{\color{red}Some things to think about: Future Work, general thoughts about
-parcellation, which methods did you expect to do well and which actually did
-well.}
+{\color{red}Some things to think about: Future Work, general thoughts
+about parcellation, which methods did you expect to do well and which
+actually did well.}
